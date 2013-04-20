@@ -40,7 +40,6 @@ static int nLeftBorder;			// pixels between leftside + tab sheet
 static int nBottomBorder;		// pixels between bottomside + tab
 
 static BOOL fxMaxed, fyMaxed;	// Remember our sized state when a size/move starts
-static UINT_PTR uHitTest;		// Keep track of if sizing or moving
 
 //
 //	These two variables help us to position WinSpy++
@@ -883,26 +882,25 @@ UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 		}
 	}
 	
-	// If the window was moved (ie. dragged by caption/client),
-	// Then update our pinned corner position
-	if(uHitTest == HTCAPTION)
-		GetPinnedPosition(hwnd, &ptPinPos);
+	GetPinnedPosition(hwnd, &ptPinPos);
 
 	uOldLayout = uLayout;
 
 	return 0;
 }
 
-UINT_PTR WinSpyDlg_FullWindowDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
+UINT_PTR WinSpyDlg_NCHitTest(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
+	UINT_PTR uHitTest;
+
 	uHitTest = DefWindowProc(hwnd, WM_NCHITTEST, wParam, lParam);
-		
+
 	// Allow full-window dragging
 	if(fFullDragging &&	uHitTest == HTCLIENT) 
 		uHitTest = HTCAPTION;
 
 	SetWindowLongPtr(hwnd, DWLP_MSGRESULT, uHitTest);
-	return uHitTest;
+	return TRUE;
 }
 
 #define X_ZOOM_BORDER 8

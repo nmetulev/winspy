@@ -764,7 +764,7 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return WinSpyDlg_Sizing(hwnd, (UINT)wParam, (RECT *)lParam);
 
 	case WM_NCHITTEST:
-		return WinSpyDlg_FullWindowDrag(hwnd, wParam, lParam);
+		return WinSpyDlg_NCHitTest(hwnd, wParam, lParam);
 
 	case WM_ENTERSIZEMOVE:
 		return WinSpyDlg_EnterSizeMove(hwnd);

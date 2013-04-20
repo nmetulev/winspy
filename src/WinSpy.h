@@ -112,7 +112,7 @@ UINT WinSpyDlg_Sizing			(HWND hwnd, UINT nSide, RECT *prc);
 UINT WinSpyDlg_WindowPosChanged	(HWND hwnd, WINDOWPOS *wp);
 UINT WinSpyDlg_EnterSizeMove	(HWND hwnd);
 UINT WinSpyDlg_ExitSizeMove		(HWND hwnd);
-UINT_PTR WinSpyDlg_FullWindowDrag	(HWND hwnd, WPARAM wParam, LPARAM lParam);
+UINT_PTR WinSpyDlg_NCHitTest	(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
 UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
