@@ -40,82 +40,76 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD cbCodeS
 	DWORD  dwProcessId;			//id of remote process
 	DWORD  dwThreadId;			//id of the thread in remote process 
 	HANDLE hProcess;			//handle to the remote process
-	
-	HANDLE hRemoteThread = 0;	//handle to the injected thread
-	DWORD  dwRemoteThreadId =0;	//ID of the injected thread
-	
-	SIZE_T dwWritten = 0;		// Number of bytes written to the remote process
-	SIZE_T dwRead = 0;
-	DWORD  dwExitCode;
-	
-	void *pRemoteData = 0;
-	
-	VA_EX_PROC pVirtualAllocEx; 
-	VF_EX_PROC pVirtualFreeEx;
 
-	// The address to which code will be copied in the remote process
-	DWORD *pdwRemoteCode;
+	HANDLE hRemoteThread;	    //handle to the injected thread
+
+	SIZE_T dwWritten;			// Number of bytes written to the remote process
+	SIZE_T dwRead;
+	DWORD  dwExitCode;
+
+	void *pRemoteCode;
+	void *pRemoteData;
 
 	const int cbCodeSizeAligned = (cbCodeSize + (sizeof(LONG_PTR)-1)) & ~ (sizeof(LONG_PTR)-1);
-	
+
+	// Return FALSE in case of failure
+	dwExitCode = FALSE;
+
 	// Find the process ID of the process which created the specified window
 	dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
-	
+
 	// Open the remote process so we can allocate some memory in it
 	hProcess = OpenProcess(INJECT_PRIVELIDGE, FALSE, dwProcessId);
-
-	//Accessed denied????!!!!!!!!!
-	if(hProcess == 0)
+	if(hProcess)
 	{
-		return FALSE;
-	}
+		pRemoteCode = VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+		if(pRemoteCode)
+		{
+			// Write a copy of our injection thread into the remote process
+			WriteProcessMemory(hProcess, pRemoteCode, lpCode, (SIZE_T)cbCodeSize, &dwWritten);
 
-	// Allocate enough memory in the remote process's address space
-	// to hold the binary image of our injection thread, and
-	// a copy of the INJTHREADINFO structure
-	pVirtualAllocEx = (VA_EX_PROC)GetProcAddress(GetModuleHandle(_T("KERNEL32.DLL")), "VirtualAllocEx");
-	pVirtualFreeEx  = (VF_EX_PROC)GetProcAddress(GetModuleHandle(_T("KERNEL32.DLL")), "VirtualFreeEx");
+			// Write a copy of the INJTHREAD to the remote process. This structure
+			// MUST start on a 32bit/64bit boundary
+			pRemoteData = (void *)((BYTE *)pRemoteCode + cbCodeSizeAligned);
 
-	if(pVirtualAllocEx == 0 || pVirtualFreeEx == 0)
-		return FALSE;
+			// Put DATA in the remote thread's memory block
+			WriteProcessMemory(hProcess, pRemoteData, lpData, cbDataSize, &dwWritten);
 
-	pdwRemoteCode = pVirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-
-	if(pdwRemoteCode == 0)
-		return FALSE;
-
-	// Write a copy of our injection thread into the remote process
-	WriteProcessMemory(hProcess, pdwRemoteCode, lpCode, (SIZE_T)cbCodeSize, &dwWritten);
-
-	// Write a copy of the INJTHREAD to the remote process. This structure
-	// MUST start on a 32bit/64bit boundary
-	pRemoteData = (void *)((BYTE *)pdwRemoteCode + cbCodeSizeAligned);
-	
-	// Put DATA in the remote thread's memory block
-	WriteProcessMemory(hProcess, pRemoteData, lpData, cbDataSize, &dwWritten);
-
-	// Create the remote thread!!!
+			// Create the remote thread!!!
 #ifndef _DEBUG
-	hRemoteThread = CreateRemoteThread(hProcess, NULL, 0, 
-		(LPTHREAD_START_ROUTINE)pdwRemoteCode, pRemoteData, 0, &dwRemoteThreadId);
+			hRemoteThread = CreateRemoteThread(hProcess, NULL, 0, 
+				(LPTHREAD_START_ROUTINE)pRemoteCode, pRemoteData, 0, NULL);
+#else
+			hRemoteThread = NULL;
 #endif
 
-	// Wait for the thread to terminate
-	WaitForSingleObject(hRemoteThread, INFINITE);
-	
-	// Read the user-structure back again
-	if(!ReadProcessMemory(hProcess, pRemoteData, lpData, cbDataSize, &dwRead))
-	{
-		//an error occurred
+			if(hRemoteThread)
+			{
+				// Wait for the thread to terminate
+				if(WaitForSingleObject(hRemoteThread, 7000) != WAIT_OBJECT_0)
+				{
+					// Timeout or failure
+					// Do not call VirtualFreeEx as the code may still run in the future
+					CloseHandle(hRemoteThread);
+					CloseHandle(hProcess);
+
+					return FALSE;
+				}
+
+				// Read the user-structure back again
+				ReadProcessMemory(hProcess, pRemoteData, lpData, cbDataSize, &dwRead);
+
+				GetExitCodeThread(hRemoteThread, &dwExitCode);
+
+				CloseHandle(hRemoteThread);
+			}
+
+			// Free the memory in the remote process
+			VirtualFreeEx(hProcess, pRemoteCode, 0, MEM_RELEASE);
+		}
+
+		CloseHandle(hProcess);
 	}
-	
-	GetExitCodeThread(hRemoteThread, &dwExitCode);
-	
-	CloseHandle(hRemoteThread);
-	
-	// Free the memory in the remote process
-	pVirtualFreeEx(hProcess, pdwRemoteCode, 0, MEM_RELEASE);
-	CloseHandle(hProcess);
 
 	return dwExitCode;
 }
