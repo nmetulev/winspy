@@ -272,7 +272,18 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		return TRUE;
 		
 	case IDC_REFRESH:
-		RefreshTreeView(GetDlgItem(hwnd, IDC_TREE1));
+		hwndTree = GetDlgItem(hwnd, IDC_TREE1);
+
+		RefreshTreeView(hwndTree);
+
+		hItem = FindTreeItemByHwnd(hwndTree, spy_hCurWnd, NULL);
+		if(hItem)
+		{
+			// Move it into view!
+			SendMessage(hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hItem);
+			SendMessage(hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hItem);
+			SetFocus(hwndTree);
+		}
 		return TRUE;
 	}
 		
