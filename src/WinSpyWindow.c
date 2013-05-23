@@ -252,6 +252,7 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 {
 	int x,y,cx,cy;
 	int i;
+	WINDOWPLACEMENT placement;
 	RECT rect, rect1;
 	HWND hwndTab;
 	HWND hwndCtrl;
@@ -291,7 +292,21 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 	GetWindowRect(hwndTab, &rect);
 
 	// Get SCREEN coords of dialog's CLIENT area
-	GetClientRect(hwnd, &rect1);
+	if(IsIconic(hwnd))
+	{
+		// If the window is minimized, calc the client rect manually
+
+		placement.length = sizeof(WINDOWPLACEMENT);
+		GetWindowPlacement(hwnd, &placement);
+
+		rect1 = placement.rcNormalPosition;
+		rect1.top += GetSystemMetrics(SM_CYCAPTION);
+		InflateRect(&rect1, -GetSystemMetrics(SM_CXFRAME), -GetSystemMetrics(SM_CYFRAME));
+		OffsetRect(&rect1, -rect1.left, -rect1.top);
+	}
+	else
+		GetClientRect(hwnd, &rect1);
+
 	MapWindowPoints(hwnd, 0, (POINT *)&rect1, 2);
 
 	// Now we know what the border is between TAB and left-side
