@@ -131,6 +131,7 @@
 #define IDC_EXPAND                      1070
 #define IDC_WINDOWPROC                  1070
 #define IDC_CLEAR                       1071
+#define IDC_AUTOUPDATE                  1072
 #define IDM_GENERAL_ONTOP               40003
 #define IDM_GENERAL_VISIBLE             40004
 #define IDM_GENERAL_ENABLED             40005
@@ -179,7 +180,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        163
 #define _APS_NEXT_COMMAND_VALUE         40044
-#define _APS_NEXT_CONTROL_VALUE         1071
+#define _APS_NEXT_CONTROL_VALUE         1073
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

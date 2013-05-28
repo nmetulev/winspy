@@ -757,6 +757,9 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		return WinSpyDlg_CommandHandler(hwnd, wParam, lParam);
 
+	case WM_TIMER:
+		return WinSpyDlg_TimerHandler(hwnd, wParam);
+
 	case WM_SIZE:
 		return WinSpyDlg_Size(hwnd, wParam, lParam);
 	
@@ -884,6 +887,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 void ExitWinSpy(HWND hwnd, UINT uCode)
 {
+	if(IsDlgButtonChecked(hwnd, IDC_AUTOUPDATE))
+		KillTimer(hwnd, 0);
+
 	DestroyWindow(hwnd);
 	PostQuitMessage(uCode);
 }

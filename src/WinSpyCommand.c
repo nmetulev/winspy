@@ -216,7 +216,14 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		CaptureWindow(hwnd, spy_hCurWnd);
 		MessageBox(hwnd, _T("Window contents captured to clipboard"), szAppName, MB_ICONINFORMATION);
 		return TRUE;
-		
+
+	case IDC_AUTOUPDATE:
+		if(IsDlgButtonChecked(hwnd, IDC_AUTOUPDATE))
+			SetTimer(hwnd, 0, 1000, NULL);
+		else
+			KillTimer(hwnd, 0);
+		return TRUE;
+
 	case IDOK: 
 		
 		hwndGeneral = WinSpyTab[GENERAL_TAB].hwnd;
@@ -345,4 +352,15 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	}
 	return FALSE;
 	
+}
+
+UINT WinSpyDlg_TimerHandler(HWND hwnd, UINT_PTR uTimerId)
+{
+	if(uTimerId == 0)
+	{
+		DisplayWindowInfo(spy_hCurWnd);
+		return TRUE;
+	}
+
+	return FALSE;
 }

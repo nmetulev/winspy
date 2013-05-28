@@ -195,7 +195,7 @@ BEGIN
     CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,261,55,46,55,WS_EX_CLIENTEDGE
     CONTROL         "Tab2",IDC_TAB2,"SysTabControl32",TCS_FOCUSNEVER,258,4,64,44
     PUSHBUTTON      "&Capture",IDC_CAPTURE,7,230,50,14
-    DEFPUSHBUTTON   "Close",IDOK,65,230,50,14
+    CONTROL         "&Autoupdate",IDC_AUTOUPDATE,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,65,230,50,14
     PUSHBUTTON      "&More",IDC_EXPAND,197,230,50,14
     PUSHBUTTON      "&Refresh",IDC_REFRESH,258,230,50,14,BS_CENTER | BS_VCENTER
     PUSHBUTTON      "&Locate",IDC_LOCATE,316,230,50,14
@@ -556,12 +556,6 @@ BEGIN
         VALUE "Translation", 0x809, 1200
     END
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// RT_MANIFEST
-//
 
 
 /////////////////////////////////////////////////////////////////////////////
