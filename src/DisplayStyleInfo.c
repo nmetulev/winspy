@@ -647,6 +647,24 @@ StyleLookupEx StyleExList[] =
 
 #endif
 
+#if(_WIN32_WINNT >= 0x0500)
+STYLE_(WS_EX_LAYERED),              0, -1, 0,   //0x00080000
+
+#endif /* _WIN32_WINNT >= 0x0500 */
+
+
+#if(WINVER >= 0x0500)
+STYLE_(WS_EX_NOINHERITLAYOUT),      0, -1, 0,   //0x00100000L // Disable inheritence of mirroring by children
+STYLE_(WS_EX_LAYOUTRTL),            0, -1, 0,   //0x00400000L // Right to left mirroring
+#endif /* WINVER >= 0x0500 */
+
+#if(_WIN32_WINNT >= 0x0501)
+STYLE_(WS_EX_COMPOSITED),           0, -1, 0,   //0x02000000L
+#endif /* _WIN32_WINNT >= 0x0501 */
+#if(_WIN32_WINNT >= 0x0500)
+STYLE_(WS_EX_NOACTIVATE),           0, -1, 0,   //0x08000000L
+#endif /* _WIN32_WINNT >= 0x0500 */
+
 	-1, _T(""), -1, -1, -1
 };
 
