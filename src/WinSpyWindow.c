@@ -575,7 +575,7 @@ void EnableLayoutCtrls(HWND hwnd, UINT layout)
 	CtrlEnable ctrl0[] = 
 	{ 
 		IDC_TAB1,		FALSE, 
-		IDOK,			FALSE, 
+		IDC_AUTOUPDATE,	FALSE, 
 		IDC_CAPTURE,	FALSE, 
 		IDC_EXPAND,		FALSE,
 		IDC_TAB2,		FALSE,
@@ -588,7 +588,7 @@ void EnableLayoutCtrls(HWND hwnd, UINT layout)
 	CtrlEnable ctrl1[] = 
 	{ 
 		IDC_TAB1,		TRUE, 
-		IDOK,			TRUE, 
+		IDC_AUTOUPDATE,	TRUE, 
 		IDC_CAPTURE,	TRUE, 
 		IDC_EXPAND,		TRUE,
 		IDC_TAB2,		FALSE,
@@ -601,7 +601,7 @@ void EnableLayoutCtrls(HWND hwnd, UINT layout)
 	CtrlEnable ctrl2[] = 
 	{ 
 		IDC_TAB1,		TRUE, 
-		IDOK,			TRUE, 
+		IDC_AUTOUPDATE,	TRUE, 
 		IDC_CAPTURE,	TRUE, 
 		IDC_EXPAND,		TRUE,
 		IDC_TAB2,		TRUE,

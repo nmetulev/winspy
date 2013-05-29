@@ -351,7 +351,7 @@ HWND CreateTooltip(HWND hwndDlg)
 		-1, IDC_MINIMIZE,   _T("Minimize On Use"),
 		-1, IDC_HIDDEN,		_T("Display Hidden Windows"),
 		-1, IDC_CAPTURE,    _T("Capture Current Window (Alt+C)"),
-		-1, IDOK,			_T("Exit WinSpy++"),
+		-1, IDC_AUTOUPDATE,	_T("Update data every second"),
 		-1, IDC_EXPAND,     _T("Expand / Collapse (F3)"),
 		-1, IDC_REFRESH,    _T("Refresh Window List (F6)"),
 		-1, IDC_LOCATE,     _T("Locate Current Window"),
