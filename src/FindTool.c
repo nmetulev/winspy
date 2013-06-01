@@ -201,10 +201,6 @@ UINT FireWndFindNotify(HWND hwndTool, UINT uCode, HWND hwnd)
 
 LRESULT EndFindToolDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndParent;
-
-	hwndParent = GetParent(hwnd);
-	
 	//InvertWindow(hwndCurrent, fShowHidden);
 	HideSel(hwndCurrent);
 	ReleaseCapture();
@@ -347,7 +343,6 @@ void HideSel(HWND hwnd)
 
 LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndParent;
 	POINT pt;
 
 	static POINT ptLast;
@@ -370,7 +365,6 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag2);
 
-		hwndParent = GetParent(hwnd);
 		hwndCurrent = hwnd;
 		
 		ShowSel(hwndCurrent);

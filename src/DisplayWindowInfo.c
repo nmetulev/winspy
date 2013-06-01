@@ -16,6 +16,7 @@
 
 #include "resource.h"
 #include "WinSpy.h"
+#include "Utils.h"
 
 static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 {
@@ -26,7 +27,7 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 	
 	//only display 1st generation (1-deep) children - 
 	//(don't display child windows of child windows)
-	if(GetParent(hwnd) == spy_hCurWnd)
+	if(GetRealParent(hwnd) == spy_hCurWnd)
 	{
 		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
 		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
@@ -55,7 +56,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 	LVITEM lvitem;
 		
 	//sibling windows must share the same parent
-	if(spy_hCurWnd != hwnd && GetParent(hwnd) == GetParent(spy_hCurWnd))
+	if(spy_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(spy_hCurWnd))
 	{
 		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
 		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
@@ -83,6 +84,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 //
 void SetWindowInfo(HWND hwnd)
 {
+	HWND hParentWnd;
 	TCHAR ach[10];
 
 	HWND hwndList1 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST1);
@@ -97,10 +99,12 @@ void SetWindowInfo(HWND hwnd)
 	EnumChildWindows(hwnd, ChildWindowProc, (LONG)hwndList1);
 
 	// Get children of it's PARENT (i.e, it's siblings!)
-	EnumChildWindows(GetParent(hwnd), SiblingWindowProc, (LONG)hwndList2);
+	hParentWnd = GetRealParent(hwnd);
+	if(hParentWnd)
+		EnumChildWindows(hParentWnd, SiblingWindowProc, (LONG)hwndList2);
 
 	// Set the Parent hyperlink
-	wsprintf(ach, szHexFmt, GetParent(hwnd));
+	wsprintf(ach, szHexFmt, hParentWnd);
 	SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_PARENT, ach);
 
 	// Set the Owner hyperlink

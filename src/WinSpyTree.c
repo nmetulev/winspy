@@ -19,6 +19,7 @@
 
 #include "resource.h"
 #include "WinSpy.h"
+#include "Utils.h"
 
 #pragma comment(lib, "comctl32.lib")
 
@@ -361,7 +362,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 
 	// Need to know the current window's parent, so we know
 	// where to insert this window
-	HWND  hwndParent = GetParent(hwnd);
+	HWND  hwndParent = GetRealParent(hwnd);
 
 	// Keep track of the last window to be inserted, so
 	// we know the z-order of the current window
@@ -436,7 +437,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	if(winProc->nWindowZ > 0 && hwndParent != WindowStack[winProc->nWindowZ - 1].hwnd)
 	{
 		//we have another child window
-		if(GetParent(hwnd) == hwndLast)
+		if(hwndParent == hwndLast)
 		{
 			//make a new parent stack entry
 			WindowStack[winProc->nWindowZ].hRoot = hTreeLast;
@@ -481,9 +482,8 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 //  starting from the desktop window
 //	HWND - handle to the dialog containing the tree
 //
-void FillGlobalWindowTree(HWND hwnd)
+void FillGlobalWindowTree(HWND hwndTree)
 {
-	HWND hwndTree = GetDlgItem(hwnd, IDC_TREE1);
 	TVINSERTSTRUCT tv;
 	static TCHAR ach[MIN_FORMAT_LEN];
 
@@ -635,7 +635,7 @@ void RefreshTreeView(HWND hwndTree)
 		
 	TreeView_DeleteAllItems(hwndTree);
 		
-	FillGlobalWindowTree(GetParent(hwndTree));
+	FillGlobalWindowTree(hwndTree);
 
 	
 	SendMessage(hwndTree, WM_SETREDRAW, TRUE, 0);

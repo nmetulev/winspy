@@ -17,6 +17,7 @@
 
 #include <windows.h>
 #include <tchar.h>
+#include "Utils.h"
 
 static HWND  hwndGlobal;
 static HWND  hwndButton;
@@ -146,7 +147,7 @@ HWND WindowFromPointEx(POINT pt, BOOL fShowHidden)
 	if(!g_fShowHidden)
 	{
 		while(hWndPoint && !IsWindowVisible(hWndPoint))
-			hWndPoint = GetParent(hWndPoint);
+			hWndPoint = GetRealParent(hWndPoint);
 	}
 
 	return hWndPoint;

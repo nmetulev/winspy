@@ -158,6 +158,7 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 //
 void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 {
+	HWND hParentWnd;
 	BOOL fParentVisible;
 	BOOL fParentEnabled;
 
@@ -167,15 +168,17 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 	dwStyle   = GetWindowLong(hwndTarget, GWL_STYLE);
 	dwStyleEx = GetWindowLong(hwndTarget, GWL_EXSTYLE);
 
-	if(GetParent(hwndTarget))
-		fParentVisible = IsWindowVisible(GetParent(hwndTarget));
+	hParentWnd = GetRealParent(hwndTarget);
+	if(hParentWnd)
+	{
+		fParentVisible = IsWindowVisible(hParentWnd);
+		fParentEnabled = IsWindowEnabled(hParentWnd);
+	}
 	else
+	{
 		fParentVisible = TRUE;
-	
-	if(GetParent(hwndTarget))
-		fParentEnabled = IsWindowEnabled(GetParent(hwndTarget));
-	else
 		fParentEnabled = TRUE;
+	}
 	
 	if(dwStyle & WS_VISIBLE)
 		CheckMenuItem(hMenu, IDM_POPUP_VISIBLE, MF_BYCOMMAND | MF_CHECKED);

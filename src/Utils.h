@@ -26,6 +26,8 @@ TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULON
 BOOL ProcessArchMatches(HWND hwnd);
 WORD GetProcessorArchitecture();
 
+HWND GetRealParent(HWND hWnd);
+
 #ifdef __cplusplus
 }
 #endif
