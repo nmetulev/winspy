@@ -466,6 +466,14 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 	RECT      rect;
 	int       width;
 
+	int       selected;
+	POINT     pt;
+	RECT      rc;
+	HMENU     hMenu;
+	UINT      uCmd;
+	LVITEM    lvitem;
+	TCHAR     ach[256];
+
 	switch(iMsg)
 	{
 	case WM_INITDIALOG:
@@ -478,22 +486,107 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 		GetClientRect(hwndList1, &rect);
 		width = rect.right;
 		width -= GetSystemMetrics(SM_CXVSCROLL);
-
-		// Insert "Handle" header-item
-		lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-		lvcol.cx   = 20+12*sizeof(LONG_PTR);
-		lvcol.iSubItem = 0;
-		lvcol.pszText = _T("Handle");
-		ListView_InsertColumn(hwndList1, 0, &lvcol);
-		width -= lvcol.cx;		
 		
 		// Insert "Property" header-item
+		lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
+		lvcol.iSubItem = 0;
+		lvcol.cx   = width - (20+12*sizeof(LONG_PTR));
 		lvcol.pszText = _T("Property Name");
-		lvcol.cx   = width;
+		ListView_InsertColumn(hwndList1, 0, &lvcol);
+
+		// Insert "Handle" header-item
+		lvcol.cx   = 20+12*sizeof(LONG_PTR);
+		lvcol.pszText = _T("Handle");
 		ListView_InsertColumn(hwndList1, 1, &lvcol);
 
 		return TRUE;
 	
+	case WM_CONTEXTMENU:
+		hwndList1 = GetDlgItem(hwnd, IDC_LIST1);
+
+		if((HWND)wParam == hwndList1)
+		{
+			// ListView has been right-clicked, so show the popup menu
+
+			if(ListView_GetSelectedCount(hwndList1) == 1)
+				selected = ListView_GetNextItem(hwndList1, -1, LVNI_SELECTED);
+			else
+				selected = -1;
+
+			pt.x = (long)(short)LOWORD(lParam);
+			pt.y = (long)(short)HIWORD(lParam);
+
+			// Calculate x, y if using keyboard
+			if(pt.x == -1 && pt.y == -1)
+			{
+				if(selected == -1)
+				{
+					GetClientRect(hwndList1, &rc);
+					pt.x = rc.left + (rc.right - rc.left) / 2;
+					pt.y = rc.top + (rc.bottom - rc.top) / 2;
+				}
+				else
+				{
+					ListView_GetItemRect(hwndList1, selected, &rc, LVIR_ICON);
+					pt.x = rc.right;
+					pt.y = rc.bottom;
+				}
+
+				ClientToScreen(hwndList1, &pt);
+			}
+
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU4));
+
+			// Show the menu
+			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
+
+			// Act accordingly
+			switch(uCmd)
+			{
+			case IDM_PROPERTY_ADD:
+				ShowWindowPropertyEditor(hwnd, spy_hCurWnd, TRUE);
+				break;
+
+			case IDM_PROPERTY_EDIT:
+				if(selected != -1)
+					ShowWindowPropertyEditor(hwnd, spy_hCurWnd, FALSE);
+				break;
+
+			case IDM_PROPERTY_REMOVE:
+				if(selected != -1)
+				{
+					lvitem.mask = LVIF_TEXT | LVIF_PARAM;
+					lvitem.iItem = selected;
+					lvitem.iSubItem = 0;
+					lvitem.pszText = ach;
+					lvitem.cchTextMax = 256;
+
+					ListView_GetItem(hwndList1, &lvitem);
+
+					if(RemoveProp(spy_hCurWnd, lvitem.lParam ? MAKEINTATOM(lvitem.lParam) : lvitem.pszText))
+						ListView_DeleteItem(hwndList1, selected);
+				}
+				break;
+			}
+
+			DestroyMenu(hMenu);
+		}
+
+		return TRUE;
+
+	case WM_NOTIFY:
+		if(((NMHDR *)lParam)->idFrom == IDC_LIST1)
+		{
+			switch(((NMHDR *)lParam)->code)
+			{
+			case NM_DBLCLK:
+				ShowWindowPropertyEditor(hwnd, spy_hCurWnd, FALSE);
+				break;
+			}
+		}
+
+		return TRUE;
+
 	case WM_SYSCOLORCHANGE:
 
 		// Need to react to system colour changes

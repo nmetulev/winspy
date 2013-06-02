@@ -78,7 +78,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,7,216,64
+    CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | WS_BORDER | WS_TABSTOP,7,7,216,64
     LTEXT           "Window Properties are entries stored in a window's property list, by using the SetProp API call.",IDC_STATIC,7,74,216,21
     GROUPBOX        "Horizontal Scrollbar",IDC_STATIC,7,98,104,70,0,WS_EX_TRANSPARENT
     LTEXT           "Minimum:",IDC_STATIC,15,121,30,8
@@ -208,7 +208,7 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Window Style Editor"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "&Style DWORD:",IDC_STATIC,7,7,58,8
+    LTEXT           "Style &DWORD:",IDC_STATIC,7,7,58,8
     EDITTEXT        IDC_EDIT1,7,16,170,14,ES_AUTOHSCROLL
     LTEXT           "&Select one or more styles:",IDC_STATIC,7,37,100,8
     LISTBOX         IDC_LIST1,7,47,170,79,LBS_MULTIPLESEL | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -281,6 +281,21 @@ BEGIN
     EDITTEXT        IDC_PROCESSPATH,70,23,136,13,ES_AUTOHSCROLL | ES_READONLY
 END
 
+IDD_PROPERTY_EDIT DIALOGEX 0, 0, 185, 107
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Property editor"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Property &name:",IDC_RADIO_NAME,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,7,66,10
+    CONTROL         "Property &atom:",IDC_RADIO_ATOM,"Button",BS_AUTORADIOBUTTON,7,19,65,10
+    EDITTEXT        IDC_EDIT_NAME,7,32,170,14,ES_AUTOHSCROLL
+    LTEXT           "&Handle:",IDC_STATIC,7,53,100,8
+    EDITTEXT        IDC_EDIT_HANDLE,7,63,170,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&Apply",IDC_APPLY,7,86,50,14
+    PUSHBUTTON      "Close",IDCANCEL,128,86,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -350,6 +365,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 243
+        VERTGUIDE, 224
         TOPMARGIN, 7
         BOTTOMMARGIN, 126
     END
@@ -376,6 +392,14 @@ BEGIN
         RIGHTMARGIN, 223
         TOPMARGIN, 7
         BOTTOMMARGIN, 163
+    END
+
+    IDD_PROPERTY_EDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 178
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 100
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -487,6 +511,16 @@ BEGIN
         MENUITEM "&Send To Back",               IDM_POPUP_TOBACK
         MENUITEM SEPARATOR
         MENUITEM "&Close Window",               IDM_POPUP_CLOSE
+    END
+END
+
+IDR_MENU4 MENU
+BEGIN
+    POPUP "Property"
+    BEGIN
+        MENUITEM "Add...",                      IDM_PROPERTY_ADD
+        MENUITEM "Edit...",                     IDM_PROPERTY_EDIT
+        MENUITEM "Remove",                      IDM_PROPERTY_REMOVE
     END
 END
 

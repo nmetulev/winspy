@@ -26,28 +26,29 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_P
 	HWND   hwndList = (HWND)dwUser;
 	TCHAR  ach[256];
 	LVITEM lvitem;
-
-	wsprintf(ach, szPtrFmt, hData);
+	int    index;
 	
-	lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
-	lvitem.iSubItem = 0;
-	lvitem.pszText = ach;
+	lvitem.mask = LVIF_TEXT | LVIF_PARAM;
 	lvitem.iItem = 0;
-	lvitem.state = 0;
-	lvitem.stateMask = 0;
-	lvitem.iImage = 0;
+	lvitem.iSubItem = 0;
+	lvitem.lParam = 0;
 
-	ListView_InsertItem(hwndList, &lvitem);
-	
 	// check that lpszString is a valid string, and not an ATOM in disguise
-	if(((DWORD)lpszString & ~0xFFFF) == 0)
+	if(((ULONG_PTR)lpszString & ~0xFFFF) == 0)
 	{
 		wsprintf(ach, _T("%08X (Atom)"), lpszString);
-		ListView_SetItemText(hwndList, 0, 1, ach);
+		lvitem.pszText = ach;
+
+		lvitem.lParam = (LPARAM)lpszString;
 	}
 	else
+		lvitem.pszText = lpszString;
+
+	index = ListView_InsertItem(hwndList, &lvitem);
+	if(index != -1)
 	{
-		ListView_SetItemText(hwndList, 0, 1, lpszString);
+		wsprintf(ach, szPtrFmt, hData);
+		ListView_SetItemText(hwndList, index, 1, ach);
 	}
 
 	return TRUE;
@@ -58,7 +59,7 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_P
 //
 void EnumWindowProps(HWND hwnd, HWND hwndList)
 {
-	ListView_DeleteAllItems(hwndList);	
+	ListView_DeleteAllItems(hwndList);
 	EnumPropsEx(hwnd, PropEnumProcEx, (ULONG_PTR)hwndList);
 }
 

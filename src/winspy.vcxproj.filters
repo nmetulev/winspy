@@ -102,6 +102,9 @@
     <ClCompile Include="LoadPNG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PropertyEdit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AggressiveOptimize.h">

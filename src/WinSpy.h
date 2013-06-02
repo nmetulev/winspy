@@ -159,9 +159,10 @@ void ExitWinSpy			(HWND hwnd, UINT uCode);
 void CheckSysMenu(HWND hwnd, UINT uItemId, BOOL fChecked);
 void SetSysMenuIconFromLayout(HWND hwnd, UINT layout);
 
-void ShowEditSizeDlg		(HWND hwndParent, HWND hwndTarget);
-void ShowWindowStyleEditor  (HWND hwndParent, HWND hwndTarget, BOOL fExtended);
-void ShowOptionsDlg			(HWND hwndParent);
+void ShowEditSizeDlg		  (HWND hwndParent, HWND hwndTarget);
+void ShowWindowStyleEditor    (HWND hwndParent, HWND hwndTarget, BOOL fExtended);
+void ShowWindowPropertyEditor (HWND hwndParent, HWND hwndTarget, BOOL bAddNew);
+void ShowOptionsDlg			  (HWND hwndParent);
 
 void LoadSettings(void);
 void SaveSettings(void);
