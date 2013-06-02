@@ -65,13 +65,6 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 			wsprintf(szText, _T("%08X"), dwStyle);
 
 			SetDlgItemText(hwndDlg, IDC_EDIT1, szText);
-
-			if(state.fExtended)
-				FillExStyleLists(hwnd, GetDlgItem(hwndDlg, IDC_LIST1), TRUE, dwStyle, FALSE);
-			else
-				FillStyleLists(hwnd, GetDlgItem(hwndDlg, IDC_LIST1), TRUE, dwStyle);
-
-			SendDlgItemMessage(hwnd, IDC_LIST1, LB_SETTOPINDEX, 0, 0);
 		}
 		else
 		{
@@ -111,15 +104,6 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 		wsprintf(szText, _T("%08X"), dwStyle);
 		SetDlgItemText(hwnd, IDC_EDIT1, szText);
-
-		hwndList = GetDlgItem(hwnd, IDC_LIST1);
-
-		if(state->fExtended)
-			FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle, FALSE);
-		else
-			FillStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle);
-
-		SendMessage(hwndList, LB_SETTOPINDEX, 0, 0);
 
 		MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
 
@@ -190,8 +174,8 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 			return TRUE;
 
 		case IDC_CLEAR:
-			//remove selection from all items
-			SendDlgItemMessage(hwnd, IDC_LIST1, LB_SETSEL, FALSE, (LONG)-1);
+			// I don't know why anyone would use that button
+			SetDlgItemText(hwnd, IDC_EDIT1, _T("00000000"));
 			return TRUE;
 
 		}
