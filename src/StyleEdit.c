@@ -135,8 +135,8 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 				hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
-				topindex = SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
-				caretindex = SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
+				topindex = (int)SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
+				caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 
 				if(state->fExtended)
 					FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle, FALSE);
