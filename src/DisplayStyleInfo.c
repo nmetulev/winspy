@@ -8,11 +8,14 @@
 //	 Fill the style-tab-pane with style info for the
 //   specified window
 //
-//  void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, 
-//					BOOL fAllStyles, BOOL fExtControl)
+//  void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, 
+//					BOOL fAllStyles, DWORD dwStyle)
 //
-//	 Fill the two list-boxes (hwndStyleList and hwndExStyleList)
-//   with the appropriate styles for the specified target window.
+//  void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, 
+//					BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl)
+//
+//	 Fill the list-box with the appropriate styles
+//   for the specified target window.
 //
 //	 hwndTarget      - window to find styles for
 //	 hwndStyleList   - listbox to receive standard styles
@@ -934,16 +937,65 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fA
 }
 
 //
-//	This function takes HWNDs of two ListBoxes, which we will fill
+//	This function takes HWNDs of a ListBox, which we will fill
 //  with the style strings that are set for the specified window
 //
-//	Either hwndStyleList or hwndExStyleList can be NULL
-//
-void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, BOOL fAllStyles, BOOL fExtControl)
+void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyle)
 {
 	TCHAR szClassName[256];
-	DWORD dwStyle;
-	DWORD dwStyleEx;
+
+	StyleLookupEx *StyleList;
+
+	//window class
+	GetClassName(hwndTarget, szClassName, sizeof(szClassName) / sizeof(TCHAR));
+
+	SendMessage(hwndStyleList, WM_SETREDRAW, FALSE, 0);
+
+	// Empty the list
+	SendMessage(hwndStyleList, LB_RESETCONTENT, 0, 0);
+
+	// enumerate the standard window styles, for any window no 
+	// matter what class it might be
+	dwStyle = EnumStyles(WindowStyles, hwndStyleList, dwStyle, fAllStyles);
+
+	// if the window class is one we know about, then see if we
+	// can decode any more style bits
+	// enumerate the custom control styles
+	StyleList = FindStyleList(StandardControls, szClassName, 0);
+	if(StyleList != 0)
+		dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
+
+	// does the window support the CCS_xxx styles (custom control styles)
+	StyleList = FindStyleList(CustomControls, szClassName, 0);
+	if(StyleList != 0)
+		dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
+
+	// if there are still style bits set in the window style,
+	// then there is something that we can't decode. Just display
+	// a single HEX entry at the end of the list.
+	if(dwStyle != 0)
+	{
+		int idx;
+		TCHAR ach[10];
+
+		wsprintf(ach, szHexFmt, dwStyle);
+		idx = (int)SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
+		SendMessage(hwndStyleList, LB_SETITEMDATA, idx, dwStyle);
+
+		if(fAllStyles)
+			SendMessage(hwndStyleList, LB_SETSEL, TRUE, idx);
+	}
+
+	SendMessage(hwndStyleList, WM_SETREDRAW, TRUE, 0);
+}
+
+//
+//	This function takes HWNDs of a ListBox, which we will fill
+//  with the extended style strings that are set for the specified window
+//
+void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl)
+{
+	TCHAR szClassName[256];
 	DWORD dwMessage;
 
 	StyleLookupEx *StyleList;
@@ -951,74 +1003,29 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, B
 	//window class
 	GetClassName(hwndTarget, szClassName, sizeof(szClassName) / sizeof(TCHAR));
 
-	//normal window styles
-	dwStyle = GetWindowLong(hwndTarget, GWL_STYLE);
-	
-	if(hwndStyleList != 0)
+	SendMessage(hwndExStyleList, WM_SETREDRAW, FALSE, 0);
+
+	// Empty the list
+	SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
+
+	EnumStyles(StyleExList, hwndExStyleList, dwStyleEx, fAllStyles);
+		
+	// Does this window use any custom control extended styles???
+	// If it does, then dwMessage will contain the message identifier to send
+	// to the window to retrieve them
+	if(fExtControl)
 	{
-		// Empty the list
-		SendMessage(hwndStyleList, LB_RESETCONTENT, 0, 0);
-		
-		// enumerate the standard window styles, for any window no 
-		// matter what class it might be
-		dwStyle = EnumStyles(WindowStyles, hwndStyleList, dwStyle, fAllStyles);
-		
-		// if the window class is one we know about, then see if we
-		// can decode any more style bits
-		// enumerate the custom control styles
-		StyleList = FindStyleList(StandardControls, szClassName, 0);
+		StyleList = FindStyleList(ExtendedControls, szClassName, &dwMessage);
+
+		// Add them if required
 		if(StyleList != 0)
-			dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
-		
-		// does the window support the CCS_xxx styles (custom control styles)
-		StyleList = FindStyleList(CustomControls, szClassName, 0);
-		if(StyleList != 0)
-			dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
-
-		// if there are still style bits set in the window style,
-		// then there is something that we can't decode. Just display
-		// a single HEX entry at the end of the list.
-		if(dwStyle != 0)
 		{
-			int idx;
-			TCHAR ach[10];
-			
-			wsprintf(ach, szHexFmt, dwStyle);
-			idx = (int)SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
-			SendMessage(hwndStyleList, LB_SETITEMDATA, idx, dwStyle);
-
-			if(fAllStyles)
-				SendMessage(hwndStyleList, LB_SETSEL, TRUE, idx);
-		}
-		
-	}
-
-	// Extended window styles
-	if(hwndExStyleList != 0)
-	{
-		// Empty the list
-		SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
-		
-		// Find extended styles
-		dwStyleEx = GetWindowLong(hwndTarget, GWL_EXSTYLE);
-		
-		EnumStyles(StyleExList, hwndExStyleList, dwStyleEx, fAllStyles);
-		
-		// Does this window use any custom control extended styles???
-		// If it does, then dwMessage will contain the message identifier to send
-		// to the window to retrieve them
-		if(fExtControl)
-		{
-			StyleList = FindStyleList(ExtendedControls, szClassName, &dwMessage);
-
-			// Add them if required
-			if(StyleList != 0)
-			{
-				dwStyleEx = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
-				EnumStyles(StyleList, hwndExStyleList, dwStyleEx, fAllStyles);
-			}
+			dwStyleEx = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
+			EnumStyles(StyleList, hwndExStyleList, dwStyleEx, fAllStyles);
 		}
 	}
+
+	SendMessage(hwndExStyleList, WM_SETREDRAW, TRUE, 0);
 }
 
 //
@@ -1028,6 +1035,7 @@ void SetStyleInfo(HWND hwnd)
 {
 	TCHAR ach[12];
 	DWORD dwStyle;
+	DWORD dwExStyle;
 
 	HWND hwndDlg = WinSpyTab[STYLE_TAB].hwnd;
 	HWND hwndStyle, hwndStyleEx;
@@ -1040,8 +1048,8 @@ void SetStyleInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	// Display the extended window style in static label
-	dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-	wsprintf(ach, szHexFmt, dwStyle);
+	dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+	wsprintf(ach, szHexFmt, dwExStyle);
 	SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
 	
 	// Find handles to standard and extended style lists
@@ -1049,5 +1057,6 @@ void SetStyleInfo(HWND hwnd)
 	hwndStyleEx = GetDlgItem(hwndDlg, IDC_LIST2);
 
 	// Fill both lists with their styles!
-	FillStyleLists(hwnd, hwndStyle, hwndStyleEx, FALSE, TRUE);
+	FillStyleLists(hwnd, hwndStyle, FALSE, dwStyle);
+	FillExStyleLists(hwnd, hwndStyleEx, FALSE, dwExStyle, TRUE);
 }

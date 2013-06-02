@@ -35,8 +35,10 @@ typedef struct
 
 static StyleEditState state;
 
-void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, HWND hwndExStyleList, 
-					BOOL fAllStyles, BOOL fExtControl);
+void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, 
+					BOOL fAllStyles, DWORD dwStyle);
+void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
+					  BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl);
 
 //
 //	Define our callback function for the Window Finder Tool
@@ -64,7 +66,11 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 			SetDlgItemText(hwndDlg, IDC_EDIT1, szText);
 
-			FillStyleLists(hwnd, GetDlgItem(hwndDlg, IDC_LIST1), 0, TRUE, FALSE);
+			if(state.fExtended)
+				FillExStyleLists(hwnd, GetDlgItem(hwndDlg, IDC_LIST1), TRUE, dwStyle, FALSE);
+			else
+				FillStyleLists(hwnd, GetDlgItem(hwndDlg, IDC_LIST1), TRUE, dwStyle);
+
 			SendDlgItemMessage(hwnd, IDC_LIST1, LB_SETTOPINDEX, 0, 0);
 		}
 		else
@@ -88,23 +94,15 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	DWORD dwStyle = 0;
 	TCHAR szText[32];
 
+	int topindex;
+	int caretindex;
+
 	switch(iMsg)
 	{
 	case WM_INITDIALOG:
 
 		// Passed through in call to DialogBoxParam
 		state = (StyleEditState *)lParam;
-
-		hwndList = GetDlgItem(hwnd, IDC_LIST1);
-
-		if(state->fExtended)
-			FillStyleLists(state->hwndTarget, NULL, hwndList, TRUE, FALSE);
-		else
-			FillStyleLists(state->hwndTarget, hwndList, NULL, TRUE, FALSE);
-
-		SendMessage(hwndList, LB_SETTOPINDEX, 0, 0);
-
-		MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
 
 		if(state->fExtended)
 			dwStyle = GetWindowLong(state->hwndTarget, GWL_EXSTYLE);
@@ -113,6 +111,17 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 		wsprintf(szText, _T("%08X"), dwStyle);
 		SetDlgItemText(hwnd, IDC_EDIT1, szText);
+
+		hwndList = GetDlgItem(hwnd, IDC_LIST1);
+
+		if(state->fExtended)
+			FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle, FALSE);
+		else
+			FillStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle);
+
+		SendMessage(hwndList, LB_SETTOPINDEX, 0, 0);
+
+		MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
 
 		return TRUE;
 
@@ -134,6 +143,30 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
+		case IDC_EDIT1:
+			switch(HIWORD(wParam))
+			{
+			case EN_CHANGE:
+				dwStyle = GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+
+				hwndList = GetDlgItem(hwnd, IDC_LIST1);
+
+				topindex = SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
+				caretindex = SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
+
+				if(state->fExtended)
+					FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle, FALSE);
+				else
+					FillStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle);
+
+				SendMessage(hwndList, LB_SETCARETINDEX, caretindex, 0);
+				SendMessage(hwndList, LB_SETTOPINDEX, topindex, 0);
+
+				return TRUE;
+			}
+
+			return FALSE;
+
 		case IDC_APPLY:
 
 			dwStyle = GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
