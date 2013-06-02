@@ -55,7 +55,10 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		if(GetClassLong(state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
 		{
-			dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+			if(state.fExtended)
+				dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+			else
+				dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
 			wsprintf(szText, _T("%08X"), dwStyle);
 
