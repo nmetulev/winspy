@@ -181,8 +181,6 @@ void SetProcessInfo(HWND hwnd)
 	else
 	{
 		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, _T("N/A"));
-		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, _T("N/A"));
+		SetDlgItemText(hwndDlg, IDC_PROCESSPATH, _T("N/A"));
 	}
-
-
 }
