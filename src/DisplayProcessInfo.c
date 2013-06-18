@@ -99,11 +99,7 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
 	}
 	
 	// OK, we have access to the PSAPI functions, so open the process
-	hProcess = OpenProcess(
-		//PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, 
-		PROCESS_QUERY_LIMITED_INFORMATION|PROCESS_VM_READ,
-		FALSE, dwProcessId);
-
+	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwProcessId);
 	if(!hProcess) 
 	{
 		FreeLibrary(hPSAPI);
@@ -141,8 +137,9 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
 	}
 	else
 	{
-		szName[0] = _T('\0');
-		szPath[0] = _T('\0');
+		CloseHandle(hProcess);
+		FreeLibrary(hPSAPI);
+		return FALSE;
 	}
 	
 	CloseHandle(hProcess);
