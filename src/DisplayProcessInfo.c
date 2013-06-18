@@ -26,6 +26,8 @@ typedef BOOL  (WINAPI * EnumProcessModulesProc )(HANDLE, HMODULE *, DWORD, LPDWO
 typedef DWORD (WINAPI * GetModuleBaseNameProc  )(HANDLE, HMODULE, LPTSTR, DWORD);
 typedef DWORD (WINAPI * GetModuleFileNameExProc)(HANDLE, HMODULE, LPTSTR, DWORD);
 
+typedef BOOL  (WINAPI * QueryFullProcessImageNameProc)(HANDLE hProcess, DWORD dwFlags, LPTSTR lpExeName, PDWORD lpdwSize);
+
 BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
 	HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -75,7 +77,7 @@ BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TC
 //  szPath       [out]
 //  nPathSize    [in]	
 //
-BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
+BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
 	HMODULE hPSAPI;
 	HANDLE hProcess;
@@ -147,6 +149,49 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 	FreeLibrary(hPSAPI);
 
 	return TRUE;
+}
+
+BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
+{
+	static QueryFullProcessImageNameProc fnQueryFullProcessImageName = NULL;
+	HANDLE hProcess;
+	DWORD dwSize;
+	TCHAR *pName;
+	BOOL bSucceeded;
+
+	if(!fnQueryFullProcessImageName)
+	{
+#ifdef UNICODE	
+		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameW");
+#else
+		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameA");
+#endif
+
+		if(!fnQueryFullProcessImageName)
+			return GetProcessNameByPid_BelowVista(dwProcessId, szName, nNameSize, szPath, nPathSize);
+	}
+
+	bSucceeded = FALSE;
+
+	hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, dwProcessId);
+	if(hProcess)
+	{
+		dwSize = nPathSize;
+
+		if(fnQueryFullProcessImageName(hProcess, 0, szPath, &dwSize))
+		{
+			pName = _tcsrchr(szPath, '\\');
+			if(pName)
+			{
+				_tcsncpy_s(szName, nNameSize, pName+1, _TRUNCATE);
+				bSucceeded = TRUE;
+			}
+		}
+
+		CloseHandle(hProcess);
+	}
+
+	return bSucceeded;
 }
 
 //
