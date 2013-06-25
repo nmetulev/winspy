@@ -47,12 +47,13 @@ void SetGeneralInfo(HWND hwnd)
 	// because it gets text of children in other processes
 	if(spy_fPassword == FALSE)
 	{
-		DWORD_PTR dwResult;
-
 		ach[0] = 0;
 
-		SendMessageTimeout(hwnd, WM_GETTEXT, sizeof(ach) / sizeof(TCHAR), (LPARAM)ach,
-			SMTO_ABORTIFHUNG, 100, &dwResult); 
+		if(!SendMessageTimeout(hwnd, WM_GETTEXT, sizeof(ach) / sizeof(TCHAR), (LPARAM)ach,
+			SMTO_ABORTIFHUNG, 100, NULL))
+		{
+			GetWindowText(hwnd, ach, sizeof(ach) / sizeof(TCHAR));
+		}
 
 		SetDlgItemText(hwndDlg, IDC_CAPTION1, ach);	// edit box
 		SetDlgItemText(hwndDlg, IDC_CAPTION2, ach);	// combo box

@@ -212,7 +212,6 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[])
 	TCHAR *pszCaption;
 	DWORD dwStyle;
 	int len;
-	DWORD_PTR dwResult;
 
 	//
 	// Window handle in hex format
@@ -256,18 +255,20 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[])
 	*pszCaption   = _T('\0');
 
 	// Window title, enclosed in quotes
-	// if(GetWindowText(hwnd, temp, sizeof(temp) / sizeof(TCHAR)))
-	SendMessageTimeout(
+	if(!SendMessageTimeout(
 		hwnd, 
 		WM_GETTEXT, 
 		MAX_WINTEXT_LEN, 
 		(LPARAM)pszCaption,
-		SMTO_ABORTIFHUNG, 100, &dwResult);
-	//{
-		// add on the last quote
-		lstrcat(pszCaption, _T("\""));
-	/*}
-	else if(fShowNoTitle)
+		SMTO_ABORTIFHUNG, 100, NULL))
+	{
+		GetWindowText(hwnd, pszCaption, MAX_WINTEXT_LEN);
+	}
+
+	// add on the last quote
+	lstrcat(pszCaption, _T("\""));
+
+	/*else if(fShowNoTitle)
 	{
 		lstrcpy(pszCaption, _T("<no title>"));
 	}
