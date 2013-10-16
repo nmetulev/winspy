@@ -205,12 +205,16 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 //
 LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	HWND  hCtrl;
-	TCHAR szCaption[256];
-	HWND  hwndEdit1, hwndEdit2;
-	HMENU hMenu, hPopup;
-	RECT  rect;
-	UINT  uCmd;
+	HWND     hCtrl;
+	TCHAR    ach[256];
+	HWND     hwndEdit1, hwndEdit2;
+	HMENU    hMenu, hPopup;
+	RECT     rect;
+	UINT     uCmd;
+	int      index;
+	LONG_PTR lp;
+	POINT    pt;
+	RECT     rc;
 
 	switch(iMsg)
 	{
@@ -224,6 +228,46 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		MakeHyperlink(hwnd, IDC_WINDOWPROC, RGB(0,0,255));
 
 		return TRUE;
+
+	case WM_CONTEXTMENU:
+		if((HWND)wParam == GetDlgItem(hwnd, IDC_WINDOWBYTES))
+		{
+			index = (int)SendDlgItemMessage(hwnd, IDC_WINDOWBYTES, CB_GETCURSEL, 0, 0);
+			if(index == CB_ERR)
+				break;
+
+			lp = SendDlgItemMessage(hwnd, IDC_WINDOWBYTES, CB_GETITEMDATA, index, 0);
+
+			pt.x = (long)(short)LOWORD(lParam);
+			pt.y = (long)(short)HIWORD(lParam);
+
+			// Calculate x, y if using keyboard
+			if(pt.x == -1 && pt.y == -1)
+			{
+				GetClientRect(GetDlgItem(hwnd, IDC_WINDOWBYTES), &rc);
+				pt.x = rc.left + (rc.right - rc.left) / 2;
+				pt.y = rc.top + (rc.bottom - rc.top) / 2;
+
+				ClientToScreen(GetDlgItem(hwnd, IDC_WINDOWBYTES), &pt);
+			}
+
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU5));
+
+			// Show the menu
+			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
+
+			// Act accordingly
+			switch(uCmd)
+			{
+			case IDM_BYTES_COPY:
+				wsprintf(ach, _T("%p"), lp);
+				CopyTextToClipboard(hwnd, ach);
+				break;
+			}
+
+			DestroyMenu(hMenu);
+		}
+		break;
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
@@ -276,8 +320,8 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			if(IsWindowVisible(hwndEdit1))
 			{
 				// Copy the contents of the edit box to the combo box
-				GetWindowText(hwndEdit1, szCaption, sizeof(szCaption) / sizeof(TCHAR));
-				SetWindowText(hwndEdit2, szCaption);
+				GetWindowText(hwndEdit1, ach, sizeof(ach) / sizeof(TCHAR));
+				SetWindowText(hwndEdit2, ach);
 
 				ShowWindow(hwndEdit2, SW_SHOW);
 				ShowWindow(hwndEdit1, SW_HIDE);
@@ -287,16 +331,16 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			hCtrl = (HWND)spy_hCurWnd;
 
 			// get the original text and add it to the combo list
-			GetWindowText(hCtrl, szCaption, sizeof(szCaption) / sizeof(TCHAR));
+			GetWindowText(hCtrl, ach, sizeof(ach) / sizeof(TCHAR));
 
-			SendMessage(hwndEdit2, CB_ADDSTRING, 0, (LPARAM)szCaption);
+			SendMessage(hwndEdit2, CB_ADDSTRING, 0, (LPARAM)ach);
 
 			// now see what the new caption is to be
-			GetWindowText(hwndEdit2, szCaption, sizeof(szCaption) / sizeof(TCHAR));
+			GetWindowText(hwndEdit2, ach, sizeof(ach) / sizeof(TCHAR));
 
 			// set the text to the new string
 			if(hCtrl != 0 && IsWindow(hCtrl))
-				SendMessage(hCtrl, WM_SETTEXT, 0, (LPARAM)szCaption);
+				SendMessage(hCtrl, WM_SETTEXT, 0, (LPARAM)ach);
 
 			return TRUE;
 		}
@@ -602,6 +646,14 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 //
 LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
+	TCHAR    ach[256];
+	int      index;
+	HMENU    hMenu;
+	UINT     uCmd;
+	POINT    pt;
+	RECT     rc;
+	LONG_PTR lp;
+
 	switch(iMsg)
 	{
 	// Just make the class-name edit-box look normal, even
@@ -616,6 +668,46 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 		}
 		else
 			return FALSE;
+
+	case WM_CONTEXTMENU:
+		if((HWND)wParam == GetDlgItem(hwnd, IDC_BYTESLIST))
+		{
+			index = (int)SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETCURSEL, 0, 0);
+			if(index == CB_ERR)
+				break;
+
+			lp = SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETITEMDATA, index, 0);
+
+			pt.x = (long)(short)LOWORD(lParam);
+			pt.y = (long)(short)HIWORD(lParam);
+
+			// Calculate x, y if using keyboard
+			if(pt.x == -1 && pt.y == -1)
+			{
+				GetClientRect(GetDlgItem(hwnd, IDC_BYTESLIST), &rc);
+				pt.x = rc.left + (rc.right - rc.left) / 2;
+				pt.y = rc.top + (rc.bottom - rc.top) / 2;
+
+				ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
+			}
+
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU5));
+
+			// Show the menu
+			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
+
+			// Act accordingly
+			switch(uCmd)
+			{
+			case IDM_BYTES_COPY:
+				wsprintf(ach, _T("%p"), lp);
+				CopyTextToClipboard(hwnd, ach);
+				break;
+			}
+
+			DestroyMenu(hMenu);
+		}
+		break;
 	}
 
 	return FALSE;

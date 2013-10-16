@@ -39,6 +39,7 @@
 #define IDB_SELBOX                      162
 #define IDR_MENU4                       163
 #define IDD_PROPERTY_EDIT               164
+#define IDR_MENU5                       165
 #define IDC_LIST1                       1000
 #define IDC_DRAGGER                     1001
 #define IDC_LIST2                       1001
@@ -181,14 +182,15 @@
 #define IDM_PROPERTY_ADD                40044
 #define IDM_PROPERTY_EDIT               40045
 #define IDM_PROPERTY_REMOVE             40046
+#define IDM_BYTES_COPY                  40047
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        165
-#define _APS_NEXT_COMMAND_VALUE         40047
+#define _APS_NEXT_RESOURCE_VALUE        166
+#define _APS_NEXT_COMMAND_VALUE         40048
 #define _APS_NEXT_CONTROL_VALUE         1077
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

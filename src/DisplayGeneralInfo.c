@@ -200,7 +200,11 @@ void SetGeneralInfo(HWND hwnd)
 		numbytes -= sizeof(LONG_PTR);
 
 		index = (int)SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_ADDSTRING, 0, (LPARAM)ach);
-		SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, lp);
+
+		if(dwLastError == ERROR_SUCCESS)
+			SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, lp);
+		else
+			SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, dwLastError);
 	}
 
 	SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETCURSEL, 0, 0);

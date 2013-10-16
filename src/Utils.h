@@ -28,6 +28,8 @@ WORD GetProcessorArchitecture();
 
 HWND GetRealParent(HWND hWnd);
 
+BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz);
+
 #ifdef __cplusplus
 }
 #endif

@@ -363,3 +363,45 @@ HWND GetRealParent(HWND hWnd)
 
 	return hParent;
 }
+
+
+//
+// Copies text to clipboard
+//
+BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
+{
+	HGLOBAL hText;
+	TCHAR *pszText;
+	size_t nTextSize;
+
+	nTextSize = lstrlen(psz);
+
+	hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize+1)*sizeof(TCHAR));
+	if(!hText)
+		return FALSE;
+
+	pszText = (TCHAR *)GlobalLock(hText);
+	lstrcpy(pszText, psz);
+	GlobalUnlock(hText);
+
+	if(OpenClipboard(hWnd))
+	{
+		if(EmptyClipboard())
+		{
+#ifdef UNICODE
+			if(SetClipboardData(CF_UNICODETEXT, hText))
+#else
+			if(SetClipboardData(CF_TEXT, hText))
+#endif
+			{
+				CloseClipboard();
+				return TRUE;
+			}
+		}
+
+		CloseClipboard();
+	}
+
+	GlobalFree(hText);
+	return FALSE;
+}
