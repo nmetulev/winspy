@@ -25,11 +25,13 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink);
 
 void SetGeneralInfo(HWND hwnd)
 {
-	TCHAR	ach[256];
-	HWND	hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
-	RECT	rect;
-	int		x1, y1;
-	int		i, numbytes;
+	TCHAR	 ach[256];
+	HWND	 hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
+	RECT	 rect;
+	int		 x1, y1;
+	int		 i, numbytes, index;
+	LONG_PTR lp;
+	DWORD    dwLastError;
 
 	if(hwnd == 0) return;
 
@@ -156,17 +158,49 @@ void SetGeneralInfo(HWND hwnd)
 	EnableDlgItem(hwndDlg, IDC_WINDOWBYTES, numbytes != 0);
 
 	// Retrieve all the window bytes + add to combo box
-	while(numbytes != 0)
+	while(numbytes > 0)
 	{
-		if(numbytes >= 4)
-			wsprintf(ach, _T("+%-8d  %08p"), i, GetWindowLongPtr(hwnd, i));
+		SetLastError(ERROR_SUCCESS);
+
+		if(numbytes <= sizeof(long))
+			lp = GetWindowLong(hwnd, i);
 		else
-			wsprintf(ach, _T("+%-8d  %s"), i, _T("(Unavailable)"));
+			lp = GetWindowLongPtr(hwnd, i);
 
-		i += 4;
-		numbytes = max(numbytes - 4, 0);
+		dwLastError = GetLastError();
+		if(dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
+			break;
 
-		SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_ADDSTRING, 0, (LPARAM)ach);
+		if(dwLastError == ERROR_SUCCESS)
+		{
+			if(numbytes < sizeof(LONG_PTR))
+			{
+				switch(numbytes)
+				{
+				case 4:
+					wsprintf(ach, _T("+%-8d %08X"), i, lp);
+					break;
+
+				case 2:
+					wsprintf(ach, _T("+%-8d %04X"), i, lp);
+					break;
+
+				default:
+					wsprintf(ach, _T("+%-8d %X"), i, lp);
+					break;
+				}
+			}
+			else
+				wsprintf(ach, _T("+%-8d %08p"), i, lp);
+		}
+		else
+			wsprintf(ach, _T("+%-8d Unavailable (0x%08X)"), i, dwLastError);
+
+		i += sizeof(LONG_PTR);
+		numbytes -= sizeof(LONG_PTR);
+
+		index = (int)SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_ADDSTRING, 0, (LPARAM)ach);
+		SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, lp);
 	}
 
 	SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETCURSEL, 0, 0);

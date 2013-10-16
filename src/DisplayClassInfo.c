@@ -237,9 +237,11 @@ void SetClassInfo(HWND hwnd)
 {
 	TCHAR ach[256];
 
-	int i, numstyles, classbytes;
+	int i, numstyles, classbytes, index;
 	HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
 	UINT style;
+	LONG_PTR lp;
+	DWORD dwLastError;
 
 	if(hwnd == 0) return;
 
@@ -356,17 +358,49 @@ void SetClassInfo(HWND hwnd)
 	EnableDlgItem(hwndDlg, IDC_BYTESLIST, classbytes != 0);
 	SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_RESETCONTENT, 0, 0);
 
-	while(classbytes != 0)
+	while(classbytes > 0)
 	{
-		if(classbytes >= 4)
-			wsprintf(ach, _T("+%-8d %08X"), i, GetClassLong(hwnd, i));
+		SetLastError(ERROR_SUCCESS);
+
+		if(classbytes <= sizeof(long))
+			lp = GetWindowLong(hwnd, i);
 		else
-			wsprintf(ach, _T("+%-8d (Unavailable)"), i);
+			lp = GetWindowLongPtr(hwnd, i);
 
-		i += 4;
-		classbytes = max(classbytes - 4, 0);
+		dwLastError = GetLastError();
+		if(dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
+			break;
 
-		SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_ADDSTRING, 0, (LPARAM)ach);
+		if(dwLastError == ERROR_SUCCESS)
+		{
+			if(classbytes < sizeof(LONG_PTR))
+			{
+				switch(classbytes)
+				{
+				case 4:
+					wsprintf(ach, _T("+%-8d %08X"), i, lp);
+					break;
+
+				case 2:
+					wsprintf(ach, _T("+%-8d %04X"), i, lp);
+					break;
+
+				default:
+					wsprintf(ach, _T("+%-8d %X"), i, lp);
+					break;
+				}
+			}
+			else
+				wsprintf(ach, _T("+%-8d %08p"), i, lp);
+		}
+		else
+			wsprintf(ach, _T("+%-8d Unavailable (0x%08X)"), i, dwLastError);
+
+		i += sizeof(LONG_PTR);
+		classbytes -= sizeof(LONG_PTR);
+
+		index = (int)SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_ADDSTRING, 0, (LPARAM)ach);
+		SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_SETITEMDATA, index, lp);
 	}
 
 	SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_SETCURSEL, 0, 0);
