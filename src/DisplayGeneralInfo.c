@@ -45,6 +45,14 @@ void SetGeneralInfo(HWND hwnd)
 
 	SendDlgItemMessage(hwndDlg, IDC_CAPTION2, CB_RESETCONTENT, 0, 0);
 
+	if(!IsWindow(hwnd))
+	{
+		SetDlgItemText(hwndDlg, IDC_CAPTION1, L"(invalid window)");	// edit box
+		SetDlgItemText(hwndDlg, IDC_CAPTION2, L"(invalid window)");	// combo box
+		SetDlgItemText(hwndDlg, IDC_CLASS, L"(invalid window)");
+		return;
+	}
+
 	// SendMessage is better than GetWindowText, 
 	// because it gets text of children in other processes
 	if(spy_fPassword == FALSE)
