@@ -30,7 +30,7 @@ HWND		hwndToolTip;	// tooltip for main window controls only
 HINSTANCE	hInst;			// Current application instance
 
 TCHAR szHexFmt[]	= _T("%08X");
-TCHAR szPtrFmt[]	= _T("%08p");
+TCHAR szPtrFmt[]	= _T("%p");
 TCHAR szAppName[]	= _T("WinSpy++");
 
 //

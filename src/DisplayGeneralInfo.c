@@ -147,7 +147,12 @@ void SetGeneralInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_USERDATA, ach);
 
 	//control ID
-	wsprintf(ach, szPtrFmt, GetWindowLongPtr(hwnd, GWLP_ID));
+	lp = GetWindowLongPtr(hwnd, GWLP_ID);
+#ifdef _WIN64
+	wsprintf(ach, _T("%p  (%I64d)"), lp, lp);
+#else // !_WIN64
+	wsprintf(ach, _T("%p  (%d)"), lp, lp);
+#endif // _WIN64
 	SetDlgItemText(hwndDlg, IDC_CONTROLID, ach);
 
 	//extra window bytes
