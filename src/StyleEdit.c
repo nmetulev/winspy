@@ -68,7 +68,7 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 		}
 		else
 		{
-			wsprintf(szText, _T("Window %08X\n\r\n\rUnable to copy this window's styles, \n\rbecause it belongs to a different class.  "), hwnd);
+			wsprintf(szText, _T("Window %08X\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  "), hwnd);
 			MessageBox(hwndDlg, szText, szAppName, MB_OK|MB_ICONINFORMATION);
 		}
 		
