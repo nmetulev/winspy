@@ -317,7 +317,7 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	// couldn't find one - build a new one instead
 	//
 	GetProcessNameByPid(pid, name, 100, path, MAX_PATH);
-	wsprintf(ach, _T("%s  (%d)"), name, pid);
+	wsprintf(ach, _T("%s  (%u)"), name, pid);
 
 	SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON);
 	hImgList = TreeView_GetImageList(hwndTree, TVSIL_NORMAL);

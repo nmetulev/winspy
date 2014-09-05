@@ -421,7 +421,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	LVCOLUMN  lvcol;
 	RECT      rect;
 	int       width;
-	int       xs[] = { 64, 100, 140 };
+	//int       xs[] = { 64, 100, 140 };
 	TCHAR     ach[10];
 	NMITEMACTIVATE *nmatv;
 
