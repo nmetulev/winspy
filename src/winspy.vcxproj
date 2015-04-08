@@ -193,6 +193,7 @@
     <ClCompile Include="InjectThread.c" />
     <ClCompile Include="LoadPNG.cpp" />
     <ClCompile Include="Options.c" />
+    <ClCompile Include="Poster.c" />
     <ClCompile Include="PropertyEdit.c" />
     <ClCompile Include="RegHelper.c" />
     <ClCompile Include="StaticCtrl.c" />

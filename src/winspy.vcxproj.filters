@@ -105,6 +105,9 @@
     <ClCompile Include="PropertyEdit.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Poster.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AggressiveOptimize.h">

@@ -160,6 +160,7 @@ void CheckSysMenu(HWND hwnd, UINT uItemId, BOOL fChecked);
 void SetSysMenuIconFromLayout(HWND hwnd, UINT layout);
 
 void ShowEditSizeDlg		  (HWND hwndParent, HWND hwndTarget);
+void ShowPosterDlg			  (HWND hwndParent, HWND hwndTarget);
 void ShowWindowStyleEditor    (HWND hwndParent, HWND hwndTarget, BOOL fExtended);
 void ShowWindowPropertyEditor (HWND hwndParent, HWND hwndTarget, BOOL bAddNew);
 void ShowOptionsDlg			  (HWND hwndParent);

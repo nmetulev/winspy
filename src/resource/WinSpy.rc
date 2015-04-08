@@ -45,6 +45,70 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_MENU2 MENU
+BEGIN
+    POPUP "Window"
+    BEGIN
+        MENUITEM "&Visible",                    IDM_POPUP_VISIBLE, CHECKED
+        MENUITEM "&Enabled",                    IDM_POPUP_ENABLED
+        MENUITEM "&Always On Top",              IDM_POPUP_ONTOP
+        MENUITEM SEPARATOR
+        MENUITEM "&Poster",                     IDM_POPUP_POSTER
+        MENUITEM SEPARATOR
+        MENUITEM "&Bring To Front",             IDM_POPUP_TOFRONT
+        MENUITEM "&Send To Back",               IDM_POPUP_TOBACK
+        MENUITEM SEPARATOR
+        MENUITEM "&Close Window",               IDM_POPUP_CLOSE
+    END
+END
+
+IDR_MENU1 MENU
+BEGIN
+    POPUP "Process"
+    BEGIN
+        MENUITEM "&End Process (safe)",         IDM_WINSPY_POSTQUIT
+        MENUITEM "&Terminate!",                 IDM_WINSPY_TERMINATE
+        MENUITEM SEPARATOR
+        MENUITEM "&Locate Executable",          IDM_WINSPY_FINDEXE
+    END
+END
+
+IDR_MENU3 MENU
+BEGIN
+    POPUP "Window"
+    BEGIN
+        MENUITEM "&Visible",                    IDM_POPUP_VISIBLE, CHECKED
+        MENUITEM "&Enabled",                    IDM_POPUP_ENABLED
+        MENUITEM "&Always On Top",              IDM_POPUP_ONTOP
+        MENUITEM SEPARATOR
+        MENUITEM "&Poster",                     IDM_POPUP_POSTER
+        MENUITEM SEPARATOR
+        MENUITEM "Capture to Clip&board",       IDM_POPUP_COPY
+        MENUITEM "&Adjust Position...",         IDM_POPUP_SETPOS
+        MENUITEM SEPARATOR
+        MENUITEM "&Bring To Front",             IDM_POPUP_TOFRONT
+        MENUITEM "&Send To Back",               IDM_POPUP_TOBACK
+        MENUITEM SEPARATOR
+        MENUITEM "&Close Window",               IDM_POPUP_CLOSE
+    END
+END
+
+IDR_MENU4 MENU
+BEGIN
+    POPUP "Property"
+    BEGIN
+        MENUITEM "Add...",                      IDM_PROPERTY_ADD
+        MENUITEM "Edit...",                     IDM_PROPERTY_EDIT
+        MENUITEM "Remove",                      IDM_PROPERTY_REMOVE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
 
@@ -211,7 +275,7 @@ CAPTION "WinSpy++"
 CLASS "WinSpy"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    CONTROL         103,IDC_DRAGGER,"Static",SS_BITMAP | SS_NOTIFY,7,5,21,17
+    CONTROL         IDB_DRAGTOOL1,IDC_DRAGGER,"Static",SS_BITMAP | SS_NOTIFY,7,5,21,17
     LTEXT           "Drag the Finder Tool over a window to select it, then release the mouse",IDC_STATIC,36,6,121,18
     CONTROL         "&Hidden Windows",IDC_HIDDEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,3,70,10
     CONTROL         "Minimi&ze WinSpy++",IDC_MINIMIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,14,77,10
@@ -239,7 +303,7 @@ BEGIN
     DEFPUSHBUTTON   "&Apply",IDC_APPLY,193,7,50,14
     PUSHBUTTON      "Close",IDCANCEL,193,24,50,14
     PUSHBUTTON      "&Clear",IDC_CLEAR,193,47,50,14
-    CONTROL         103,IDC_DRAGGER,"Static",SS_BITMAP | SS_NOTIFY,207,100,21,17
+    CONTROL         IDB_DRAGTOOL1,IDC_DRAGGER,"Static",SS_BITMAP | SS_NOTIFY,207,100,21,17
     GROUPBOX        "Copy Style",IDC_STATIC,193,86,50,39,BS_CENTER
 END
 
@@ -287,6 +351,27 @@ BEGIN
     DEFPUSHBUTTON   "&Adjust",IDC_ADJUST,148,7,50,14
     PUSHBUTTON      "Close",IDCANCEL,148,24,50,14
     PUSHBUTTON      "&Reset",IDC_RESET,148,55,50,14
+END
+
+IDD_POSTER DIALOGEX 0, 0, 171, 115
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTERMOUSE | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "Poster"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Handle:",IDC_STATIC,7,9,26,8
+    EDITTEXT        IDC_POSTER_HANDLE,48,7,116,12,ES_AUTOHSCROLL
+    LTEXT           "Message:",IDC_STATIC,7,25,32,8
+    COMBOBOX        IDC_POSTER_MESSAGES,48,23,116,158,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "wParam:",IDC_STATIC,7,41,29,8
+    EDITTEXT        IDC_POSTER_WPARAM,48,39,116,12,ES_AUTOHSCROLL
+    LTEXT           "lParam:",IDC_STATIC,7,57,25,8
+    EDITTEXT        IDC_POSTER_LPARAM,48,55,116,12,ES_AUTOHSCROLL
+    LTEXT           "Result:",IDC_STATIC,7,73,24,8
+    EDITTEXT        IDC_POSTER_RESULT,48,73,116,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    DEFPUSHBUTTON   "&Send",IDC_POSTER_SEND,7,94,50,14
+    PUSHBUTTON      "&Post",IDC_POSTER_POST,61,94,50,14
+    PUSHBUTTON      "Close",IDCANCEL,115,94,50,14
 END
 
 IDD_TAB_PROCESS DIALOGEX 0, 0, 230, 170
@@ -410,6 +495,14 @@ BEGIN
         BOTTOMMARGIN, 70
     END
 
+    IDD_POSTER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 108
+    END
+
     IDD_TAB_PROCESS, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -488,66 +581,6 @@ IDI_ICON10              ICON                    "icon3.ico"
 IDI_ICON17              ICON                    "icon4.ico"
 IDI_ICON16              ICON                    "icon5.ico"
 IDI_ICON18              ICON                    "icon6.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_MENU2 MENU
-BEGIN
-    POPUP "Window"
-    BEGIN
-        MENUITEM "&Visible",                    IDM_POPUP_VISIBLE, CHECKED
-        MENUITEM "&Enabled",                    IDM_POPUP_ENABLED
-        MENUITEM "&Always On Top",              IDM_POPUP_ONTOP
-        MENUITEM SEPARATOR
-        MENUITEM "&Bring To Front",             IDM_POPUP_TOFRONT
-        MENUITEM "&Send To Back",               IDM_POPUP_TOBACK
-        MENUITEM SEPARATOR
-        MENUITEM "&Close Window",               IDM_POPUP_CLOSE
-    END
-END
-
-IDR_MENU1 MENU
-BEGIN
-    POPUP "Process"
-    BEGIN
-        MENUITEM "&End Process (safe)",         IDM_WINSPY_POSTQUIT
-        MENUITEM "&Terminate!",                 IDM_WINSPY_TERMINATE
-        MENUITEM SEPARATOR
-        MENUITEM "&Locate Executable",          IDM_WINSPY_FINDEXE
-    END
-END
-
-IDR_MENU3 MENU
-BEGIN
-    POPUP "Window"
-    BEGIN
-        MENUITEM "&Visible",                    IDM_POPUP_VISIBLE, CHECKED
-        MENUITEM "&Enabled",                    IDM_POPUP_ENABLED
-        MENUITEM "&Always On Top",              IDM_POPUP_ONTOP
-        MENUITEM SEPARATOR
-        MENUITEM "Capture to Clip&board",       IDM_POPUP_COPY
-        MENUITEM "&Adjust Position...",         IDM_POPUP_SETPOS
-        MENUITEM SEPARATOR
-        MENUITEM "&Bring To Front",             IDM_POPUP_TOFRONT
-        MENUITEM "&Send To Back",               IDM_POPUP_TOBACK
-        MENUITEM SEPARATOR
-        MENUITEM "&Close Window",               IDM_POPUP_CLOSE
-    END
-END
-
-IDR_MENU4 MENU
-BEGIN
-    POPUP "Property"
-    BEGIN
-        MENUITEM "Add...",                      IDM_PROPERTY_ADD
-        MENUITEM "Edit...",                     IDM_PROPERTY_EDIT
-        MENUITEM "Remove",                      IDM_PROPERTY_REMOVE
-    END
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

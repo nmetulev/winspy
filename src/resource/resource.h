@@ -40,6 +40,7 @@
 #define IDR_MENU4                       163
 #define IDD_PROPERTY_EDIT               164
 #define IDR_MENU5                       165
+#define IDD_POSTER                      166
 #define IDC_LIST1                       1000
 #define IDC_DRAGGER                     1001
 #define IDC_LIST2                       1001
@@ -139,6 +140,13 @@
 #define IDC_RADIO_ATOM                  1074
 #define IDC_EDIT_NAME                   1075
 #define IDC_EDIT_HANDLE                 1076
+#define IDC_POSTER_HANDLE               1077
+#define IDC_POSTER_MESSAGES             1078
+#define IDC_POSTER_WPARAM               1079
+#define IDC_POSTER_LPARAM               1080
+#define IDC_POSTER_SEND                 1081
+#define IDC_POSTER_POST                 1082
+#define IDC_POSTER_RESULT               1083
 #define IDM_GENERAL_ONTOP               40003
 #define IDM_GENERAL_VISIBLE             40004
 #define IDM_GENERAL_ENABLED             40005
@@ -183,15 +191,16 @@
 #define IDM_PROPERTY_EDIT               40045
 #define IDM_PROPERTY_REMOVE             40046
 #define IDM_BYTES_COPY                  40047
+#define IDM_POPUP_POSTER                40048
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        166
-#define _APS_NEXT_COMMAND_VALUE         40048
-#define _APS_NEXT_CONTROL_VALUE         1077
+#define _APS_NEXT_RESOURCE_VALUE        167
+#define _APS_NEXT_COMMAND_VALUE         40049
+#define _APS_NEXT_CONTROL_VALUE         1084
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

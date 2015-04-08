@@ -114,7 +114,11 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 		SetWindowPos(hwndTarget, hwndZ,	0,0,0,0, dwSWPflags);
 
 		return 0;
-		
+
+	case IDM_POPUP_POSTER:
+		ShowPosterDlg(hwndDlg, hwndTarget);
+		return 0;
+
 	// Show the edit-size dialog
 	case IDM_POPUP_SETPOS:
 		
