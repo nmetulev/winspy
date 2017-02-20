@@ -88,9 +88,6 @@ void GetRemoteInfo(HWND hwnd)
 		//Remote Threads only available under Windows NT
 		if(GetVersion() < 0x80000000 && ProcessArchMatches(hwnd))
 		{
-			// doesn't work with debug info!!!!!!!!
-			// make sure we never call this function unless we have 
-			// a release build!!!
 			GetRemoteWindowInfo(hwnd, &spy_WndClassEx, &spy_WndProc, spy_szPassword, 200);
 		}
 		else
