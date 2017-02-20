@@ -32,22 +32,6 @@ BEGIN
     END
 END
 
-#endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (United Kingdom) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-#pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
 IDR_MENU2 MENU
 BEGIN
     POPUP "Window"
@@ -554,12 +538,19 @@ END
 //
 
 IDB_DRAGTOOL1           BITMAP                  "bitmap1.bmp"
+
 IDB_WINDOW_INVISIBLE    BITMAP                  "bitmap6.bmp"
+
 IDB_DRAGTOOL2           BITMAP                  "bitmap2.bmp"
+
 IDB_WINDOW_VISIBLE      BITMAP                  "bitmap5.bmp"
+
 IDB_CHECK1              BITMAP                  "bitmap3.bmp"
+
 IDB_CHECK2              BITMAP                  "bitmap4.bmp"
+
 IDB_PIN_BITMAP          BITMAP                  "bitmap7.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -567,6 +558,7 @@ IDB_PIN_BITMAP          BITMAP                  "bitmap7.bmp"
 //
 
 IDC_CURSOR1             CURSOR                  "cursor1.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -576,11 +568,17 @@ IDC_CURSOR1             CURSOR                  "cursor1.cur"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ICON1               ICON                    "icon1.ico"
+
 IDI_ICON5               ICON                    "icon2.ico"
+
 IDI_ICON10              ICON                    "icon3.ico"
+
 IDI_ICON17              ICON                    "icon4.ico"
+
 IDI_ICON16              ICON                    "icon5.ico"
+
 IDI_ICON18              ICON                    "icon6.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -655,7 +653,8 @@ END
 //
 
 IDB_SELBOX              PNG                     "selbox.png"
-#endif    // English (United Kingdom) resources
+
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
