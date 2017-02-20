@@ -84,7 +84,7 @@ void GetRemoteInfo(HWND hwnd)
 		//Remote Threads only available under Windows NT
 		if (GetVersion() < 0x80000000 && ProcessArchMatches(hwnd))
 		{
-			GetRemoteWindowInfo(hwnd, &spy_WndClassEx, &spy_WndProc, spy_szPassword, 200);
+			GetRemoteWindowInfo(hwnd, &spy_WndClassEx, &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
 		}
 		else
 		{
@@ -163,7 +163,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		if (fShowInCaption)
 		{
-			GetClassName(hwnd, szClass, sizeof(szClass) / sizeof(TCHAR));
+			GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
 			wsprintf(ach, _T("%s [%08X, %s]"), szAppName, hwnd, szClass);
 			SetWindowText(hwndMain, ach);
 		}
@@ -194,7 +194,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		if (fShowInCaption)
 		{
-			GetClassName(spy_hCurWnd, szClass, sizeof(szClass) / sizeof(TCHAR));
+			GetClassName(spy_hCurWnd, szClass, ARRAYSIZE(szClass));
 
 			wsprintf(ach, _T("%s [%08X, %s]"), szAppName, spy_hCurWnd, szClass);
 			SetWindowText(hwndMain, ach);
@@ -378,7 +378,7 @@ HWND CreateTooltip(HWND hwndDlg)
 	//	
 	//	Add tooltips to every control (above)
 	//	
-	for (i = 0; i < sizeof(CtrlTips) / sizeof(CtrlTips[0]); i++)
+	for (i = 0; i < ARRAYSIZE(CtrlTips); i++)
 	{
 		HWND hwnd;
 
@@ -421,7 +421,7 @@ HWND CreatePinToolbar(HWND hwndDlg)
 		hInst,							//where the bitmap is
 		IDB_PIN_BITMAP,					//bitmap resource name
 		tbbPin,							//TBBUTTON structure
-		sizeof(tbbPin) / sizeof(tbbPin[0]),
+		ARRAYSIZE(tbbPin),
 		15, 14, 15, 14,					//0,0,//16,18, 16, 18,
 		sizeof(TBBUTTON));
 

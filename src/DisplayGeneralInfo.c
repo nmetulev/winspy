@@ -33,7 +33,7 @@ void SetGeneralInfo(HWND hwnd)
 	LONG_PTR lp;
 	DWORD    dwLastError;
 
-	if(hwnd == 0) return;
+	if (hwnd == 0) return;
 
 	//handle
 	wsprintf(ach, szHexFmt, hwnd);
@@ -45,7 +45,7 @@ void SetGeneralInfo(HWND hwnd)
 
 	SendDlgItemMessage(hwndDlg, IDC_CAPTION2, CB_RESETCONTENT, 0, 0);
 
-	if(!IsWindow(hwnd))
+	if (!IsWindow(hwnd))
 	{
 		SetDlgItemText(hwndDlg, IDC_CAPTION1, L"(invalid window)");	// edit box
 		SetDlgItemText(hwndDlg, IDC_CAPTION2, L"(invalid window)");	// combo box
@@ -55,14 +55,14 @@ void SetGeneralInfo(HWND hwnd)
 
 	// SendMessage is better than GetWindowText, 
 	// because it gets text of children in other processes
-	if(spy_fPassword == FALSE)
+	if (spy_fPassword == FALSE)
 	{
 		ach[0] = 0;
 
-		if(!SendMessageTimeout(hwnd, WM_GETTEXT, sizeof(ach) / sizeof(TCHAR), (LPARAM)ach,
+		if (!SendMessageTimeout(hwnd, WM_GETTEXT, ARRAYSIZE(ach), (LPARAM)ach,
 			SMTO_ABORTIFHUNG, 100, NULL))
 		{
-			GetWindowText(hwnd, ach, sizeof(ach) / sizeof(TCHAR));
+			GetWindowText(hwnd, ach, ARRAYSIZE(ach));
 		}
 
 		SetDlgItemText(hwndDlg, IDC_CAPTION1, ach);	// edit box
@@ -75,20 +75,18 @@ void SetGeneralInfo(HWND hwnd)
 	}
 
 	//class name
-	GetClassName(hwnd, ach, sizeof(ach)/sizeof(TCHAR));
+	GetClassName(hwnd, ach, ARRAYSIZE(ach));
 
-	if(IsWindowUnicode(hwnd))	lstrcat(ach, _T("  (Unicode)"));
+	if (IsWindowUnicode(hwnd))	lstrcat(ach, _T("  (Unicode)"));
 
 	SetDlgItemText(hwndDlg, IDC_CLASS, ach);
 
 	//style
 	wsprintf(ach, szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
-	
-	if(IsWindowVisible(hwnd))	lstrcat(ach, _T("  (visible, "));
-	else						lstrcat(ach, _T("  (hidden, "));
 
-	if(IsWindowEnabled(hwnd))	lstrcat(ach, _T("enabled)"));
-	else						lstrcat(ach, _T("disabled)"));
+	lstrcat(ach, IsWindowVisible(hwnd) ? _T("  (visible, ") : _T("  (hidden, "));
+
+	lstrcat(ach, IsWindowEnabled(hwnd) ? _T("enabled)") : _T("disabled)"));
 
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
@@ -97,30 +95,30 @@ void SetGeneralInfo(HWND hwnd)
 	x1 = rect.left;
 	y1 = rect.top;
 
-	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"), 
-		rect.left,rect.top, rect.right,rect.bottom,
-		(rect.right-rect.left), (rect.bottom-rect.top));
+	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+		rect.left, rect.top, rect.right, rect.bottom,
+		(rect.right - rect.left), (rect.bottom - rect.top));
 
 	SetDlgItemText(hwndDlg, IDC_RECTANGLE, ach);
 
 	//client rect
 	GetClientRect(hwnd, &rect);
 	MapWindowPoints(hwnd, 0, (POINT *)&rect, 2);
-	x1 = rect.left-x1;
-	y1 = rect.top-y1;
+	x1 = rect.left - x1;
+	y1 = rect.top - y1;
 
 	OffsetRect(&rect, -rect.left, -rect.top);
 	OffsetRect(&rect, x1, y1);
-	
-	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"), 
-		rect.left,rect.top, rect.right,rect.bottom,
-		(rect.right-rect.left), (rect.bottom-rect.top));
 
-	SetDlgItemText(hwndDlg, IDC_CLIENTRECT, ach);	
+	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+		rect.left, rect.top, rect.right, rect.bottom,
+		(rect.right - rect.left), (rect.bottom - rect.top));
+
+	SetDlgItemText(hwndDlg, IDC_CLIENTRECT, ach);
 
 	//restored rect
 	/*GetWindowPlacement(hwnd, &wp);
-	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"), 
+	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"),
 		wp.rcNormalPosition.left, wp.rcNormalPosition.top,
 		wp.rcNormalPosition.right, wp.rcNormalPosition.bottom,
 		(wp.rcNormalPosition.right-wp.rcNormalPosition.left),
@@ -129,20 +127,20 @@ void SetGeneralInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_RESTOREDRECT, ach);*/
 
 	//window procedure
-	if(spy_WndProc == 0)
+	if (spy_WndProc == 0)
 	{
 		wsprintf(ach, _T("N/A"));
 		SetDlgItemText(hwndDlg, IDC_WINDOWPROC, ach);
 
-		ShowDlgItem(hwndDlg, IDC_WINDOWPROC,  SW_SHOW);
+		ShowDlgItem(hwndDlg, IDC_WINDOWPROC, SW_SHOW);
 		ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, SW_HIDE);
 	}
-	else					
+	else
 	{
 		wsprintf(ach, szPtrFmt, spy_WndProc);
 		SetDlgItemText(hwndDlg, IDC_WINDOWPROC2, ach);
 
-		ShowDlgItem(hwndDlg, IDC_WINDOWPROC,  SW_HIDE);
+		ShowDlgItem(hwndDlg, IDC_WINDOWPROC, SW_HIDE);
 		ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, SW_SHOW);
 	}
 
@@ -163,28 +161,28 @@ void SetGeneralInfo(HWND hwnd)
 	numbytes = GetClassLong(hwnd, GCL_CBWNDEXTRA);
 	i = 0;
 
-	SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_RESETCONTENT, 0, 0);	
+	SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_RESETCONTENT, 0, 0);
 	EnableDlgItem(hwndDlg, IDC_WINDOWBYTES, numbytes != 0);
 
 	// Retrieve all the window bytes + add to combo box
-	while(numbytes > 0)
+	while (numbytes > 0)
 	{
 		SetLastError(ERROR_SUCCESS);
 
-		if(numbytes <= sizeof(long))
+		if (numbytes <= sizeof(long))
 			lp = GetWindowLong(hwnd, i);
 		else
 			lp = GetWindowLongPtr(hwnd, i);
 
 		dwLastError = GetLastError();
-		if(dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
+		if (dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
 			break;
 
-		if(dwLastError == ERROR_SUCCESS)
+		if (dwLastError == ERROR_SUCCESS)
 		{
-			if(numbytes < sizeof(LONG_PTR))
+			if (numbytes < sizeof(LONG_PTR))
 			{
-				switch(numbytes)
+				switch (numbytes)
 				{
 				case 4:
 					wsprintf(ach, _T("+%-8d %08X"), i, lp);
@@ -210,7 +208,7 @@ void SetGeneralInfo(HWND hwnd)
 
 		index = (int)SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_ADDSTRING, 0, (LPARAM)ach);
 
-		if(dwLastError == ERROR_SUCCESS)
+		if (dwLastError == ERROR_SUCCESS)
 			SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, lp);
 		else
 			SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, dwLastError);

@@ -324,7 +324,7 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			if (IsWindowVisible(hwndEdit1))
 			{
 				// Copy the contents of the edit box to the combo box
-				GetWindowText(hwndEdit1, ach, sizeof(ach) / sizeof(TCHAR));
+				GetWindowText(hwndEdit1, ach, ARRAYSIZE(ach));
 				SetWindowText(hwndEdit2, ach);
 
 				ShowWindow(hwndEdit2, SW_SHOW);
@@ -335,12 +335,12 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			hCtrl = (HWND)spy_hCurWnd;
 
 			// get the original text and add it to the combo list
-			GetWindowText(hCtrl, ach, sizeof(ach) / sizeof(TCHAR));
+			GetWindowText(hCtrl, ach, ARRAYSIZE(ach));
 
 			SendMessage(hwndEdit2, CB_ADDSTRING, 0, (LPARAM)ach);
 
 			// now see what the new caption is to be
-			GetWindowText(hwndEdit2, ach, sizeof(ach) / sizeof(TCHAR));
+			GetWindowText(hwndEdit2, ach, ARRAYSIZE(ach));
 
 			// set the text to the new string
 			if (hCtrl != 0 && IsWindow(hCtrl))
@@ -476,7 +476,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 		if (nmatv->hdr.code == NM_DBLCLK)
 		{
-			ListView_GetItemText(nmatv->hdr.hwndFrom, nmatv->iItem, 0, ach, sizeof(ach) / sizeof(TCHAR));
+			ListView_GetItemText(nmatv->hdr.hwndFrom, nmatv->iItem, 0, ach, ARRAYSIZE(ach));
 			DisplayWindowInfo((HWND)_tstrtoib16(ach));
 		}
 
@@ -494,7 +494,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		switch (LOWORD(wParam))
 		{
 		case IDC_PARENT: case IDC_OWNER:
-			GetDlgItemText(hwnd, LOWORD(wParam), ach, sizeof(ach) / sizeof(TCHAR));
+			GetDlgItemText(hwnd, LOWORD(wParam), ach, ARRAYSIZE(ach));
 			DisplayWindowInfo((HWND)_tstrtoib16(ach));
 			return TRUE;
 		}
@@ -762,7 +762,7 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 				TCHAR szExplorer[MAX_PATH];
 				TCHAR szPath[MAX_PATH];
 
-				GetDlgItemText(hwnd, IDC_PROCESSPATH, szPath, sizeof(szPath) / sizeof(TCHAR));
+				GetDlgItemText(hwnd, IDC_PROCESSPATH, szPath, ARRAYSIZE(szPath));
 
 				wsprintf(szExplorer, _T("/select,\"%s\""), szPath);
 				ShellExecute(0, _T("open"), _T("explorer"), szExplorer, 0, SW_SHOW);

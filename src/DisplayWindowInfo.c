@@ -29,8 +29,8 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 	//(don't display child windows of child windows)
 	if (GetRealParent(hwnd) == spy_hCurWnd)
 	{
-		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
-		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
+		GetClassName(hwnd, cname, ARRAYSIZE(cname));
+		GetWindowText(hwnd, wname, ARRAYSIZE(wname));
 		wsprintf(ach, szHexFmt, hwnd);
 
 		lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
@@ -58,8 +58,8 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 	//sibling windows must share the same parent
 	if (spy_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(spy_hCurWnd))
 	{
-		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
-		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
+		GetClassName(hwnd, cname, ARRAYSIZE(cname));
+		GetWindowText(hwnd, wname, ARRAYSIZE(wname));
 		wsprintf(ach, szHexFmt, hwnd);
 
 		lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;

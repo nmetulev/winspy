@@ -23,11 +23,6 @@
 #include "resource.h"
 #include "Utils.h"
 
-#define STYLE_(style) (UINT)style, _T(#style)
-
-BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *pszText, int nTextLen);
-
-
 void VerboseClassName(TCHAR ach[])
 {
 	if (lstrcmpi(ach, _T("#32770")) == 0) lstrcat(ach, _T(" (Dialog)"));
@@ -167,11 +162,11 @@ StyleLookupType StkBrLookup[] =
 	STYLE_(NULL_BRUSH),
 };
 
-#define NUM_ICON_LOOKUP		(sizeof(IconLookup)   /	sizeof(IconLookup[0]))
-#define NUM_CURSOR_LOOKUP	(sizeof(CursorLookup) / sizeof(CursorLookup[0]))
-#define NUM_CLASS_STYLES	(sizeof(ClassLookup)  /	sizeof(ClassLookup[0]))
-#define NUM_BRUSH_STYLES	(sizeof(BrushLookup)  /	sizeof(BrushLookup[0]))
-#define NUM_STKBR_STYLES	(sizeof(StkBrLookup)  /	sizeof(StkBrLookup[0]))
+#define NUM_ICON_LOOKUP ARRAYSIZE(IconLookup)
+#define NUM_CURSOR_LOOKUP ARRAYSIZE(CursorLookup)
+#define NUM_CLASS_STYLES ARRAYSIZE(ClassLookup)
+#define NUM_BRUSH_STYLES ARRAYSIZE(BrushLookup)
+#define NUM_STKBR_STYLES ARRAYSIZE(StkBrLookup)
 
 //
 //	This table is a combination of the BrushLookup and StkBrLookup tables.
@@ -179,7 +174,7 @@ StyleLookupType StkBrLookup[] =
 //
 HandleLookupType BrushLookup2[NUM_BRUSH_STYLES + NUM_STKBR_STYLES];
 
-#define NUM_BRUSH2_LOOKUP	(sizeof(BrushLookup2) /	sizeof(BrushLookup2[0]))
+#define NUM_BRUSH2_LOOKUP ARRAYSIZE(BrushLookup2)
 
 //
 //	Prepare the resource lookup tables by obtaining the 
@@ -272,7 +267,7 @@ void SetClassInfo(HWND hwnd)
 	if (hwnd == 0) return;
 
 
-	GetClassName(hwnd, ach, sizeof(ach) / sizeof(TCHAR));
+	GetClassName(hwnd, ach, ARRAYSIZE(ach));
 
 	// be nice and give the proper name for the following class names
 	//

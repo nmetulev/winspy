@@ -36,7 +36,7 @@ BOOL	g_fThemeApiAvailable = FALSE;
 
 HTHEME _OpenThemeData(HWND hwnd, LPCWSTR pszClassList)
 {
-	if(g_fThemeApiAvailable)
+	if (g_fThemeApiAvailable)
 		return OpenThemeData(hwnd, pszClassList);
 	else
 		return NULL;
@@ -44,7 +44,7 @@ HTHEME _OpenThemeData(HWND hwnd, LPCWSTR pszClassList)
 
 HRESULT _CloseThemeData(HTHEME hTheme)
 {
-	if(g_fThemeApiAvailable)
+	if (g_fThemeApiAvailable)
 		return CloseThemeData(hTheme);
 	else
 		return E_FAIL;
@@ -73,16 +73,16 @@ static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 	static BOOL mouseOver;
 	POINT pt;
 	RECT  rect;
-	
-	switch(msg)
+
+	switch (msg)
 	{
 	case WM_LBUTTONDBLCLK:
 		msg = WM_LBUTTONDOWN;
 		break;
 
 	case WM_MOUSEMOVE:
-		
-		if(!mouseOver)
+
+		if (!mouseOver)
 		{
 			SetTimer(hwnd, 0, 15, 0);
 			mouseOver = FALSE;
@@ -94,10 +94,10 @@ static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 		GetCursorPos(&pt);
 		ScreenToClient(hwnd, &pt);
 		GetClientRect(hwnd, &rect);
-		
-		if(PtInRect(&rect, pt))
+
+		if (PtInRect(&rect, pt))
 		{
-			if(!mouseOver)
+			if (!mouseOver)
 			{
 				mouseOver = TRUE;
 				InvalidateRect(hwnd, 0, 0);
@@ -109,19 +109,19 @@ static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 			KillTimer(hwnd, 0);
 			InvalidateRect(hwnd, 0, 0);
 		}
-	
+
 		return 0;
 
-	// Under Win2000 / XP, Windows sends a strange message
-	// to dialog controls, whenever the ALT key is pressed
-	// for the first time (i.e. to show focus rect / & prefixes etc).
-	// msg = 0x0128, wParam = 0x00030003, lParam = 0
+		// Under Win2000 / XP, Windows sends a strange message
+		// to dialog controls, whenever the ALT key is pressed
+		// for the first time (i.e. to show focus rect / & prefixes etc).
+		// msg = 0x0128, wParam = 0x00030003, lParam = 0
 	case 0x0128:
 		InvalidateRect(hwnd, 0, 0);
 		break;
 	}
 
-	return CallWindowProc(oldproc, hwnd, msg, wParam, lParam); 
+	return CallWindowProc(oldproc, hwnd, msg, wParam, lParam);
 }
 
 //BOOL DrawThemedBitmapButton(DRAWITEMSTRUCT *dis)
@@ -160,22 +160,22 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	int bx, by;			// border sizes
 	int sxIcon, syIcon;	// Icon size
 	int xoff, yoff;		// 
-	
+
 	TCHAR szText[100];
 	int   nTextLen;
-	
+
 	HICON hIcon;
 	DWORD dwStyle = GetWindowLong(dis->hwndItem, GWL_STYLE);
 
 	DWORD dwDTflags = DT_CENTER | DT_SINGLELINE | DT_VCENTER;
 	BOOL  fRightAlign;
-	
+
 	// XP/Vista theme support
 	DWORD dwThemeFlags;
 	HTHEME hTheme;
 	BOOL   fDrawThemed = g_fThemeApiAvailable;
 
-	if(dis->itemState & ODS_NOFOCUSRECT)
+	if (dis->itemState & ODS_NOFOCUSRECT)
 		dwDTflags |= DT_HIDEPREFIX;
 
 	fRightAlign = (dwStyle & BS_RIGHT) ? TRUE : FALSE;
@@ -183,16 +183,16 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	// do the theme thing
 	hTheme = _OpenThemeData(dis->hwndItem, L"Button");
 
-	switch(dis->itemAction)
+	switch (dis->itemAction)
 	{
-	// We need to redraw the whole button, no
-	// matter what DRAWITEM event we receive..
+		// We need to redraw the whole button, no
+		// matter what DRAWITEM event we receive..
 	case ODA_FOCUS:
 	case ODA_SELECT:
 	case ODA_DRAWENTIRE:
-	
+
 		// Retrieve button text
-		GetWindowText(dis->hwndItem, szText, sizeof(szText) / sizeof(TCHAR));
+		GetWindowText(dis->hwndItem, szText, ARRAYSIZE(szText));
 
 		nTextLen = lstrlen(szText);
 
@@ -207,64 +207,64 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		GetCursorPos(&pt);
 		ScreenToClient(dis->hwndItem, &pt);
 
-		if(PtInRect(&rect, pt))
+		if (PtInRect(&rect, pt))
 			dis->itemState |= ODS_HOTLIGHT;
-	
+
 		// border dimensions
 		bx = 2;
 		by = 2;
-		
+
 		// icon offsets
-		if(nTextLen == 0)
+		if (nTextLen == 0)
 		{
 			// center the image if no text
 			ix = (rect.right - rect.left - sxIcon) / 2;
 		}
 		else
 		{
-			if(fRightAlign)
+			if (fRightAlign)
 				ix = rect.right - bx - X_ICON_BORDER - sxIcon;
 			else
 				ix = rect.left + bx + X_ICON_BORDER;
 		}
-	
+
 		// center image vertically
-		iy = (rect.bottom-rect.top - syIcon) / 2;
+		iy = (rect.bottom - rect.top - syIcon) / 2;
 
 		InflateRect(&rect, -5, -5);
 
 		// Draw a single-line black border around the button
-		if(hTheme == NULL && (dis->itemState & (ODS_FOCUS | ODS_DEFAULT)))
+		if (hTheme == NULL && (dis->itemState & (ODS_FOCUS | ODS_DEFAULT)))
 		{
 			FrameRect(dis->hDC, &dis->rcItem, GetStockObject(BLACK_BRUSH));
 			InflateRect(&dis->rcItem, -1, -1);
 		}
 
-		if(dis->itemState & ODS_FOCUS)
+		if (dis->itemState & ODS_FOCUS)
 			dwThemeFlags = PBS_DEFAULTED;
-		if(dis->itemState & ODS_DISABLED)
+		if (dis->itemState & ODS_DISABLED)
 			dwThemeFlags = PBS_DISABLED;
-		else if(dis->itemState & ODS_SELECTED)
+		else if (dis->itemState & ODS_SELECTED)
 			dwThemeFlags = PBS_PRESSED;
-		else if(dis->itemState & ODS_HOTLIGHT)
+		else if (dis->itemState & ODS_HOTLIGHT)
 			dwThemeFlags = PBS_HOT;
-		else if(dis->itemState & ODS_DEFAULT)
+		else if (dis->itemState & ODS_DEFAULT)
 			dwThemeFlags = PBS_DEFAULTED;
 		else
 			dwThemeFlags = PBS_NORMAL;
 
 		// Button is DOWN
-		if(dis->itemState & ODS_SELECTED)
+		if (dis->itemState & ODS_SELECTED)
 		{
 			// Draw a button
-			if(hTheme != NULL)
+			if (hTheme != NULL)
 				DrawThemeBackground(hTheme, dis->hDC, BP_PUSHBUTTON, dwThemeFlags, &dis->rcItem, 0);
 			else
 				DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH | DFCS_PUSHED | DFCS_FLAT);
-			
-			
+
+
 			// Offset contents to make it look "pressed"
-			if(hTheme == NULL)
+			if (hTheme == NULL)
 			{
 				OffsetRect(&rect, 1, 1);
 				xoff = yoff = 1;
@@ -276,7 +276,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		else
 		{
 			//
-			if(hTheme != NULL)
+			if (hTheme != NULL)
 				DrawThemeBackground(hTheme, dis->hDC, BP_PUSHBUTTON, dwThemeFlags, &dis->rcItem, 0);
 			else
 				DrawFrameControl(dis->hDC, &dis->rcItem, DFC_BUTTON, DFCS_BUTTONPUSH);
@@ -288,17 +288,17 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		DrawIconEx(dis->hDC, ix + xoff, iy + yoff, hIcon, sxIcon, syIcon, 0, 0, DI_NORMAL);
 
 		// Adjust position of window text 
-		if(fRightAlign)
+		if (fRightAlign)
 		{
-			rect.left  += bx + X_ICON_BORDER;
+			rect.left += bx + X_ICON_BORDER;
 			rect.right -= sxIcon + bx + X_ICON_BORDER;
 		}
 		else
 		{
 			rect.right -= bx + X_ICON_BORDER;
-			rect.left  += sxIcon + bx + X_ICON_BORDER;
+			rect.left += sxIcon + bx + X_ICON_BORDER;
 		}
-		
+
 		// Draw the text
 		OffsetRect(&rect, 0, -1);
 		SetBkMode(dis->hDC, TRANSPARENT);
@@ -306,14 +306,14 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		OffsetRect(&rect, 0, 1);
 
 		// Draw the focus rectangle (only if text present)
-		if((dis->itemState & ODS_FOCUS) && nTextLen > 0)
+		if ((dis->itemState & ODS_FOCUS) && nTextLen > 0)
 		{
-			if(!(dis->itemState & ODS_NOFOCUSRECT))
-			{	
+			if (!(dis->itemState & ODS_NOFOCUSRECT))
+			{
 				// Get a "fresh" copy of the button rectangle
 				CopyRect(&rect, &dis->rcItem);
-				
-				if(fRightAlign)
+
+				if (fRightAlign)
 					rect.right -= sxIcon + bx;
 				else
 					rect.left += sxIcon + bx + 2;
@@ -357,7 +357,7 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 	// Store old procedure
 	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)oldproc);
 
-	if(g_fThemeApiAvailable)
+	if (g_fThemeApiAvailable)
 		SetWindowTheme(hwnd, L"explorer", NULL);
 }
 
@@ -366,7 +366,7 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 //
 void MakeDlgBitmapButton(HWND hwndDlg, UINT uCtrlId, UINT uIconId)
 {
-	if(GetModuleHandle(_T("uxtheme.dll")))
+	if (GetModuleHandle(_T("uxtheme.dll")))
 		g_fThemeApiAvailable = TRUE;
 	else
 		g_fThemeApiAvailable = FALSE;

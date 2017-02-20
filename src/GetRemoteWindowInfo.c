@@ -147,7 +147,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	InjData.atom = (ATOM)GetClassLong(hwnd, GCW_ATOM);
 	InjData.hInst = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
 	InjData.wndproc = 0;
-	InjData.nTextSize = sizeof(InjData.szText) / sizeof(TCHAR);
+	InjData.nTextSize = ARRAYSIZE(InjData.szText);
 
 
 	// if we are injecting into THIS process, DO NOT RUN GETWINDOWTEXT!!!

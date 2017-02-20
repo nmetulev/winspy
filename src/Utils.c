@@ -15,7 +15,7 @@
 #include <malloc.h>
 #include "Utils.h"
 
-int atoi( const char *string );
+int atoi(const char *string);
 
 //
 //	Enable/Disable privilege with specified name (for current process)
@@ -26,16 +26,16 @@ BOOL EnablePrivilege(TCHAR *szPrivName, BOOL fEnable)
 	LUID	luid;
 	HANDLE	hToken;
 
-	if(!LookupPrivilegeValue(NULL, szPrivName, &luid))
+	if (!LookupPrivilegeValue(NULL, szPrivName, &luid))
 		return FALSE;
 
-	if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
 		return FALSE;
-	
-	tp.PrivilegeCount			= 1;
-	tp.Privileges[0].Luid		= luid;
+
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Luid = luid;
 	tp.Privileges[0].Attributes = fEnable ? SE_PRIVILEGE_ENABLED : 0;
-	
+
 	AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
 
 	CloseHandle(hToken);
@@ -56,7 +56,7 @@ BOOL EnableDebugPrivilege()
 UINT AddStyle(HWND hwnd, UINT style)
 {
 	UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
-	SetWindowLong(hwnd, GWL_STYLE,  oldstyle | style);
+	SetWindowLong(hwnd, GWL_STYLE, oldstyle | style);
 	return oldstyle;
 }
 
@@ -122,16 +122,16 @@ DWORD_PTR _tstrtoib16(TCHAR *szHexStr)
 	TCHAR *hexptr = szHexStr;
 	UINT  ch = *hexptr++;
 
-	while(isxdigit(ch))
+	while (isxdigit(ch))
 	{
 		UINT x = ch - _T('0');
-		if(x > 9 && x <= 42) x -= 7;		//A-Z
-		else if(x > 42)   x -= 39;			//a-z
-					
+		if (x > 9 && x <= 42) x -= 7;		//A-Z
+		else if (x > 42)   x -= 39;			//a-z
+
 		num = (num << 4) | (x & 0x0f);
 		ch = *hexptr++;
 	}
-	
+
 	return num;
 }
 
@@ -139,9 +139,9 @@ DWORD_PTR GetNumericValue(HWND hwnd, int base)
 {
 	TCHAR szAddressText[128];
 
-	GetWindowText(hwnd, szAddressText, sizeof(szAddressText) / sizeof(TCHAR));
+	GetWindowText(hwnd, szAddressText, ARRAYSIZE(szAddressText));
 
-	switch(base)
+	switch (base)
 	{
 	case 1:
 	case 16:			//base is currently hex
@@ -172,7 +172,7 @@ DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base)
 #define ETDT_ENABLETAB      (ETDT_ENABLE  | ETDT_USETABTEXTURE)
 
 // 
-typedef HRESULT (WINAPI * ETDTProc) (HWND, DWORD);
+typedef HRESULT(WINAPI * ETDTProc) (HWND, DWORD);
 
 //
 //	Try to call EnableThemeDialogTexture, if uxtheme.dll is present
@@ -184,15 +184,15 @@ BOOL EnableDialogTheme(HWND hwnd)
 
 	hUXTheme = LoadLibrary(_T("uxtheme.dll"));
 
-	if(hUXTheme)
+	if (hUXTheme)
 	{
-		fnEnableThemeDialogTexture = 
+		fnEnableThemeDialogTexture =
 			(ETDTProc)GetProcAddress(hUXTheme, "EnableThemeDialogTexture");
 
-		if(fnEnableThemeDialogTexture)
+		if (fnEnableThemeDialogTexture)
 		{
 			fnEnableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
-			
+
 			FreeLibrary(hUXTheme);
 			return TRUE;
 		}
@@ -222,27 +222,27 @@ BOOL EnableDialogTheme(HWND hwnd)
 TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULONG nLength)
 {
 	DWORD  len;
-	PVOID  ver;	
+	PVOID  ver;
 	DWORD  *codepage;
 	TCHAR  fmt[0x40];
 	PVOID  ptr = 0;
 	BOOL   result = FALSE;
-	
+
 	szBuffer[0] = '\0';
 
 	len = GetFileVersionInfoSize(szFileName, 0);
 
-	if(len == 0 || (ver = malloc(len)) == 0)
+	if (len == 0 || (ver = malloc(len)) == 0)
 		return NULL;
 
-	if(GetFileVersionInfo(szFileName, 0, len, ver))
+	if (GetFileVersionInfo(szFileName, 0, len, ver))
 	{
-		if(VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), &codepage, &len))
+		if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), &codepage, &len))
 		{
-			wsprintf(fmt, TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF, 
-					(*codepage) >> 16, szValue);
-			
-			if(VerQueryValue(ver, fmt, &ptr, &len))
+			wsprintf(fmt, TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
+				(*codepage) >> 16, szValue);
+
+			if (VerQueryValue(ver, fmt, &ptr, &len))
 			{
 				lstrcpyn(szBuffer, (TCHAR*)ptr, min(nLength, len));
 				result = TRUE;
@@ -267,12 +267,12 @@ BOOL ProcessArchMatches(HWND hwnd)
 	BOOL bIsWow64Process;
 	BOOL bSuccess;
 
-	if(GetProcessorArchitecture() == PROCESSOR_ARCHITECTURE_INTEL)
+	if (GetProcessorArchitecture() == PROCESSOR_ARCHITECTURE_INTEL)
 		return TRUE;
 
-	if(!fnIsWow64Process)
+	if (!fnIsWow64Process)
 	{
-		if(bIsWow64ProcessAbsents)
+		if (bIsWow64ProcessAbsents)
 		{
 #ifdef _WIN64
 			return FALSE;
@@ -282,7 +282,7 @@ BOOL ProcessArchMatches(HWND hwnd)
 		}
 
 		fnIsWow64Process = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-		if(!fnIsWow64Process)
+		if (!fnIsWow64Process)
 		{
 			bIsWow64ProcessAbsents = TRUE;
 
@@ -297,14 +297,14 @@ BOOL ProcessArchMatches(HWND hwnd)
 	GetWindowThreadProcessId(hwnd, &dwProcessId);
 
 	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
-	if(!hProcess)
+	if (!hProcess)
 		return FALSE; // assume no match, to be on the safe side
 
-	bSuccess = ((BOOL (WINAPI *)(HANDLE, PBOOL))fnIsWow64Process)(hProcess, &bIsWow64Process);
+	bSuccess = ((BOOL(WINAPI *)(HANDLE, PBOOL))fnIsWow64Process)(hProcess, &bIsWow64Process);
 
 	CloseHandle(hProcess);
 
-	if(bSuccess)
+	if (bSuccess)
 	{
 #ifdef _WIN64
 		return !bIsWow64Process;
@@ -327,16 +327,16 @@ WORD GetProcessorArchitecture()
 #else // ifndef _WIN64
 	static WORD wProcessorArchitecture = PROCESSOR_ARCHITECTURE_UNKNOWN;
 
-	if(wProcessorArchitecture == PROCESSOR_ARCHITECTURE_UNKNOWN)
+	if (wProcessorArchitecture == PROCESSOR_ARCHITECTURE_UNKNOWN)
 	{
 		FARPROC fnGetNativeSystemInfo = NULL;
 		SYSTEM_INFO siSystemInfo;
 
 		fnGetNativeSystemInfo = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetNativeSystemInfo");
 
-		if(fnGetNativeSystemInfo)
+		if (fnGetNativeSystemInfo)
 		{
-			((VOID (WINAPI *)(LPSYSTEM_INFO))fnGetNativeSystemInfo)(&siSystemInfo);
+			((VOID(WINAPI *)(LPSYSTEM_INFO))fnGetNativeSystemInfo)(&siSystemInfo);
 
 			wProcessorArchitecture = siSystemInfo.wProcessorArchitecture;
 		}
@@ -358,7 +358,7 @@ HWND GetRealParent(HWND hWnd)
 	HWND hParent;
 
 	hParent = GetAncestor(hWnd, GA_PARENT);
-	if(!hParent || hParent == GetDesktopWindow())
+	if (!hParent || hParent == GetDesktopWindow())
 		return NULL;
 
 	return hParent;
@@ -376,22 +376,22 @@ BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
 
 	nTextSize = lstrlen(psz);
 
-	hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize+1)*sizeof(TCHAR));
-	if(!hText)
+	hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize + 1) * sizeof(TCHAR));
+	if (!hText)
 		return FALSE;
 
 	pszText = (TCHAR *)GlobalLock(hText);
 	lstrcpy(pszText, psz);
 	GlobalUnlock(hText);
 
-	if(OpenClipboard(hWnd))
+	if (OpenClipboard(hWnd))
 	{
-		if(EmptyClipboard())
+		if (EmptyClipboard())
 		{
 #ifdef UNICODE
-			if(SetClipboardData(CF_UNICODETEXT, hText))
+			if (SetClipboardData(CF_UNICODETEXT, hText))
 #else
-			if(SetClipboardData(CF_TEXT, hText))
+			if (SetClipboardData(CF_TEXT, hText))
 #endif
 			{
 				CloseClipboard();
