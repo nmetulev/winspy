@@ -24,10 +24,10 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 	TCHAR  cname[256];
 	TCHAR  wname[256];
 	LVITEM lvitem;
-	
+
 	//only display 1st generation (1-deep) children - 
 	//(don't display child windows of child windows)
-	if(GetRealParent(hwnd) == spy_hCurWnd)
+	if (GetRealParent(hwnd) == spy_hCurWnd)
 	{
 		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
 		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
@@ -44,7 +44,7 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 		ListView_InsertItem((HWND)lParam, &lvitem);
 		ListView_SetItemText((HWND)lParam, 0, 1, cname);
 		ListView_SetItemText((HWND)lParam, 0, 2, wname);
-	}	
+	}
 	return TRUE;
 }
 
@@ -54,9 +54,9 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 	TCHAR  cname[256];
 	TCHAR  wname[256];
 	LVITEM lvitem;
-		
+
 	//sibling windows must share the same parent
-	if(spy_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(spy_hCurWnd))
+	if (spy_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(spy_hCurWnd))
 	{
 		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
 		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
@@ -73,7 +73,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 		ListView_InsertItem((HWND)lParam, &lvitem);
 		ListView_SetItemText((HWND)lParam, 0, 1, cname);
 		ListView_SetItemText((HWND)lParam, 0, 2, wname);
-	}	
+	}
 
 	return TRUE;
 }
@@ -90,18 +90,18 @@ void SetWindowInfo(HWND hwnd)
 	HWND hwndList1 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST1);
 	HWND hwndList2 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST2);
 
-	if(hwnd == 0) return;
+	if (hwnd == 0) return;
 
 	ListView_DeleteAllItems(hwndList1);
 	ListView_DeleteAllItems(hwndList2);
 
 	// Get all children of the window
-	EnumChildWindows(hwnd, ChildWindowProc, (LONG)hwndList1);
+	EnumChildWindows(hwnd, ChildWindowProc, (LPARAM)hwndList1);
 
 	// Get children of it's PARENT (i.e, it's siblings!)
 	hParentWnd = GetRealParent(hwnd);
-	if(hParentWnd)
-		EnumChildWindows(hParentWnd, SiblingWindowProc, (LONG)hwndList2);
+	if (hParentWnd)
+		EnumChildWindows(hParentWnd, SiblingWindowProc, (LPARAM)hwndList2);
 
 	// Set the Parent hyperlink
 	wsprintf(ach, szHexFmt, hParentWnd);

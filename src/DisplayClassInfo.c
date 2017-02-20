@@ -30,17 +30,17 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 
 void VerboseClassName(TCHAR ach[])
 {
-	if     (lstrcmpi(ach, _T("#32770")) == 0)	lstrcat(ach, _T(" (Dialog)"));
-	else if(lstrcmpi(ach, _T("#32768")) == 0)	lstrcat(ach, _T(" (Menu)"));
-	else if(lstrcmpi(ach, _T("#32769")) == 0)	lstrcat(ach, _T(" (Desktop window)"));
-	else if(lstrcmpi(ach, _T("#32771")) == 0)	lstrcat(ach, _T(" (Task-switch window)"));
-	else if(lstrcmpi(ach, _T("#32772")) == 0)	lstrcat(ach, _T(" (Icon title)"));
+	if (lstrcmpi(ach, _T("#32770")) == 0) lstrcat(ach, _T(" (Dialog)"));
+	else if (lstrcmpi(ach, _T("#32768")) == 0) lstrcat(ach, _T(" (Menu)"));
+	else if (lstrcmpi(ach, _T("#32769")) == 0) lstrcat(ach, _T(" (Desktop window)"));
+	else if (lstrcmpi(ach, _T("#32771")) == 0) lstrcat(ach, _T(" (Task-switch window)"));
+	else if (lstrcmpi(ach, _T("#32772")) == 0) lstrcat(ach, _T(" (Icon title)"));
 }
 
 //	
 //	Class styles lookup table
 //
-StyleLookupType ClassLookup[] = 
+StyleLookupType ClassLookup[] =
 {
 	STYLE_(CS_BYTEALIGNCLIENT),
 	STYLE_(CS_BYTEALIGNWINDOW),
@@ -62,19 +62,19 @@ StyleLookupType ClassLookup[] =
 //	stock icon handle values by calling LoadIcon(NULL, ID) before
 //	the list can be searched.
 //
-StyleLookupType IconLookup[] =
+HandleLookupType IconLookup[] =
 {
-	STYLE_(IDI_WARNING),
-	STYLE_(IDI_ERROR),
-	STYLE_(IDI_INFORMATION),
-	STYLE_(IDI_APPLICATION),
-	STYLE_(IDI_HAND),
-	STYLE_(IDI_QUESTION),
-	STYLE_(IDI_EXCLAMATION),
-	STYLE_(IDI_ASTERISK),
+	HANDLE_(IDI_WARNING),
+	HANDLE_(IDI_ERROR),
+	HANDLE_(IDI_INFORMATION),
+	HANDLE_(IDI_APPLICATION),
+	HANDLE_(IDI_HAND),
+	HANDLE_(IDI_QUESTION),
+	HANDLE_(IDI_EXCLAMATION),
+	HANDLE_(IDI_ASTERISK),
 
 #if(WINVER >= 0x0400)
-	STYLE_(IDI_WINLOGO),
+	HANDLE_(IDI_WINLOGO),
 #endif
 
 };
@@ -83,30 +83,30 @@ StyleLookupType IconLookup[] =
 //	Stock Cursor lookup table. These values must also be 
 //  converted to stock cursor handles.
 //
-StyleLookupType CursorLookup[] =
+HandleLookupType CursorLookup[] =
 {
-	STYLE_(IDC_ARROW),
-	STYLE_(IDC_IBEAM),
-	STYLE_(IDC_WAIT),
-	STYLE_(IDC_CROSS),
-	STYLE_(IDC_UPARROW),
-	STYLE_(IDC_SIZE),
-	STYLE_(IDC_ICON),
-	STYLE_(IDC_SIZENWSE),
-	STYLE_(IDC_SIZENESW),
-	STYLE_(IDC_SIZEWE),
-	STYLE_(IDC_SIZENS),
-	STYLE_(IDC_SIZEALL),
-	STYLE_(IDC_NO),
+	HANDLE_(IDC_ARROW),
+	HANDLE_(IDC_IBEAM),
+	HANDLE_(IDC_WAIT),
+	HANDLE_(IDC_CROSS),
+	HANDLE_(IDC_UPARROW),
+	HANDLE_(IDC_SIZE),
+	HANDLE_(IDC_ICON),
+	HANDLE_(IDC_SIZENWSE),
+	HANDLE_(IDC_SIZENESW),
+	HANDLE_(IDC_SIZEWE),
+	HANDLE_(IDC_SIZENS),
+	HANDLE_(IDC_SIZEALL),
+	HANDLE_(IDC_NO),
 
 #if(WINVER >= 0x0500)
-	STYLE_(IDC_HAND),
+	HANDLE_(IDC_HAND),
 #endif
 
-	STYLE_(IDC_APPSTARTING),
+	HANDLE_(IDC_APPSTARTING),
 
 #if(WINVER >= 0x0400)
-	STYLE_(IDC_HELP),
+	HANDLE_(IDC_HELP),
 #endif
 
 };
@@ -114,7 +114,7 @@ StyleLookupType CursorLookup[] =
 //
 //	COLOR_xx Brush ID lookup. Needs no conversion
 //
-StyleLookupType BrushLookup[] = 
+StyleLookupType BrushLookup[] =
 {
 	STYLE_(COLOR_SCROLLBAR),
 	STYLE_(COLOR_BACKGROUND),
@@ -157,7 +157,7 @@ StyleLookupType BrushLookup[] =
 //	GetStockObject brush lookup. These values must be
 //  converted to valid stock brushes.
 //
-StyleLookupType StkBrLookup[] = 
+StyleLookupType StkBrLookup[] =
 {
 	STYLE_(WHITE_BRUSH),
 	STYLE_(BLACK_BRUSH),
@@ -167,8 +167,8 @@ StyleLookupType StkBrLookup[] =
 	STYLE_(NULL_BRUSH),
 };
 
-#define NUM_ICON_STYLES		(sizeof(IconLookup)   /	sizeof(IconLookup[0]))
-#define NUM_CURSOR_STYLES	(sizeof(CursorLookup) / sizeof(CursorLookup[0]))
+#define NUM_ICON_LOOKUP		(sizeof(IconLookup)   /	sizeof(IconLookup[0]))
+#define NUM_CURSOR_LOOKUP	(sizeof(CursorLookup) / sizeof(CursorLookup[0]))
 #define NUM_CLASS_STYLES	(sizeof(ClassLookup)  /	sizeof(ClassLookup[0]))
 #define NUM_BRUSH_STYLES	(sizeof(BrushLookup)  /	sizeof(BrushLookup[0]))
 #define NUM_STKBR_STYLES	(sizeof(StkBrLookup)  /	sizeof(StkBrLookup[0]))
@@ -177,9 +177,9 @@ StyleLookupType StkBrLookup[] =
 //	This table is a combination of the BrushLookup and StkBrLookup tables.
 //	All values are handles to stock brushes.
 //
-StyleLookupType BrushLookup2[NUM_BRUSH_STYLES + NUM_STKBR_STYLES];
+HandleLookupType BrushLookup2[NUM_BRUSH_STYLES + NUM_STKBR_STYLES];
 
-#define NUM_BRUSH2_STYLES	(sizeof(BrushLookup2) /	sizeof(BrushLookup2[0]))
+#define NUM_BRUSH2_LOOKUP	(sizeof(BrushLookup2) /	sizeof(BrushLookup2[0]))
 
 //
 //	Prepare the resource lookup tables by obtaining the 
@@ -188,44 +188,70 @@ StyleLookupType BrushLookup2[NUM_BRUSH_STYLES + NUM_STKBR_STYLES];
 void InitStockStyleLists()
 {
 	int i;
-	for(i = 0; i < NUM_ICON_STYLES; i++)
-		IconLookup[i].style = (UINT)LoadIcon(NULL, MAKEINTRESOURCE(IconLookup[i].style));
+	for (i = 0; i < NUM_ICON_LOOKUP; i++)
+		IconLookup[i].handle = LoadIcon(NULL, MAKEINTRESOURCE(IconLookup[i].handle));
 
-	for(i = 0; i < NUM_CURSOR_STYLES; i++)
-		CursorLookup[i].style = (UINT)LoadCursor(NULL, MAKEINTRESOURCE(CursorLookup[i].style));
+	for (i = 0; i < NUM_CURSOR_LOOKUP; i++)
+		CursorLookup[i].handle = LoadCursor(NULL, MAKEINTRESOURCE(CursorLookup[i].handle));
 
-	for(i = 0; i < NUM_BRUSH_STYLES; i++)
+	for (i = 0; i < NUM_BRUSH_STYLES; i++)
 	{
-		BrushLookup2[i].style = (UINT)GetSysColorBrush(BrushLookup[i].style);
+		BrushLookup2[i].handle = GetSysColorBrush(BrushLookup[i].style);
 		BrushLookup2[i].szName = BrushLookup[i].szName;
 	}
 
-	for(i = 0; i < NUM_STKBR_STYLES; i++)
+	for (i = 0; i < NUM_STKBR_STYLES; i++)
 	{
-		BrushLookup2[i+NUM_BRUSH_STYLES].style = (UINT)GetStockObject(StkBrLookup[i].style);
-		BrushLookup2[i+NUM_BRUSH_STYLES].szName = StkBrLookup[i].szName;
+		BrushLookup2[i + NUM_BRUSH_STYLES].handle = GetStockObject(StkBrLookup[i].style);
+		BrushLookup2[i + NUM_BRUSH_STYLES].szName = StkBrLookup[i].szName;
 	}
-
 }
 
 //
-//	Lookup the specified handle in the style list
+//	Lookup the specified value in the style list
 //
 int FormatStyle(TCHAR *ach, StyleLookupType *stylelist, int items, UINT matchthis)
 {
 	int i;
 
-	for(i = 0; i < items; i++)
+	for (i = 0; i < items; i++)
 	{
-		if(stylelist[i].style == matchthis)
+		if (stylelist[i].style == matchthis)
 		{
-			wsprintf(ach, _T("%s"), stylelist[i].szName);
+			lstrcpy(ach, stylelist[i].szName);
 			return i;
 		}
 	}
 
-	wsprintf(ach, szHexFmt, matchthis);
-	if(matchthis == 0 || matchthis == -1) lstrcpy(ach, _T("(None)"));
+	return -1;
+}
+
+int PrintHandle(TCHAR *ach, ULONG_PTR value)
+{
+	// if the handle value fits into 32 bits, only use the 32-bit hex format; otherwise full pointer format (this only makes a difference for 64 bit)
+	return wsprintf(ach, value <= MAXUINT ? szHexFmt : szPtrFmt, value);
+}
+
+//
+//	Lookup the specified value in the handle list
+//
+int FormatHandle(TCHAR *ach, HandleLookupType *handlelist, int items, ULONG_PTR matchthis)
+{
+	int i;
+
+	for (i = 0; i < items; i++)
+	{
+		if (handlelist[i].handle == (HANDLE)matchthis)
+		{
+			lstrcpy(ach, handlelist[i].szName);
+			return i;
+		}
+	}
+
+	if (matchthis == 0 || (HANDLE)matchthis == INVALID_HANDLE_VALUE)
+		lstrcpy(ach, _T("(None)"));
+	else
+		PrintHandle(ach, matchthis);
 
 	return -1;
 }
@@ -239,11 +265,11 @@ void SetClassInfo(HWND hwnd)
 
 	int i, numstyles, classbytes, index;
 	HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
-	UINT style;
+	UINT_PTR handle;
 	LONG_PTR lp;
 	DWORD dwLastError;
 
-	if(hwnd == 0) return;
+	if (hwnd == 0) return;
 
 
 	GetClassName(hwnd, ach, sizeof(ach) / sizeof(TCHAR));
@@ -251,7 +277,7 @@ void SetClassInfo(HWND hwnd)
 	// be nice and give the proper name for the following class names
 	//
 	VerboseClassName(ach);
-	
+
 	SetDlgItemText(hwndDlg, IDC_CLASSNAME, ach);
 
 	//class style
@@ -275,26 +301,27 @@ void SetClassInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_MENUHANDLE, _T("(None)"));
 
 	//cursor handle
-	style = (UINT)GetClassLongPtr(hwnd, GCLP_HCURSOR);
-	FormatStyle(ach, CursorLookup, NUM_CURSOR_STYLES, style);
+	handle = GetClassLongPtr(hwnd, GCLP_HCURSOR);
+	FormatHandle(ach, CursorLookup, NUM_CURSOR_LOOKUP, handle);
 	SetDlgItemText(hwndDlg, IDC_CURSORHANDLE, ach);
 
 	//icon handle
-	style = (UINT)GetClassLongPtr(hwnd, GCLP_HICON);
-	FormatStyle(ach, IconLookup, NUM_ICON_STYLES, style);
+	handle = GetClassLongPtr(hwnd, GCLP_HICON);
+	FormatHandle(ach, IconLookup, NUM_ICON_LOOKUP, handle);
 	SetDlgItemText(hwndDlg, IDC_ICONHANDLE, ach);
 
 	//background brush handle
-	style = (UINT)GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
-	
+	handle = GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
+
+	//see hbrBackground description at https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
 	//first of all, search by COLOR_xxx value
-	if(-1 == FormatStyle(ach, BrushLookup, NUM_BRUSH_STYLES, style-1))
+	if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatStyle(ach, BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
 	{
 		//now search by handle value
-		i = FormatStyle(ach, BrushLookup2, NUM_BRUSH2_STYLES, style);
-		if(i != -1)
+		i = FormatHandle(ach, BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
+		if (i != -1)
 		{
-			wsprintf(ach, _T("%08X  (%s)"), BrushLookup2[i].style, BrushLookup2[i].szName);
+			wsprintf(ach + PrintHandle(ach, (UINT_PTR)BrushLookup2[i].handle), _T("  (%s)"), BrushLookup2[i].szName);
 		}
 	}
 
@@ -302,23 +329,23 @@ void SetClassInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_BKGNDBRUSH, ach);
 
 	//window procedure
-	if(spy_WndProc == 0)	
+	if (spy_WndProc == 0)
 	{
 		wsprintf(ach, _T("N/A"));
 	}
-	else					
+	else
 	{
 		wsprintf(ach, szPtrFmt, spy_WndProc);
-		if(spy_WndProc != spy_WndClassEx.lpfnWndProc)
+		if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
 			lstrcat(ach, _T(" (Subclassed)"));
 	}
-	
+
 	SetDlgItemText(hwndDlg, IDC_WNDPROC, ach);
 
 	SetDlgItemText(WinSpyTab[GENERAL_TAB].hwnd, IDC_WINDOWPROC2, ach);
 
 	//class window procedure
-	if(spy_WndClassEx.lpfnWndProc == 0)
+	if (spy_WndClassEx.lpfnWndProc == 0)
 		wsprintf(ach, _T("N/A"));
 	else
 		wsprintf(ach, szPtrFmt, spy_WndClassEx.lpfnWndProc);
@@ -326,7 +353,7 @@ void SetClassInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_CLASSPROC, ach);
 
 
-	
+
 	//instance handle
 	wsprintf(ach, szPtrFmt, spy_WndClassEx.hInstance);
 	SetDlgItemText(hwndDlg, IDC_INSTANCEHANDLE, ach);
@@ -336,11 +363,11 @@ void SetClassInfo(HWND hwnd)
 	//
 	numstyles = 0;
 	SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_RESETCONTENT, 0, 0);
-	for(i = 0; i < NUM_CLASS_STYLES; i++)
+	for (i = 0; i < NUM_CLASS_STYLES; i++)
 	{
-		if(spy_WndClassEx.style & ClassLookup[i].style)
+		if (spy_WndClassEx.style & ClassLookup[i].style)
 		{
-			SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0, 
+			SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
 				(LPARAM)ClassLookup[i].szName);
 
 			numstyles++;
@@ -358,24 +385,24 @@ void SetClassInfo(HWND hwnd)
 	EnableDlgItem(hwndDlg, IDC_BYTESLIST, classbytes != 0);
 	SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_RESETCONTENT, 0, 0);
 
-	while(classbytes > 0)
+	while (classbytes > 0)
 	{
 		SetLastError(ERROR_SUCCESS);
 
-		if(classbytes <= sizeof(long))
+		if (classbytes <= sizeof(long))
 			lp = GetWindowLong(hwnd, i);
 		else
 			lp = GetWindowLongPtr(hwnd, i);
 
 		dwLastError = GetLastError();
-		if(dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
+		if (dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
 			break;
 
-		if(dwLastError == ERROR_SUCCESS)
+		if (dwLastError == ERROR_SUCCESS)
 		{
-			if(classbytes < sizeof(LONG_PTR))
+			if (classbytes < sizeof(LONG_PTR))
 			{
-				switch(classbytes)
+				switch (classbytes)
 				{
 				case 4:
 					wsprintf(ach, _T("+%-8d %08X"), i, lp);

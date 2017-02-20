@@ -15,7 +15,7 @@ extern "C" {
 //	Define a structure for each property page in
 //  the main window
 //
-typedef struct 
+typedef struct
 {
 	HWND    hwnd;
 	LPCTSTR szText;
@@ -36,17 +36,25 @@ extern DialogTab WinSpyTab[];
 //
 //	Simple style-lookup
 //
-typedef struct 
+typedef struct
 {
-	UINT    style;
+	UINT style;
 	LPCTSTR szName;
-
 } StyleLookupType;
+
+//
+//	Handle-lookup
+//
+typedef struct
+{
+	HANDLE handle;
+	LPCTSTR szName;
+} HandleLookupType;
 
 //
 //	Extended Style table. 1 per window class
 //
-typedef struct 
+typedef struct
 {
 	DWORD   style;		// Single window style
 	LPCTSTR name;		// Textual name of style
@@ -68,11 +76,13 @@ typedef struct
 //
 #define STYLE_(style) (UINT)style, _T(#style)
 
+#define HANDLE_(handle) (HANDLE)handle, _T(#handle)
+
 //
 //	Use this structure to list each window class with its
 //	associated style table
 //
-typedef struct 
+typedef struct
 {
 	LPCTSTR        szClassName;
 	StyleLookupEx  *stylelist;
@@ -87,7 +97,7 @@ typedef struct
 //	Useful functions!
 //
 BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis);
-BOOL FunkyList_DrawItem   (HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis);
+BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis);
 
 //
 //	WinSpy layout functions
@@ -101,30 +111,30 @@ void ForceVisibleDisplay(HWND hwnd);
 #define WINSPY_NORMAL    2
 #define WINSPY_EXPANDED  3
 #define WINSPY_LASTMAX	 4	// Only use with SetWindowLayout 
-							// (chooses between normal/expanded)
+// (chooses between normal/expanded)
 
 //
 //	WinSpy message handler functions
 //
 
-UINT WinSpyDlg_Size				(HWND hwnd, WPARAM wParam, LPARAM lParam);
-UINT WinSpyDlg_Sizing			(HWND hwnd, UINT nSide, RECT *prc);
-UINT WinSpyDlg_WindowPosChanged	(HWND hwnd, WINDOWPOS *wp);
-UINT WinSpyDlg_EnterSizeMove	(HWND hwnd);
-UINT WinSpyDlg_ExitSizeMove		(HWND hwnd);
-UINT_PTR WinSpyDlg_NCHitTest	(HWND hwnd, WPARAM wParam, LPARAM lParam);
+UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam);
+UINT WinSpyDlg_Sizing(HWND hwnd, UINT nSide, RECT *prc);
+UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp);
+UINT WinSpyDlg_EnterSizeMove(HWND hwnd);
+UINT WinSpyDlg_ExitSizeMove(HWND hwnd);
+UINT_PTR WinSpyDlg_NCHitTest(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
 UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
 UINT WinSpyDlg_TimerHandler(HWND hwnd, UINT_PTR uTimerId);
 
-void WinSpyDlg_SizeContents     (HWND hwnd);
+void WinSpyDlg_SizeContents(HWND hwnd);
 
-UINT WinSpy_PopupCommandHandler (HWND hwndDlg, UINT uCmdId, HWND hwndTarget);
-void WinSpy_SetupPopupMenu      (HMENU hMenu, HWND hwndTarget);
+UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget);
+void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget);
 
 
-int WINAPI GetRectWidth (RECT *rect);
+int WINAPI GetRectWidth(RECT *rect);
 int WINAPI GetRectHeight(RECT *rect);
 
 BOOL IsMinimized(HWND hwnd);
@@ -132,25 +142,25 @@ BOOL IsMinimized(HWND hwnd);
 //
 //	Dialog box procedures for each dialog tab.
 //
-LRESULT CALLBACK GeneralDlgProc	 (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK StyleDlgProc	 (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK WindowDlgProc	 (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK PropertyDlgProc (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK ProcessDlgProc	 (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK ClassDlgProc	 (HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 // Top-level
-void DisplayWindowInfo  (HWND hwnd);
+void DisplayWindowInfo(HWND hwnd);
 
-void SetWindowInfo		(HWND hwnd);
-void SetClassInfo		(HWND hwnd);
-void SetStyleInfo		(HWND hwnd);
-void SetGeneralInfo		(HWND hwnd);
-void SetScrollbarInfo	(HWND hwnd);
-void SetPropertyInfo	(HWND hwnd);
-void SetProcessInfo		(HWND hwnd);
+void SetWindowInfo(HWND hwnd);
+void SetClassInfo(HWND hwnd);
+void SetStyleInfo(HWND hwnd);
+void SetGeneralInfo(HWND hwnd);
+void SetScrollbarInfo(HWND hwnd);
+void SetPropertyInfo(HWND hwnd);
+void SetProcessInfo(HWND hwnd);
 
-void ExitWinSpy			(HWND hwnd, UINT uCode);
+void ExitWinSpy(HWND hwnd, UINT uCode);
 
 //
 //	Menu and System Menu functions
@@ -159,17 +169,17 @@ void ExitWinSpy			(HWND hwnd, UINT uCode);
 void CheckSysMenu(HWND hwnd, UINT uItemId, BOOL fChecked);
 void SetSysMenuIconFromLayout(HWND hwnd, UINT layout);
 
-void ShowEditSizeDlg		  (HWND hwndParent, HWND hwndTarget);
-void ShowPosterDlg			  (HWND hwndParent, HWND hwndTarget);
-void ShowWindowStyleEditor    (HWND hwndParent, HWND hwndTarget, BOOL fExtended);
-void ShowWindowPropertyEditor (HWND hwndParent, HWND hwndTarget, BOOL bAddNew);
-void ShowOptionsDlg			  (HWND hwndParent);
+void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget);
+void ShowPosterDlg(HWND hwndParent, HWND hwndTarget);
+void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended);
+void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew);
+void ShowOptionsDlg(HWND hwndParent);
 
 void LoadSettings(void);
 void SaveSettings(void);
 
-BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, 
-						 WNDPROC *pProc, TCHAR *pszText, int nTextLen);
+BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass,
+	WNDPROC *pProc, TCHAR *pszText, int nTextLen);
 
 BOOL RemoveTabCtrlFlicker(HWND hwndTab);
 
@@ -225,9 +235,9 @@ extern UINT  uPinnedCorner;
 //
 extern HINSTANCE hInst;
 
-extern TCHAR szHexFmt[];
-extern TCHAR szPtrFmt[];
-extern TCHAR szAppName[];
+#define szHexFmt _T("%08X")
+#define szPtrFmt _T("%p")
+#define szAppName _T("WinSpy++")
 
 extern HWND	 hwndPin;		// Toolbar with pin bitmap
 extern HWND	 hwndSizer;		// Sizing grip for bottom-right corner
