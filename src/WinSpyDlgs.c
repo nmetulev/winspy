@@ -234,25 +234,25 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		return TRUE;
 
 	case WM_CONTEXTMENU:
-		if ((HWND)wParam == GetDlgItem(hwnd, IDC_WINDOWBYTES))
+		if ((HWND)wParam == GetDlgItem(hwnd, IDC_BYTESLIST))
 		{
-			index = (int)SendDlgItemMessage(hwnd, IDC_WINDOWBYTES, CB_GETCURSEL, 0, 0);
+			index = (int)SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETCURSEL, 0, 0);
 			if (index == CB_ERR)
 				break;
 
-			lp = SendDlgItemMessage(hwnd, IDC_WINDOWBYTES, CB_GETITEMDATA, index, 0);
+			lp = SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETITEMDATA, index, 0);
 
-			pt.x = (long)(short)LOWORD(lParam);
-			pt.y = (long)(short)HIWORD(lParam);
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
 
 			// Calculate x, y if using keyboard
 			if (pt.x == -1 && pt.y == -1)
 			{
-				GetClientRect(GetDlgItem(hwnd, IDC_WINDOWBYTES), &rc);
+				GetClientRect(GetDlgItem(hwnd, IDC_BYTESLIST), &rc);
 				pt.x = rc.left + (rc.right - rc.left) / 2;
 				pt.y = rc.top + (rc.bottom - rc.top) / 2;
 
-				ClientToScreen(GetDlgItem(hwnd, IDC_WINDOWBYTES), &pt);
+				ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
 			}
 
 			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU5));
@@ -561,8 +561,8 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 			else
 				selected = -1;
 
-			pt.x = (long)(short)LOWORD(lParam);
-			pt.y = (long)(short)HIWORD(lParam);
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
 
 			// Calculate x, y if using keyboard
 			if (pt.x == -1 && pt.y == -1)
@@ -682,8 +682,8 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 
 			lp = SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETITEMDATA, index, 0);
 
-			pt.x = (long)(short)LOWORD(lParam);
-			pt.y = (long)(short)HIWORD(lParam);
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
 
 			// Calculate x, y if using keyboard
 			if (pt.x == -1 && pt.y == -1)

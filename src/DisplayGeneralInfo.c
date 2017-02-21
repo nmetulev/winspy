@@ -21,17 +21,23 @@
 
 void RemoveHyperlink(HWND hwnd, UINT staticid);
 void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink);
-
+void FillBytesList(
+	HWND hwndDlg,
+	HWND hwnd,
+	int numBytes,
+	WORD WINAPI pGetWord(HWND, int),
+	LONG WINAPI pGetLong(HWND, int),
+	LONG_PTR WINAPI pGetLongPtr(HWND, int)
+);
 
 void SetGeneralInfo(HWND hwnd)
 {
-	TCHAR	 ach[256];
-	HWND	 hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
-	RECT	 rect;
-	int		 x1, y1;
-	int		 i, numbytes, index;
+	TCHAR	ach[256];
+	HWND	hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
+	RECT	rect;
+	int		x1, y1;
+	int		numbytes;
 	LONG_PTR lp;
-	DWORD    dwLastError;
 
 	if (hwnd == 0) return;
 
@@ -159,60 +165,6 @@ void SetGeneralInfo(HWND hwnd)
 
 	//extra window bytes
 	numbytes = GetClassLong(hwnd, GCL_CBWNDEXTRA);
-	i = 0;
 
-	SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_RESETCONTENT, 0, 0);
-	EnableDlgItem(hwndDlg, IDC_WINDOWBYTES, numbytes != 0);
-
-	// Retrieve all the window bytes + add to combo box
-	while (numbytes > 0)
-	{
-		SetLastError(ERROR_SUCCESS);
-
-		if (numbytes <= sizeof(long))
-			lp = GetWindowLong(hwnd, i);
-		else
-			lp = GetWindowLongPtr(hwnd, i);
-
-		dwLastError = GetLastError();
-		if (dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
-			break;
-
-		if (dwLastError == ERROR_SUCCESS)
-		{
-			if (numbytes < sizeof(LONG_PTR))
-			{
-				switch (numbytes)
-				{
-				case 4:
-					wsprintf(ach, _T("+%-8d %08X"), i, lp);
-					break;
-
-				case 2:
-					wsprintf(ach, _T("+%-8d %04X"), i, lp);
-					break;
-
-				default:
-					wsprintf(ach, _T("+%-8d %X"), i, lp);
-					break;
-				}
-			}
-			else
-				wsprintf(ach, _T("+%-8d %08p"), i, lp);
-		}
-		else
-			wsprintf(ach, _T("+%-8d Unavailable (0x%08X)"), i, dwLastError);
-
-		i += sizeof(LONG_PTR);
-		numbytes -= sizeof(LONG_PTR);
-
-		index = (int)SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_ADDSTRING, 0, (LPARAM)ach);
-
-		if (dwLastError == ERROR_SUCCESS)
-			SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, lp);
-		else
-			SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETITEMDATA, index, dwLastError);
-	}
-
-	SendDlgItemMessage(hwndDlg, IDC_WINDOWBYTES, CB_SETCURSEL, 0, 0);
+	FillBytesList(hwndDlg, hwnd, numbytes, GetWindowWord, GetWindowLong, GetWindowLongPtr);
 }

@@ -251,6 +251,92 @@ int FormatHandle(TCHAR *ach, HandleLookupType *handlelist, int items, ULONG_PTR 
 	return -1;
 }
 
+void FillBytesList(
+	HWND hwndDlg,
+	HWND hwnd,
+	int numBytes,
+	WORD WINAPI pGetWord(HWND, int),
+	LONG WINAPI pGetLong(HWND, int),
+	LONG_PTR WINAPI pGetLongPtr(HWND, int)
+)
+{
+	TCHAR ach[256];
+	int i = 0;
+	LONG_PTR lp;
+
+	SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_RESETCONTENT, 0, 0);
+	EnableDlgItem(hwndDlg, IDC_BYTESLIST, numBytes != 0);
+
+	// Retrieve all the bytes + add to combo box
+	// We will be getting all the bytes except for the possible last incomplete portion by Get*LongPtr.
+	// Because Get*Long* checks the bounds, the last piece has to be retrieved with one operation whose span ends at the very last byte.
+	while (numBytes > 0)
+	{
+		SetLastError(ERROR_SUCCESS);
+
+		// get the biggest chunk (WORD, LONG or LONG_PTR) that will fit in the bytes; if it ends at the last byte, clear out the bytes we don't need
+		int chunkBytes, extraBytes;
+		// |--------i----------|---numBytes---|
+		// |              |     chunkBytes    |
+		// |              | eb |
+		// or
+		// |--------i----------|-------numBytes-------|
+		// |-------------------|---chunkBytes-----|
+		// eb = 0
+		if (i + numBytes >= sizeof(LONG_PTR))
+		{
+			chunkBytes = sizeof(LONG_PTR);
+			extraBytes = max(0, chunkBytes - numBytes);
+			lp = pGetLongPtr(hwnd, i - extraBytes);
+		}
+		else if (i + numBytes >= sizeof(LONG))
+		{
+			chunkBytes = sizeof(LONG);
+			extraBytes = max(0, chunkBytes - numBytes);
+			lp = pGetLong(hwnd, i - extraBytes);
+		}
+		else
+		{
+			// WORD is the smallest chunk we can access. If there is only 1 byte, we will never be able to set or get that 1 byte.
+			chunkBytes = sizeof(WORD);
+			extraBytes = max(0, chunkBytes - numBytes);
+			if (i < extraBytes)
+			{
+				chunkBytes -= extraBytes - i;
+				extraBytes -= extraBytes - i;
+			}
+			lp = pGetWord(hwnd, i - extraBytes);
+		}
+
+		DWORD dwLastError = GetLastError();
+		if (dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
+			break;
+
+		// by this point, the lowest chunkBytes of lp contain the data retrieved; the lowest extraBytes of them are overlapping previously retrieved data
+#define bitsInByte 8
+		lp >>= bitsInByte * extraBytes;
+		chunkBytes -= extraBytes;
+		// by this point, the lowest chunkBytes of lp contain the data needed. Clear all higher bytes
+		if (chunkBytes < sizeof(lp))
+			lp &= (1ll << bitsInByte * chunkBytes) - 1;
+
+		if (dwLastError == ERROR_SUCCESS)
+		{
+			_stprintf_s(ach, ARRAYSIZE(ach), _T("+%-8d %0*IX"), i, 2 * chunkBytes, lp);
+		}
+		else
+			_stprintf_s(ach, ARRAYSIZE(ach), _T("+%-8d Unavailable (0x%08X)"), i, dwLastError);
+
+		i += chunkBytes;
+		numBytes -= chunkBytes;
+
+		LRESULT index = SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_ADDSTRING, 0, (LPARAM)ach);
+		SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_SETITEMDATA, index, dwLastError == ERROR_SUCCESS ? lp : dwLastError);
+	}
+
+	SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_SETCURSEL, 0, 0);
+}
+
 //
 //	Set the class information on the Class Tab, for the specified window
 //
@@ -258,11 +344,9 @@ void SetClassInfo(HWND hwnd)
 {
 	TCHAR ach[256];
 
-	int i, numstyles, classbytes, index;
+	int i, numstyles, classbytes;
 	HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
 	UINT_PTR handle;
-	LONG_PTR lp;
-	DWORD dwLastError;
 
 	if (hwnd == 0) return;
 
@@ -375,56 +459,8 @@ void SetClassInfo(HWND hwnd)
 	//
 	// fill combo box with class extra bytes
 	//
-	i = 0;
 	classbytes = spy_WndClassEx.cbClsExtra;
-	EnableDlgItem(hwndDlg, IDC_BYTESLIST, classbytes != 0);
-	SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_RESETCONTENT, 0, 0);
 
-	while (classbytes > 0)
-	{
-		SetLastError(ERROR_SUCCESS);
-
-		if (classbytes <= sizeof(long))
-			lp = GetWindowLong(hwnd, i);
-		else
-			lp = GetWindowLongPtr(hwnd, i);
-
-		dwLastError = GetLastError();
-		if (dwLastError == ERROR_PRIVATE_DIALOG_INDEX)
-			break;
-
-		if (dwLastError == ERROR_SUCCESS)
-		{
-			if (classbytes < sizeof(LONG_PTR))
-			{
-				switch (classbytes)
-				{
-				case 4:
-					wsprintf(ach, _T("+%-8d %08X"), i, lp);
-					break;
-
-				case 2:
-					wsprintf(ach, _T("+%-8d %04X"), i, lp);
-					break;
-
-				default:
-					wsprintf(ach, _T("+%-8d %X"), i, lp);
-					break;
-				}
-			}
-			else
-				wsprintf(ach, _T("+%-8d %08p"), i, lp);
-		}
-		else
-			wsprintf(ach, _T("+%-8d Unavailable (0x%08X)"), i, dwLastError);
-
-		i += sizeof(LONG_PTR);
-		classbytes -= sizeof(LONG_PTR);
-
-		index = (int)SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_ADDSTRING, 0, (LPARAM)ach);
-		SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_SETITEMDATA, index, lp);
-	}
-
-	SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_SETCURSEL, 0, 0);
+	FillBytesList(hwndDlg, hwnd, classbytes, GetClassWord, GetClassLong, GetClassLongPtr);
 }
 

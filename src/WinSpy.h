@@ -6,6 +6,8 @@ extern "C" {
 #endif
 
 #include <windows.h>
+#include <WindowsX.h>
+#undef IsMinimized
 #include <commctrl.h>
 #include <tchar.h>
 
