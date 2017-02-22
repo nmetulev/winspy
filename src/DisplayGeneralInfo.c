@@ -42,7 +42,7 @@ void SetGeneralInfo(HWND hwnd)
 	if (hwnd == 0) return;
 
 	//handle
-	wsprintf(ach, szHexFmt, hwnd);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
 	SetDlgItemText(hwndDlg, IDC_HANDLE, ach);
 
 	//caption
@@ -83,16 +83,17 @@ void SetGeneralInfo(HWND hwnd)
 	//class name
 	GetClassName(hwnd, ach, ARRAYSIZE(ach));
 
-	if (IsWindowUnicode(hwnd))	lstrcat(ach, _T("  (Unicode)"));
+	if (IsWindowUnicode(hwnd))
+		_tcscat_s(ach, ARRAYSIZE(ach), _T("  (Unicode)"));
 
 	SetDlgItemText(hwndDlg, IDC_CLASS, ach);
 
 	//style
-	wsprintf(ach, szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
 
-	lstrcat(ach, IsWindowVisible(hwnd) ? _T("  (visible, ") : _T("  (hidden, "));
+	_tcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? _T("  (visible, ") : _T("  (hidden, "));
 
-	lstrcat(ach, IsWindowEnabled(hwnd) ? _T("enabled)") : _T("disabled)"));
+	_tcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? _T("enabled)") : _T("disabled)"));
 
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
@@ -101,7 +102,7 @@ void SetGeneralInfo(HWND hwnd)
 	x1 = rect.left;
 	y1 = rect.top;
 
-	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
 		rect.left, rect.top, rect.right, rect.bottom,
 		(rect.right - rect.left), (rect.bottom - rect.top));
 
@@ -116,7 +117,7 @@ void SetGeneralInfo(HWND hwnd)
 	OffsetRect(&rect, -rect.left, -rect.top);
 	OffsetRect(&rect, x1, y1);
 
-	wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
 		rect.left, rect.top, rect.right, rect.bottom,
 		(rect.right - rect.left), (rect.bottom - rect.top));
 
@@ -135,7 +136,7 @@ void SetGeneralInfo(HWND hwnd)
 	//window procedure
 	if (spy_WndProc == 0)
 	{
-		wsprintf(ach, _T("N/A"));
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("N/A"));
 		SetDlgItemText(hwndDlg, IDC_WINDOWPROC, ach);
 
 		ShowDlgItem(hwndDlg, IDC_WINDOWPROC, SW_SHOW);
@@ -143,7 +144,7 @@ void SetGeneralInfo(HWND hwnd)
 	}
 	else
 	{
-		wsprintf(ach, szPtrFmt, spy_WndProc);
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
 		SetDlgItemText(hwndDlg, IDC_WINDOWPROC2, ach);
 
 		ShowDlgItem(hwndDlg, IDC_WINDOWPROC, SW_HIDE);
@@ -151,16 +152,16 @@ void SetGeneralInfo(HWND hwnd)
 	}
 
 	//instance handle
-	wsprintf(ach, szPtrFmt, GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
 	SetDlgItemText(hwndDlg, IDC_INSTANCE, ach);
 
 	//user data
-	wsprintf(ach, szPtrFmt, GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
 	SetDlgItemText(hwndDlg, IDC_USERDATA, ach);
 
 	//control ID
 	lp = GetWindowLongPtr(hwnd, GWLP_ID);
-	wsprintf(ach, _T("%p  (%Id)"), lp, lp);
+	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt _T("  (%Id)"), (void*)lp, lp);
 	SetDlgItemText(hwndDlg, IDC_CONTROLID, ach);
 
 	//extra window bytes

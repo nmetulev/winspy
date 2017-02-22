@@ -23,7 +23,6 @@
 
 #pragma comment(lib, "comctl32.lib")
 
-static BOOL       fShowNoTitle = FALSE;
 static HIMAGELIST hImgList = 0;
 
 
@@ -76,14 +75,14 @@ typedef struct
 	int   index;			// Index into image list
 	ATOM  atom;             // (Unused) Might use for fast lookups. 
 
-    DWORD  dwAdjustStyles;	// Only valid if one of these styles is set
+	DWORD  dwAdjustStyles;	// Only valid if one of these styles is set
 							// Default = 0 (don't care)
 
 	DWORD  dwMask;			// Compare
 
 }  ClassImageLookup;
 
-ClassImageLookup ClassImage[] = 
+ClassImageLookup ClassImage[] =
 {
 	_T("#32770"),               0,  0, 0, 0,
 	_T("Button"),               4,  0, BS_GROUPBOX,			0xF,
@@ -97,7 +96,7 @@ ClassImageLookup ClassImage[] =
 	_T("ComboBox"),             5,  0, 0, 0,
 	_T("Edit"),                 6,  0, 0, 0,
 	_T("ListBox"),              7,  0, 0, 0,
-	
+
 	_T("RICHEDIT"),				8,  0, 0, 0,
 	_T("RichEdit20A"),			8,  0, 0, 0,
 	_T("RichEdit20W"),			8,  0, 0, 0,
@@ -144,14 +143,14 @@ void InitAtomList()
 	INITCOMMONCONTROLSEX ice;
 
 	ice.dwSize = sizeof(ice);
-	ice.dwICC  = ICC_COOL_CLASSES ;//-1;	//all classes
+	ice.dwICC = ICC_COOL_CLASSES;//-1;	//all classes
 
-	i=InitCommonControlsEx(&ice);
+	i = InitCommonControlsEx(&ice);
 
-	for(i = 0; ClassImage[i].szName[0] != 0; i++)
+	for (i = 0; ClassImage[i].szName[0] != 0; i++)
 	{
 		atom = GlobalFindAtom(ClassImage[i].szName);
-		
+
 		ClassImage[i].atom = atom;
 	}
 }
@@ -165,34 +164,34 @@ int IconFromClassName(TCHAR *szName, DWORD dwStyle)
 {
 	int i = 0;
 
-	while(ClassImage[i].szName[0] != _T('\0'))
+	while (ClassImage[i].szName[0] != _T('\0'))
 	{
-		if(lstrcmpi(ClassImage[i].szName, szName) == 0)
+		if (lstrcmpi(ClassImage[i].szName, szName) == 0)
 		{
 			DWORD dwMask = ClassImage[i].dwMask;
 
-			if(ClassImage[i].dwAdjustStyles != 0)
+			if (ClassImage[i].dwAdjustStyles != 0)
 			{
-				if(dwMask != 0)
+				if (dwMask != 0)
 				{
-					if(ClassImage[i].dwAdjustStyles == (dwStyle & dwMask)) 
+					if (ClassImage[i].dwAdjustStyles == (dwStyle & dwMask))
 						return  (ClassImage[i].index + CONTROL_START);
 				}
 				else
 				{
-					if(ClassImage[i].dwAdjustStyles & dwStyle)
+					if (ClassImage[i].dwAdjustStyles & dwStyle)
 						return  (ClassImage[i].index + CONTROL_START);
 				}
 
 			}
 
-			if(ClassImage[i].dwAdjustStyles == 0)
+			if (ClassImage[i].dwAdjustStyles == 0)
 				return  (ClassImage[i].index + CONTROL_START);
 		}
 
 		i++;
 	}
-	
+
 	return -1;
 }
 
@@ -205,24 +204,24 @@ int IconFromClassName(TCHAR *szName, DWORD dwStyle)
 //
 //	szTotal must be MIN_FORMAT_LEN characters
 //
-int FormatWindowText(HWND hwnd, TCHAR szTotal[])
+int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 {
+	//ASSERT(cchTotal >= MIN_FORMAT_LEN);
 	static TCHAR szClass[MAX_CLASS_LEN + MAX_VERBOSE_LEN];
 	int idx;
 	TCHAR *pszCaption;
 	DWORD dwStyle;
-	int len;
 
 	//
 	// Window handle in hex format
 	//
-	if(uTreeInclude & WINLIST_INCLUDE_HANDLE)
+	if (uTreeInclude & WINLIST_INCLUDE_HANDLE)
 	{
-		wsprintf(szTotal, _T("%08X  "), hwnd);
+		_stprintf_s(szTotal, cchTotal, szHexFmt _T("  "), (UINT)(UINT_PTR)hwnd);
 	}
 	else
 	{
-		szTotal[0] = _T('\0');
+		_tcscpy_s(szTotal, cchTotal, _T(""));
 	}
 
 	//
@@ -233,54 +232,45 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[])
 	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 	idx = IconFromClassName(szClass, dwStyle);
 
-	if(uTreeInclude & WINLIST_INCLUDE_CLASS)
+	if (uTreeInclude & WINLIST_INCLUDE_CLASS)
 	{
-		VerboseClassName(szClass);
+		VerboseClassName(szClass, ARRAYSIZE(szClass));
 
-		if(fClassThenText)
+		if (fClassThenText)
 		{
-			lstrcat(szTotal, szClass);
-			lstrcat(szTotal, _T("  "));
+			_tcscat_s(szTotal, cchTotal, szClass);
+			_tcscat_s(szTotal, cchTotal, _T("  "));
 		}
 	}
 	else
-	{	
+	{
 		szClass[0] = _T('\0');
-	}	
+	}
 
-	len = lstrlen(szTotal);
+	_tcscat_s(szTotal, cchTotal, _T("\""));
+
+	size_t len = _tcslen(szTotal);
 	pszCaption = szTotal + len;
 
-	*pszCaption++ = _T('\"');
-	*pszCaption   = _T('\0');
-
+	size_t cchCaption = min(MAX_WINTEXT_LEN, cchTotal - len);
 	// Window title, enclosed in quotes
-	if(!SendMessageTimeout(
-		hwnd, 
-		WM_GETTEXT, 
-		MAX_WINTEXT_LEN, 
+	if (!SendMessageTimeout(
+		hwnd,
+		WM_GETTEXT,
+		cchCaption,
 		(LPARAM)pszCaption,
 		SMTO_ABORTIFHUNG, 100, NULL))
 	{
-		GetWindowText(hwnd, pszCaption, MAX_WINTEXT_LEN);
+		GetWindowText(hwnd, pszCaption, (int)cchCaption);
 	}
 
 	// add on the last quote
-	lstrcat(pszCaption, _T("\""));
+	_tcscat_s(szTotal, cchTotal, _T("\""));
 
-	/*else if(fShowNoTitle)
+	if (!fClassThenText)
 	{
-		lstrcpy(pszCaption, _T("<no title>"));
-	}
-	else
-	{
-		lstrcpy(pszCaption, _T("\"\""));
-	}*/
-
-	if(!fClassThenText)
-	{
-		lstrcat(szTotal, _T("  "));
-		lstrcat(szTotal, szClass);
+		_tcscat_s(szTotal, cchTotal, _T("  "));
+		_tcscat_s(szTotal, cchTotal, szClass);
 	}
 
 	return idx;
@@ -306,9 +296,9 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	//
 	// look for an existing process/window stack:
 	//
-	for(i = 0; i < WinStackCount; i++)
+	for (i = 0; i < WinStackCount; i++)
 	{
-		if(WinStackList[i].dwProcessId == pid)
+		if (WinStackList[i].dwProcessId == pid)
 			return &WinStackList[i];
 	}
 
@@ -317,30 +307,30 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	// couldn't find one - build a new one instead
 	//
 	GetProcessNameByPid(pid, name, 100, path, MAX_PATH);
-	wsprintf(ach, _T("%s  (%u)"), name, pid);
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("%s  (%u)"), name, pid);
 
 	SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON);
 	hImgList = TreeView_GetImageList(hwndTree, TVSIL_NORMAL);
-	
-	
+
+
 	// Add the root item
-	tv.hParent              = TVI_ROOT;
-	tv.hInsertAfter         = TVI_LAST;
-	tv.item.mask            = TVIF_STATE|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
-	tv.item.state           = 0;//TVIS_EXPANDED;
-	tv.item.stateMask       = 0;//TVIS_EXPANDED;
-	tv.item.pszText         = ach;
-	tv.item.cchTextMax      = lstrlen(ach);
-	tv.item.iImage          = ImageList_AddIcon(hImgList, shfi.hIcon);//DESKTOP_IMAGE;
-	tv.item.iSelectedImage  = tv.item.iImage;
-	tv.item.lParam          = (LPARAM)GetDesktopWindow();
+	tv.hParent = TVI_ROOT;
+	tv.hInsertAfter = TVI_LAST;
+	tv.item.mask = TVIF_STATE | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	tv.item.state = 0;//TVIS_EXPANDED;
+	tv.item.stateMask = 0;//TVIS_EXPANDED;
+	tv.item.pszText = ach;
+	tv.item.cchTextMax = ARRAYSIZE(ach);
+	tv.item.iImage = ImageList_AddIcon(hImgList, shfi.hIcon);//DESKTOP_IMAGE;
+	tv.item.iSelectedImage = tv.item.iImage;
+	tv.item.lParam = (LPARAM)GetDesktopWindow();
 
 	hRoot = TreeView_InsertItem(hwndTree, &tv);
-	WinStackList[WinStackCount].hRoot		= hRoot;//TVI_ROOT ;
+	WinStackList[WinStackCount].hRoot = hRoot;//TVI_ROOT ;
 	WinStackList[WinStackCount].dwProcessId = pid;
-	WinStackList[WinStackCount].nWindowZ	= 1;
+	WinStackList[WinStackCount].nWindowZ = 1;
 	WinStackList[WinStackCount].windowStack[0].hRoot = hRoot;
-	WinStackList[WinStackCount].windowStack[0].hwnd  = 0;
+	WinStackList[WinStackCount].windowStack[0].hwnd = 0;
 
 	return &WinStackList[WinStackCount++];
 }
@@ -353,9 +343,9 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 {
 	HWND hwndTree = (HWND)lParam;
-	
+
 	static TCHAR szTotal[MIN_FORMAT_LEN];
-	
+
 	int i, idx;
 
 	// Style is used to decide which bitmap to display in the tree
@@ -380,33 +370,33 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	WinStackType *WindowStack = winProc->windowStack;
 
 
-	idx = FormatWindowText(hwnd, szTotal);
-	
+	idx = FormatWindowText(hwnd, szTotal, ARRAYSIZE(szTotal));
+
 	// Prepare the TVINSERTSTRUCT object
 	ZeroMemory(&tv, sizeof(tv));
-	tv.hParent         = winProc->hRoot;
-	tv.hInsertAfter    = TVI_LAST;
-	tv.item.mask       = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-	tv.item.pszText    = szTotal;
-	tv.item.cchTextMax = lstrlen(szTotal); 
-	tv.item.lParam     = (LPARAM)(hwnd);
+	tv.hParent = winProc->hRoot;
+	tv.hInsertAfter = TVI_LAST;
+	tv.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	tv.item.pszText = szTotal;
+	tv.item.cchTextMax = ARRAYSIZE(szTotal);
+	tv.item.lParam = (LPARAM)(hwnd);
 
 	//
 	// set the image, depending on what type of window we have
 	//
-	if(uStyle & WS_CHILD)
+	if (uStyle & WS_CHILD)
 	{
 		// child windows (edit boxes, list boxes etc)
-		tv.item.iImage  = CHILD_IMAGE;
+		tv.item.iImage = CHILD_IMAGE;
 		tv.hInsertAfter = TVI_LAST;
 	}
-	else if((uStyle & WS_POPUPWINDOW) == WS_POPUPWINDOW)
+	else if ((uStyle & WS_POPUPWINDOW) == WS_POPUPWINDOW)
 	{
 		// dialog boxes
-		tv.item.iImage  = DIALOG_IMAGE;
+		tv.item.iImage = DIALOG_IMAGE;
 		tv.hInsertAfter = TVI_FIRST;
 	}
-	else if(uStyle & WS_POPUP)
+	else if (uStyle & WS_POPUP)
 	{
 		// popup windows (tooltips etc)
 		tv.item.iImage = POPUP_IMAGE;
@@ -419,15 +409,15 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 		tv.hInsertAfter = TVI_FIRST;
 	}
 
-	if(idx != -1)
+	if (idx != -1)
 		tv.item.iImage = idx;
 
-	if(fShowDimmed && !IsWindowVisible(hwnd) && hwnd != hwndTree)
+	if (fShowDimmed && !IsWindowVisible(hwnd) && hwnd != hwndTree)
 		tv.item.iImage += NUM_CLASS_BITMAPS;
 
 	//set the selected bitmap to be the same
 	tv.item.iSelectedImage = tv.item.iImage;
-	
+
 	//
 	// Decide where to place this item
 	//
@@ -435,16 +425,16 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	//  we need to either start a sub-hierarchy (if it is a child),
 	//	or return back up the existing hierarchy.
 	//
-	if(winProc->nWindowZ > 0 && hwndParent != WindowStack[winProc->nWindowZ - 1].hwnd)
+	if (winProc->nWindowZ > 0 && hwndParent != WindowStack[winProc->nWindowZ - 1].hwnd)
 	{
 		//we have another child window
-		if(hwndParent == hwndLast)
+		if (hwndParent == hwndLast)
 		{
 			//make a new parent stack entry
 			WindowStack[winProc->nWindowZ].hRoot = hTreeLast;
-			WindowStack[winProc->nWindowZ].hwnd  = hwndParent;
-			
-			if(winProc->nWindowZ < MAX_WINDOW_DEPTH-1) 
+			WindowStack[winProc->nWindowZ].hwnd = hwndParent;
+
+			if (winProc->nWindowZ < MAX_WINDOW_DEPTH - 1)
 				winProc->nWindowZ++;
 
 			tv.hParent = hTreeLast;
@@ -454,9 +444,9 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 		{
 			//search for this window's parent in the stack so
 			//we know where to insert this window under
-			for(i = 0; i < winProc->nWindowZ; i++)
+			for (i = 0; i < winProc->nWindowZ; i++)
 			{
-				if(WindowStack[i].hwnd == hwndParent)
+				if (WindowStack[i].hwnd == hwndParent)
 				{
 					winProc->nWindowZ = i + 1;
 					tv.hParent = WindowStack[i].hRoot;
@@ -470,11 +460,11 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	{
 		tv.hParent = WindowStack[winProc->nWindowZ - 1].hRoot;
 	}
-	
+
 	// Finally add the node
 	hTreeLast = TreeView_InsertItem(hwndTree, &tv);
-	hwndLast  = hwnd;
-	
+	hwndLast = hwnd;
+
 	return TRUE;
 }
 
@@ -488,23 +478,23 @@ void FillGlobalWindowTree(HWND hwndTree)
 	TVINSERTSTRUCT tv;
 	static TCHAR ach[MIN_FORMAT_LEN];
 
-	FormatWindowText(GetDesktopWindow(), ach);
-	
+	FormatWindowText(GetDesktopWindow(), ach, ARRAYSIZE(ach));
+
 	//Add the root item
-	tv.hParent              = TVI_ROOT;
-	tv.hInsertAfter         = TVI_LAST;
-	tv.item.mask            = TVIF_STATE|TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_PARAM;
-	tv.item.state           = TVIS_EXPANDED;
-	tv.item.stateMask       = TVIS_EXPANDED;
-	tv.item.pszText         = ach;
-	tv.item.cchTextMax      = lstrlen(ach);
-	tv.item.iImage          = DESKTOP_IMAGE;
-	tv.item.iSelectedImage  = DESKTOP_IMAGE;
-	tv.item.lParam          = (LPARAM)GetDesktopWindow();
+	tv.hParent = TVI_ROOT;
+	tv.hInsertAfter = TVI_LAST;
+	tv.item.mask = TVIF_STATE | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	tv.item.state = TVIS_EXPANDED;
+	tv.item.stateMask = TVIS_EXPANDED;
+	tv.item.pszText = ach;
+	tv.item.cchTextMax = ARRAYSIZE(ach);
+	tv.item.iImage = DESKTOP_IMAGE;
+	tv.item.iSelectedImage = DESKTOP_IMAGE;
+	tv.item.lParam = (LPARAM)GetDesktopWindow();
 	//tv.itemex.iIntegral = 1;
 
 	//hRoot = TreeView_InsertItem(hwndTree, &tv);
-	
+
 	//WindowStack[0].hRoot = hRoot;
 	//WindowStack[0].hwnd = 0;
 
@@ -525,20 +515,20 @@ void InitGlobalWindowTree(HWND hwndTree)
 	HWND    hwndTab;
 
 	//only need to create the image list once.
-	if(hImgList == 0)
+	if (hImgList == 0)
 	{
 		// Create an empty image list
-		hImgList = ImageList_Create(16,16,ILC_COLOR32 /*ILC_COLORDDB*/|ILC_MASK,NUM_CLASS_BITMAPS,8);
-	
+		hImgList = ImageList_Create(16, 16, ILC_COLOR32 /*ILC_COLORDDB*/ | ILC_MASK, NUM_CLASS_BITMAPS, 8);
+
 		// Load our bitmap and add it to the image list
 		hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WINDOW_VISIBLE));
-		ImageList_AddMasked(hImgList,hBitmap,RGB(255,0,255));
+		ImageList_AddMasked(hImgList, hBitmap, RGB(255, 0, 255));
 		DeleteObject(hBitmap);
 
 		hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WINDOW_INVISIBLE));
-		ImageList_AddMasked(hImgList,hBitmap,RGB(255,0,255));
+		ImageList_AddMasked(hImgList, hBitmap, RGB(255, 0, 255));
 		DeleteObject(hBitmap);
-	
+
 		// Assign the image list to the treeview control
 		TreeView_SetImageList(hwndTree, hImgList, TVSIL_NORMAL);
 	}
@@ -552,7 +542,7 @@ void InitGlobalWindowTree(HWND hwndTree)
 	SendMessage(hwndTab, TCM_INSERTITEM, 0, (LPARAM)&tcitem);
 
 	//subclass the tab control to remove flicker whilst it is resized
-	RemoveTabCtrlFlicker(hwndTab); 
+	RemoveTabCtrlFlicker(hwndTab);
 
 	//InitAtomList();
 }
@@ -572,48 +562,48 @@ void DeInitGlobalWindowTree(HWND hwndTree)
 //
 HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem)
 {
-	if(!hwndTarget)
+	if (!hwndTarget)
 		return NULL;
 
 	// Start at root if necessary
-	if(hItem == NULL)
+	if (hItem == NULL)
 		hItem = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_ROOT, 0);
 
-	while(hItem != NULL)
+	while (hItem != NULL)
 	{
 		TVITEM item;
 
-		item.hItem  = hItem;
-		item.mask   = TVIF_PARAM | TVIF_CHILDREN;
+		item.hItem = hItem;
+		item.mask = TVIF_PARAM | TVIF_CHILDREN;
 		item.lParam = (LPARAM)hwndTarget;
-		
+
 		// Search!
 		SendMessage(hwndTree, TVM_GETITEM, 0, (LPARAM)&item);
 
 		// Did we find it??
-		if(item.lParam == (LPARAM)hwndTarget)
+		if (item.lParam == (LPARAM)hwndTarget)
 			return hItem;
 
-		if(item.cChildren != 0)
+		if (item.cChildren != 0)
 		{
 			// Recursively traverse child items.
-            HTREEITEM hItemFound, hItemChild;
+			HTREEITEM hItemFound, hItemChild;
 
-            hItemChild = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hItem);
+			hItemChild = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hItem);
 
-            hItemFound = FindTreeItemByHwnd(hwndTree, hwndTarget, hItemChild);
+			hItemFound = FindTreeItemByHwnd(hwndTree, hwndTarget, hItemChild);
 
-            // Did we find it?
-            if (hItemFound != NULL)
-                return hItemFound;
-        }
+			// Did we find it?
+			if (hItemFound != NULL)
+				return hItemFound;
+		}
 
-        // Go to next sibling item.
-        hItem = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)hItem);
-    }
+		// Go to next sibling item.
+		hItem = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)hItem);
+	}
 
-    // Not found.
-    return NULL;
+	// Not found.
+	return NULL;
 }
 
 //
@@ -623,29 +613,29 @@ void RefreshTreeView(HWND hwndTree)
 {
 	DWORD dwStyle;
 
-	WinStackList  = (WinProc*)malloc(1000 * sizeof(WinStackList[0]));
+	WinStackList = (WinProc*)malloc(1000 * sizeof(WinStackList[0]));
 	WinStackCount = 0;
 
 	EnableWindow(hwndTree, TRUE);
-		
+
 	dwStyle = GetWindowLong(hwndTree, GWL_STYLE);
-		
+
 	// We need to hide the treeview temporarily (turn OFF WS_VISIBLE)
 	SendMessage(hwndTree, WM_SETREDRAW, FALSE, 0);
 	SetWindowLong(hwndTree, GWL_STYLE, dwStyle & ~WS_VISIBLE);
-		
+
 	TreeView_DeleteAllItems(hwndTree);
-		
+
 	FillGlobalWindowTree(hwndTree);
 
-	
+
 	SendMessage(hwndTree, WM_SETREDRAW, TRUE, 0);
 	dwStyle = GetWindowLong(hwndTree, GWL_STYLE);
 	SetWindowLong(hwndTree, GWL_STYLE, dwStyle | WS_VISIBLE);
 
-		
-	SetWindowPos(hwndTree, 0, 0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|
-		SWP_NOZORDER|SWP_NOACTIVATE|SWP_DRAWFRAME);
+
+	SetWindowPos(hwndTree, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
+		SWP_NOZORDER | SWP_NOACTIVATE | SWP_DRAWFRAME);
 
 	InvalidateRect(hwndTree, 0, TRUE);
 

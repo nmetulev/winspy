@@ -10,6 +10,7 @@ extern "C" {
 #undef IsMinimized
 #include <commctrl.h>
 #include <tchar.h>
+#include <Strsafe.h>
 
 #define IDM_WINSPY_ABOUT	100
 
@@ -188,7 +189,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass,
 
 BOOL RemoveTabCtrlFlicker(HWND hwndTab);
 
-void VerboseClassName(TCHAR ach[]);
+void VerboseClassName(TCHAR ach[], size_t cch);
 
 void RefreshTreeView(HWND hwndTree);
 void InitGlobalWindowTree(HWND hwnd);
@@ -240,6 +241,7 @@ extern UINT  uPinnedCorner;
 //
 extern HINSTANCE hInst;
 
+#define szAtomFmt _T("%04hX")
 #define szHexFmt _T("%08X")
 #define szPtrFmt _T("%p")
 #define szAppName _T("WinSpy++")

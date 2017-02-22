@@ -41,7 +41,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 	HANDLE hHandle;
 	TCHAR szText[32];
 
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
 
@@ -50,7 +50,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 
 		hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
-		if(state->bAddNew)
+		if (state->bAddNew)
 		{
 			CheckRadioButton(hwnd, IDC_RADIO_NAME, IDC_RADIO_ATOM, IDC_RADIO_NAME);
 
@@ -58,12 +58,12 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 		}
 		else
 		{
-			if(state->aAtom)
+			if (state->aAtom)
 			{
 				CheckRadioButton(hwnd, IDC_RADIO_NAME, IDC_RADIO_ATOM, IDC_RADIO_ATOM);
 				EnableWindow(GetDlgItem(hwnd, IDC_RADIO_NAME), FALSE);
 
-				wsprintf(szText, _T("%04X"), state->aAtom);
+				_stprintf_s(szText, ARRAYSIZE(szText), _T("%04hX"), state->aAtom);
 				SetDlgItemText(hwnd, IDC_EDIT_NAME, szText);
 
 				hHandle = GetProp(state->hwndTarget, MAKEINTATOM(state->aAtom));
@@ -80,7 +80,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 
 			SendDlgItemMessage(hwnd, IDC_EDIT_NAME, EM_SETREADONLY, TRUE, 0);
 
-			wsprintf(szText, szPtrFmt, hHandle);
+			_stprintf_s(szText, ARRAYSIZE(szText), szPtrFmt, hHandle);
 			SetDlgItemText(hwnd, IDC_EDIT_HANDLE, szText);
 		}
 
@@ -93,16 +93,16 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 		//if clicked on one of the underlined static controls, then
 		//display window info..
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
+		switch (LOWORD(wParam))
 		{
 		case IDC_EDIT_NAME:
 		case IDC_EDIT_HANDLE:
 
-			if(HIWORD(wParam) == EN_CHANGE)
+			if (HIWORD(wParam) == EN_CHANGE)
 			{
 				EnableWindow(
-					GetDlgItem(hwnd, IDC_APPLY), 
-					SendDlgItemMessage(hwnd, IDC_EDIT_NAME, WM_GETTEXTLENGTH, 0, 0) > 0 && 
+					GetDlgItem(hwnd, IDC_APPLY),
+					SendDlgItemMessage(hwnd, IDC_EDIT_NAME, WM_GETTEXTLENGTH, 0, 0) > 0 &&
 					SendDlgItemMessage(hwnd, IDC_EDIT_HANDLE, WM_GETTEXTLENGTH, 0, 0) > 0
 				);
 			}
@@ -113,7 +113,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 
 			hHandle = (HANDLE)GetDlgItemBaseInt(hwnd, IDC_EDIT_HANDLE, 16);
 
-			if(IsDlgButtonChecked(hwnd, IDC_RADIO_ATOM))
+			if (IsDlgButtonChecked(hwnd, IDC_RADIO_ATOM))
 			{
 				state->aAtom = (ATOM)GetDlgItemBaseInt(hwnd, IDC_EDIT_NAME, 16);
 				SetProp(state->hwndTarget, MAKEINTATOM(state->aAtom), hHandle);
@@ -146,11 +146,11 @@ void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew)
 	state.hwndTarget = hwndTarget;
 	state.bAddNew = bAddNew;
 
-	if(!bAddNew)
+	if (!bAddNew)
 	{
 		hwndList = GetDlgItem(hwndParent, IDC_LIST1);
 
-		if(ListView_GetSelectedCount(hwndList) != 1)
+		if (ListView_GetSelectedCount(hwndList) != 1)
 			return;
 
 		lvitem.mask = LVIF_TEXT | LVIF_PARAM;

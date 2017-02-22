@@ -374,7 +374,7 @@ BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
 	TCHAR *pszText;
 	size_t nTextSize;
 
-	nTextSize = lstrlen(psz);
+	nTextSize = _tcslen(psz);
 
 	hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize + 1) * sizeof(TCHAR));
 	if (!hText)

@@ -205,11 +205,11 @@ void SetProcessInfo(HWND hwnd)
 	dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
 
 	// Process Id
-	wsprintf(ach, _T("%08X  (%u)"), dwProcessId, dwProcessId);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwProcessId, dwProcessId);
 	SetDlgItemText(hwndDlg, IDC_PID, ach);
 
 	// Thread Id
-	wsprintf(ach, _T("%08X  (%u)"), dwThreadId, dwThreadId);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwThreadId, dwThreadId);
 	SetDlgItemText(hwndDlg, IDC_TID, ach);
 
 	// Try to get process name and path

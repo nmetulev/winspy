@@ -1045,12 +1045,12 @@ void SetStyleInfo(HWND hwnd)
 
 	// Display the window style in static label
 	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-	wsprintf(ach, szHexFmt, dwStyle);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyle);
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	// Display the extended window style in static label
 	dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-	wsprintf(ach, szHexFmt, dwExStyle);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwExStyle);
 	SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
 
 	// Find handles to standard and extended style lists

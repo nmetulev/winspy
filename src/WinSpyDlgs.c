@@ -264,7 +264,7 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			switch (uCmd)
 			{
 			case IDM_BYTES_COPY:
-				wsprintf(ach, _T("%p"), lp);
+				_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)lp);
 				CopyTextToClipboard(hwnd, ach);
 				break;
 			}
@@ -704,7 +704,7 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 			switch (uCmd)
 			{
 			case IDM_BYTES_COPY:
-				wsprintf(ach, _T("%p"), lp);
+				_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)lp);
 				CopyTextToClipboard(hwnd, ach);
 				break;
 			}
@@ -757,18 +757,15 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			switch (uCmd)
 			{
 			case IDM_WINSPY_FINDEXE:
-
 			{
 				TCHAR szExplorer[MAX_PATH];
 				TCHAR szPath[MAX_PATH];
 
 				GetDlgItemText(hwnd, IDC_PROCESSPATH, szPath, ARRAYSIZE(szPath));
 
-				wsprintf(szExplorer, _T("/select,\"%s\""), szPath);
+				_stprintf_s(szExplorer, ARRAYSIZE(szExplorer), _T("/select,\"%s\""), szPath);
 				ShellExecute(0, _T("open"), _T("explorer"), szExplorer, 0, SW_SHOW);
-
 			}
-
 			break;
 
 			// Forcibly terminate!
@@ -791,7 +788,6 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 						MessageBox(hwnd, _T("Invalid Process Id"), szAppName, MB_OK | MB_ICONWARNING);
 					}
 				}
-
 				break;
 
 				// Cleanly exit. Won't work if app. is hung
@@ -801,7 +797,6 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 				{
 					PostThreadMessage(dwThreadId, WM_QUIT, 0, 0);
 				}
-
 				break;
 
 			}

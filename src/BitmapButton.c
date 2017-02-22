@@ -162,7 +162,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	int xoff, yoff;		// 
 
 	TCHAR szText[100];
-	int   nTextLen;
+	size_t nTextLen;
 
 	HICON hIcon;
 	DWORD dwStyle = GetWindowLong(dis->hwndItem, GWL_STYLE);
@@ -194,7 +194,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		// Retrieve button text
 		GetWindowText(dis->hwndItem, szText, ARRAYSIZE(szText));
 
-		nTextLen = lstrlen(szText);
+		nTextLen = _tcslen(szText);
 
 		// Retrieve button icon
 		hIcon = (HICON)SendMessage(dis->hwndItem, BM_GETIMAGE, IMAGE_ICON, 0);

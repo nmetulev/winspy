@@ -80,7 +80,7 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 		ExtTextOut(dis->hDC,
 			dis->rcItem.left + 2,
 			dis->rcItem.top + 0,
-			ETO_OPAQUE, &dis->rcItem, szText, lstrlen(szText), 0);
+			ETO_OPAQUE, &dis->rcItem, szText, (UINT)_tcslen(szText), 0);
 
 		//Draw the style bytes
 		if ((dis->itemState & ODS_SELECTED))
@@ -88,7 +88,7 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 		else
 			SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 
-		wsprintf(szText, _T("%08X"), dwStyle);
+		_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyle);
 
 		dis->rcItem.right -= 4;
 

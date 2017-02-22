@@ -164,7 +164,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 		if (fShowInCaption)
 		{
 			GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
-			wsprintf(ach, _T("%s [%08X, %s]"), szAppName, hwnd, szClass);
+			_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)hwnd, szClass);
 			SetWindowText(hwndMain, ach);
 		}
 
@@ -196,7 +196,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 		{
 			GetClassName(spy_hCurWnd, szClass, ARRAYSIZE(szClass));
 
-			wsprintf(ach, _T("%s [%08X, %s]"), szAppName, spy_hCurWnd, szClass);
+			_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)spy_hCurWnd, szClass);
 			SetWindowText(hwndMain, ach);
 		}
 
@@ -715,7 +715,7 @@ void DumpRect(HWND hwnd)
 	RECT  rect;
 	TCHAR ach[80];
 	GetWindowRect(hwnd, &rect);
-	wsprintf(ach, _T("%d %d %d %d\n"), rect.left, rect.top, rect.right, rect.bottom);
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("%d %d %d %d\n"), rect.left, rect.top, rect.right, rect.bottom);
 	OutputDebugString(ach);
 
 }

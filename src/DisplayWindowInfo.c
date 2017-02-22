@@ -31,7 +31,7 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 	{
 		GetClassName(hwnd, cname, ARRAYSIZE(cname));
 		GetWindowText(hwnd, wname, ARRAYSIZE(wname));
-		wsprintf(ach, szHexFmt, hwnd);
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
 
 		lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
 		lvitem.iSubItem = 0;
@@ -60,7 +60,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 	{
 		GetClassName(hwnd, cname, ARRAYSIZE(cname));
 		GetWindowText(hwnd, wname, ARRAYSIZE(wname));
-		wsprintf(ach, szHexFmt, hwnd);
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
 
 		lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
 		lvitem.iSubItem = 0;
@@ -98,16 +98,16 @@ void SetWindowInfo(HWND hwnd)
 	// Get all children of the window
 	EnumChildWindows(hwnd, ChildWindowProc, (LPARAM)hwndList1);
 
-	// Get children of it's PARENT (i.e, it's siblings!)
+	// Get children of its PARENT (i.e, its siblings!)
 	hParentWnd = GetRealParent(hwnd);
 	if (hParentWnd)
 		EnumChildWindows(hParentWnd, SiblingWindowProc, (LPARAM)hwndList2);
 
 	// Set the Parent hyperlink
-	wsprintf(ach, szHexFmt, hParentWnd);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hParentWnd);
 	SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_PARENT, ach);
 
 	// Set the Owner hyperlink
-	wsprintf(ach, szHexFmt, GetWindow(hwnd, GW_OWNER));
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)GetWindow(hwnd, GW_OWNER));
 	SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_OWNER, ach);
 }

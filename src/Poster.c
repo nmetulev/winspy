@@ -420,14 +420,14 @@ static void SetInitialGuiInfo(HWND hwnd, HWND hwndTarget)
 	HWND	 hwndMsgsCombo;
 	TCHAR	 ach[256];
 
-	wsprintf(ach, szHexFmt, hwndTarget);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwndTarget);
 	SetDlgItemText(hwnd, IDC_POSTER_HANDLE, ach);
 
 	hwndMsgsCombo = GetDlgItem(hwnd, IDC_POSTER_MESSAGES);
-	for(int i = 0; WindowMessages[i].pszMsgName; i++)
+	for (int i = 0; WindowMessages[i].pszMsgName; i++)
 	{
 		int index = (int)SendMessage(hwndMsgsCombo, CB_ADDSTRING, 0, (LPARAM)WindowMessages[i].pszMsgName);
-		if(index != -1)
+		if (index != -1)
 		{
 			SendMessage(hwndMsgsCombo, CB_SETITEMDATA, index, WindowMessages[i].uMsgValue);
 		}
@@ -443,7 +443,7 @@ static void GetGuiInfo(HWND hwnd, HWND *phwndTarget, UINT *puMsg, WPARAM *pwPara
 
 	hwndMsgsCombo = GetDlgItem(hwnd, IDC_POSTER_MESSAGES);
 	nComboIndex = (int)SendMessage(hwndMsgsCombo, CB_GETCURSEL, 0, 0);
-	if(nComboIndex != -1)
+	if (nComboIndex != -1)
 	{
 		*puMsg = (UINT)SendMessage(hwndMsgsCombo, CB_GETITEMDATA, nComboIndex, 0);
 	}
@@ -467,7 +467,7 @@ static void PosterSendMessage(HWND hwnd)
 
 	GetGuiInfo(hwnd, &hwndTarget, &uMsg, &wParam, &lParam);
 
-	if(!IsWindow(hwndTarget))
+	if (!IsWindow(hwndTarget))
 	{
 		MessageBox(hwnd,
 			_T("Not a valid window"),
@@ -476,13 +476,13 @@ static void PosterSendMessage(HWND hwnd)
 		return;
 	}
 
-	if(SendMessageTimeout(hwndTarget, uMsg, wParam, lParam, 0, 7000, &dwResult))
+	if (SendMessageTimeout(hwndTarget, uMsg, wParam, lParam, 0, 7000, &dwResult))
 	{
-		wsprintf(ach, szHexFmt, dwResult);
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)dwResult);
 	}
 	else
 	{
-		wsprintf(ach, _T("Error 0x%08X"), GetLastError());
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("Error 0x") szHexFmt, GetLastError());
 	}
 
 	SetDlgItemText(hwnd, IDC_POSTER_RESULT, ach);
@@ -498,7 +498,7 @@ static void PosterPostMessage(HWND hwnd)
 
 	GetGuiInfo(hwnd, &hwndTarget, &uMsg, &wParam, &lParam);
 
-	if(!IsWindow(hwndTarget))
+	if (!IsWindow(hwndTarget))
 	{
 		MessageBox(hwnd,
 			_T("Not a valid window"),
@@ -507,13 +507,13 @@ static void PosterPostMessage(HWND hwnd)
 		return;
 	}
 
-	if(PostMessage(hwndTarget, uMsg, wParam, lParam))
+	if (PostMessage(hwndTarget, uMsg, wParam, lParam))
 	{
-		wsprintf(ach, _T("Posted"));
+		_tcscpy_s(ach, ARRAYSIZE(ach), _T("Posted"));
 	}
 	else
 	{
-		wsprintf(ach, _T("Error 0x%08X"), GetLastError());
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("Error 0x") szHexFmt, GetLastError());
 	}
 
 	SetDlgItemText(hwnd, IDC_POSTER_RESULT, ach);
@@ -526,7 +526,7 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 {
 	HWND hwndTarget;	// target window!
 
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
 		hwndTarget = (HWND)lParam;
@@ -539,7 +539,7 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
+		switch (LOWORD(wParam))
 		{
 		case IDC_POSTER_SEND:
 			PosterSendMessage(hwnd);
@@ -562,22 +562,22 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
 {
-	if(IsWindow(spy_hCurWnd))
+	if (IsWindow(spy_hCurWnd))
 	{
 		DialogBoxParam(
-			GetModuleHandle(0), 
-			MAKEINTRESOURCE(IDD_POSTER), 
-			hwndParent, 
-			PosterDlgProc, 
+			GetModuleHandle(0),
+			MAKEINTRESOURCE(IDD_POSTER),
+			hwndParent,
+			PosterDlgProc,
 			(LPARAM)hwndTarget);
 
 		SetGeneralInfo(hwndTarget);
 	}
 	else
 	{
-		MessageBox(hwndParent, 
-			_T("Not a valid window"), 
-			szAppName, 
+		MessageBox(hwndParent,
+			_T("Not a valid window"),
+			szAppName,
 			MB_OK | MB_ICONEXCLAMATION);
 	}
 }

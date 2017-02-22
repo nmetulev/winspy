@@ -32,12 +32,12 @@ void ShowHelp(HWND hwndMain, UINT uCommand, DWORD dwData)
 
 	GetModuleFileName(0, szPath, ARRAYSIZE(szPath));
 
-	ptr = szPath + lstrlen(szPath) - 1;
+	ptr = szPath + _tcslen(szPath) - 1;
 
 	while (ptr > szPath && *ptr != _T('\\'))
 		ptr--;
 
-	lstrcpy(ptr, _T("\\WinSpy.hlp"));
+	_tcscpy_s(ptr, ARRAYSIZE(szPath) - (ptr - szPath), _T("\\WinSpy.hlp"));
 
 	WinHelp(hwndMain, szPath, uCommand, dwData);
 }
@@ -334,7 +334,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		GetModuleFileName(0, szCurExe, MAX_PATH);
 		GetVersionString(szCurExe, TEXT("FileVersion"), szVersion, 40);
 
-		wsprintf(szText,
+		_stprintf_s(szText, ARRAYSIZE(szText),
 			_T("%s v%s\n")
 			_T("\n")
 			_T("Copyright(c) 2002-2012 by Catch22 Productions.\n")
@@ -344,7 +344,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 			_T("Forked and improved by RaMMicHaeL.\n")
 			_T("Homepage: rammichael.com"),
 			szAppName, szVersion);
-		wsprintf(szTitle, _T("About %s"), szAppName);
+		_stprintf_s(szTitle, ARRAYSIZE(szTitle), _T("About %s"), szAppName);
 
 		MessageBox(hwnd, szText, szTitle, MB_OK | MB_ICONINFORMATION);
 		return TRUE;

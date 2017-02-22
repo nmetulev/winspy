@@ -23,13 +23,13 @@
 #include "resource.h"
 #include "Utils.h"
 
-void VerboseClassName(TCHAR ach[])
+void VerboseClassName(TCHAR ach[], size_t cch)
 {
-	if (lstrcmpi(ach, _T("#32770")) == 0) lstrcat(ach, _T(" (Dialog)"));
-	else if (lstrcmpi(ach, _T("#32768")) == 0) lstrcat(ach, _T(" (Menu)"));
-	else if (lstrcmpi(ach, _T("#32769")) == 0) lstrcat(ach, _T(" (Desktop window)"));
-	else if (lstrcmpi(ach, _T("#32771")) == 0) lstrcat(ach, _T(" (Task-switch window)"));
-	else if (lstrcmpi(ach, _T("#32772")) == 0) lstrcat(ach, _T(" (Icon title)"));
+	if (lstrcmpi(ach, _T("#32770")) == 0) _tcscat_s(ach, cch, _T(" (Dialog)"));
+	else if (lstrcmpi(ach, _T("#32768")) == 0) _tcscat_s(ach, cch, _T(" (Menu)"));
+	else if (lstrcmpi(ach, _T("#32769")) == 0) _tcscat_s(ach, cch, _T(" (Desktop window)"));
+	else if (lstrcmpi(ach, _T("#32771")) == 0) _tcscat_s(ach, cch, _T(" (Task-switch window)"));
+	else if (lstrcmpi(ach, _T("#32772")) == 0) _tcscat_s(ach, cch, _T(" (Icon title)"));
 }
 
 //	
@@ -205,7 +205,7 @@ void InitStockStyleLists()
 //
 //	Lookup the specified value in the style list
 //
-int FormatStyle(TCHAR *ach, StyleLookupType *stylelist, int items, UINT matchthis)
+int FormatStyle(TCHAR *ach, size_t cch, StyleLookupType *stylelist, int items, UINT matchthis)
 {
 	int i;
 
@@ -213,7 +213,7 @@ int FormatStyle(TCHAR *ach, StyleLookupType *stylelist, int items, UINT matchthi
 	{
 		if (stylelist[i].style == matchthis)
 		{
-			lstrcpy(ach, stylelist[i].szName);
+			_tcscpy_s(ach, cch, stylelist[i].szName);
 			return i;
 		}
 	}
@@ -221,16 +221,16 @@ int FormatStyle(TCHAR *ach, StyleLookupType *stylelist, int items, UINT matchthi
 	return -1;
 }
 
-int PrintHandle(TCHAR *ach, ULONG_PTR value)
+int PrintHandle(TCHAR *ach, size_t cch, ULONG_PTR value)
 {
 	// if the handle value fits into 32 bits, only use the 32-bit hex format; otherwise full pointer format (this only makes a difference for 64 bit)
-	return wsprintf(ach, value <= MAXUINT ? szHexFmt : szPtrFmt, value);
+	return _stprintf_s(ach, cch, value <= MAXUINT ? szHexFmt : szPtrFmt, value);
 }
 
 //
 //	Lookup the specified value in the handle list
 //
-int FormatHandle(TCHAR *ach, HandleLookupType *handlelist, int items, ULONG_PTR matchthis)
+int FormatHandle(TCHAR *ach, size_t cch, HandleLookupType *handlelist, int items, ULONG_PTR matchthis)
 {
 	int i;
 
@@ -238,15 +238,15 @@ int FormatHandle(TCHAR *ach, HandleLookupType *handlelist, int items, ULONG_PTR 
 	{
 		if (handlelist[i].handle == (HANDLE)matchthis)
 		{
-			lstrcpy(ach, handlelist[i].szName);
+			_tcscpy_s(ach, cch, handlelist[i].szName);
 			return i;
 		}
 	}
 
 	if (matchthis == 0 || (HANDLE)matchthis == INVALID_HANDLE_VALUE)
-		lstrcpy(ach, _T("(None)"));
+		_tcscpy_s(ach, cch, _T("(None)"));
 	else
-		PrintHandle(ach, matchthis);
+		PrintHandle(ach, cch, matchthis);
 
 	return -1;
 }
@@ -325,7 +325,7 @@ void FillBytesList(
 			_stprintf_s(ach, ARRAYSIZE(ach), _T("+%-8d %0*IX"), i, 2 * chunkBytes, lp);
 		}
 		else
-			_stprintf_s(ach, ARRAYSIZE(ach), _T("+%-8d Unavailable (0x%08X)"), i, dwLastError);
+			_stprintf_s(ach, ARRAYSIZE(ach), _T("+%-8d Unavailable (0x") szHexFmt _T(")"), i, dwLastError);
 
 		i += chunkBytes;
 		numBytes -= chunkBytes;
@@ -355,38 +355,38 @@ void SetClassInfo(HWND hwnd)
 
 	// be nice and give the proper name for the following class names
 	//
-	VerboseClassName(ach);
+	VerboseClassName(ach, ARRAYSIZE(ach));
 
 	SetDlgItemText(hwndDlg, IDC_CLASSNAME, ach);
 
 	//class style
-	wsprintf(ach, szHexFmt, spy_WndClassEx.style);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, spy_WndClassEx.style);
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	//atom
-	wsprintf(ach, _T("%04X"), GetClassLong(hwnd, GCW_ATOM));
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("%04X"), GetClassLong(hwnd, GCW_ATOM));
 	SetDlgItemText(hwndDlg, IDC_ATOM, ach);
 
 	//extra class bytes
-	wsprintf(ach, _T("%d"), spy_WndClassEx.cbClsExtra);
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbClsExtra);
 	SetDlgItemText(hwndDlg, IDC_CLASSBYTES, ach);
 
 	//extra window bytes
-	wsprintf(ach, _T("%d"), spy_WndClassEx.cbWndExtra);
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbWndExtra);
 	SetDlgItemText(hwndDlg, IDC_WINDOWBYTES, ach);
 
 	//menu (not implemented)
-	wsprintf(ach, szPtrFmt, GetClassLongPtr(hwnd, GCLP_MENUNAME));
+	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
 	SetDlgItemText(hwndDlg, IDC_MENUHANDLE, _T("(None)"));
 
 	//cursor handle
 	handle = GetClassLongPtr(hwnd, GCLP_HCURSOR);
-	FormatHandle(ach, CursorLookup, NUM_CURSOR_LOOKUP, handle);
+	FormatHandle(ach, ARRAYSIZE(ach), CursorLookup, NUM_CURSOR_LOOKUP, handle);
 	SetDlgItemText(hwndDlg, IDC_CURSORHANDLE, ach);
 
 	//icon handle
 	handle = GetClassLongPtr(hwnd, GCLP_HICON);
-	FormatHandle(ach, IconLookup, NUM_ICON_LOOKUP, handle);
+	FormatHandle(ach, ARRAYSIZE(ach), IconLookup, NUM_ICON_LOOKUP, handle);
 	SetDlgItemText(hwndDlg, IDC_ICONHANDLE, ach);
 
 	//background brush handle
@@ -394,13 +394,13 @@ void SetClassInfo(HWND hwnd)
 
 	//see hbrBackground description at https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
 	//first of all, search by COLOR_xxx value
-	if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatStyle(ach, BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
+	if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatStyle(ach, ARRAYSIZE(ach), BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
 	{
 		//now search by handle value
-		i = FormatHandle(ach, BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
+		i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
 		if (i != -1)
 		{
-			wsprintf(ach + PrintHandle(ach, (UINT_PTR)BrushLookup2[i].handle), _T("  (%s)"), BrushLookup2[i].szName);
+			_stprintf_s(ach + PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle), ARRAYSIZE(ach), _T("  (%s)"), BrushLookup2[i].szName);
 		}
 	}
 
@@ -410,13 +410,13 @@ void SetClassInfo(HWND hwnd)
 	//window procedure
 	if (spy_WndProc == 0)
 	{
-		wsprintf(ach, _T("N/A"));
+		_tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
 	}
 	else
 	{
-		wsprintf(ach, szPtrFmt, spy_WndProc);
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
 		if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
-			lstrcat(ach, _T(" (Subclassed)"));
+			_tcscat_s(ach, ARRAYSIZE(ach), _T(" (Subclassed)"));
 	}
 
 	SetDlgItemText(hwndDlg, IDC_WNDPROC, ach);
@@ -425,16 +425,16 @@ void SetClassInfo(HWND hwnd)
 
 	//class window procedure
 	if (spy_WndClassEx.lpfnWndProc == 0)
-		wsprintf(ach, _T("N/A"));
+		_tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
 	else
-		wsprintf(ach, szPtrFmt, spy_WndClassEx.lpfnWndProc);
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndClassEx.lpfnWndProc);
 
 	SetDlgItemText(hwndDlg, IDC_CLASSPROC, ach);
 
 
 
 	//instance handle
-	wsprintf(ach, szPtrFmt, spy_WndClassEx.hInstance);
+	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndClassEx.hInstance);
 	SetDlgItemText(hwndDlg, IDC_INSTANCEHANDLE, ach);
 
 	//
