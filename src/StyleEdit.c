@@ -35,10 +35,10 @@ typedef struct
 
 static StyleEditState state;
 
-void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, 
-					BOOL fAllStyles, DWORD dwStyle);
+void FillStyleLists(HWND hwndTarget, HWND hwndStyleList,
+	BOOL fAllStyles, DWORD dwStyle);
 void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
-					  BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl);
+	BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl);
 
 //
 //	Define our callback function for the Window Finder Tool
@@ -49,15 +49,15 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 	TCHAR szText[120];
 
 	DWORD dwStyle;
-		
-	switch(uCode)
+
+	switch (uCode)
 	{
 	case WFN_END:
-		hwndDlg  = GetParent(hwndTool);
+		hwndDlg = GetParent(hwndTool);
 
-		if(GetClassLong(state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
+		if (GetClassLong(state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
 		{
-			if(state.fExtended)
+			if (state.fExtended)
 				dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
 			else
 				dwStyle = GetWindowLong(hwnd, GWL_STYLE);
@@ -69,11 +69,11 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 		else
 		{
 			wsprintf(szText, _T("Window %08X\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  "), hwnd);
-			MessageBox(hwndDlg, szText, szAppName, MB_OK|MB_ICONINFORMATION);
+			MessageBox(hwndDlg, szText, szAppName, MB_OK | MB_ICONINFORMATION);
 		}
-		
+
 		break;
-	
+
 	}
 	return 0;
 }
@@ -90,14 +90,14 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	int topindex;
 	int caretindex;
 
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
 
 		// Passed through in call to DialogBoxParam
 		state = (StyleEditState *)lParam;
 
-		if(state->fExtended)
+		if (state->fExtended)
 			dwStyle = GetWindowLong(state->hwndTarget, GWL_EXSTYLE);
 		else
 			dwStyle = GetWindowLong(state->hwndTarget, GWL_STYLE);
@@ -117,7 +117,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		return FunkyList_MeasureItem(hwnd, (UINT)wParam, (MEASUREITEMSTRUCT *)lParam);
 
 	case WM_DRAWITEM:
-		if(wParam == IDC_LIST1 || wParam == IDC_LIST2)
+		if (wParam == IDC_LIST1)
 			return FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam);
 		else
 			return FALSE;
@@ -125,10 +125,10 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		//if clicked on one of the underlined static controls, then
 	//display window info..
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
+		switch (LOWORD(wParam))
 		{
 		case IDC_EDIT1:
-			switch(HIWORD(wParam))
+			switch (HIWORD(wParam))
 			{
 			case EN_CHANGE:
 				dwStyle = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
@@ -138,7 +138,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 				topindex = (int)SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
 				caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 
-				if(state->fExtended)
+				if (state->fExtended)
 					FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle, FALSE);
 				else
 					FillStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle);
@@ -155,15 +155,15 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 			dwStyle = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
-			if(state->fExtended)
+			if (state->fExtended)
 				SetWindowLong(state->hwndTarget, GWL_EXSTYLE, dwStyle);
 			else
 				SetWindowLong(state->hwndTarget, GWL_STYLE, dwStyle);
-			
+
 			SetWindowPos(state->hwndTarget, 0,
-				0,0,0,0,
-				SWP_NOMOVE|SWP_NOSIZE|SWP_NOZORDER|
-				SWP_NOACTIVATE|SWP_DRAWFRAME);
+				0, 0, 0, 0,
+				SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+				SWP_NOACTIVATE | SWP_DRAWFRAME);
 
 			InvalidateRect(state->hwndTarget, 0, TRUE);
 
@@ -180,22 +180,22 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 		}
 
-		switch(HIWORD(wParam))
+		switch (HIWORD(wParam))
 		{
 		case LBN_SELCHANGE:
-			if(LOWORD(wParam) == IDC_LIST1)
+			if (LOWORD(wParam) == IDC_LIST1)
 			{
 				int cursel, caretidx;
-				
+
 				hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
-				dwStyle  = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+				dwStyle = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
 				caretidx = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
-				cursel   = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
-				
-				if(cursel)
-					dwStyle |=  SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
+				cursel = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
+
+				if (cursel)
+					dwStyle |= SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
 				else
 					dwStyle &= ~SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
 
@@ -217,8 +217,8 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 {
 	state.hwndTarget = hwndTarget;
-	state.dwStyle    = 0;
-	state.fExtended  = fExtended;
+	state.dwStyle = 0;
+	state.fExtended = fExtended;
 
 	DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
 

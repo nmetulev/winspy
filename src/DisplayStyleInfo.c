@@ -978,7 +978,8 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
 		int idx;
 		TCHAR ach[10];
 
-		wsprintf(ach, szHexFmt, dwStyle);
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyle);
+		static_assert(ARRAYSIZE(ach) < MAX_STYLE_NAME_CCH, "Style name exceeds the expected limit");
 		idx = (int)SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
 		SendMessage(hwndStyleList, LB_SETITEMDATA, idx, dwStyle);
 

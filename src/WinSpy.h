@@ -35,6 +35,8 @@ extern DialogTab WinSpyTab[];
 #define PROCESS_TAB	       5
 #define NUMTABCONTROLITEMS 6
 
+#define MAX_STYLE_NAME_CCH 60
+
 //
 //	Simple style-lookup
 //
@@ -76,7 +78,8 @@ typedef struct
 //
 //  e.g. STYLE_(WS_CHILD)  ->  WS_CHILD, "WS_CHILD"
 //
-#define STYLE_(style) (UINT)style, _T(#style)
+// We use a loose equivalent of a static_assert here to make sure style name lengths never exceed MAX_STYLE_NAME_CCH
+#define STYLE_(style) 1 ? (UINT)style : sizeof(int[ARRAYSIZE(#style) < MAX_STYLE_NAME_CCH]), _T(#style)
 
 #define HANDLE_(handle) (HANDLE)handle, _T(#handle)
 
