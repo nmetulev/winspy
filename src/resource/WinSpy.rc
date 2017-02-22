@@ -153,17 +153,17 @@ BEGIN
     CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SORTASCENDING | WS_BORDER | WS_TABSTOP,7,7,216,64
     LTEXT           "Window Properties are entries stored in a window's property list, by using the SetProp API call.",IDC_STATIC,7,74,216,21
     GROUPBOX        "Horizontal Scrollbar",IDC_STATIC,7,98,104,70,0,WS_EX_TRANSPARENT
-    LTEXT           "Minimum:",IDC_STATIC,15,121,30,8
-    LTEXT           "Maximum:",IDC_STATIC,15,132,32,8
-    LTEXT           "Position:",IDC_STATIC,15,143,28,8
+    LTEXT           "Minimum:",IDC_STATIC,15,121,35,8
+    LTEXT           "Maximum:",IDC_STATIC,15,132,35,8
+    LTEXT           "Position:",IDC_STATIC,15,143,35,8
     LTEXT           "Page Size:",IDC_STATIC,15,154,35,8
     GROUPBOX        "Vertical Scrollbar",IDC_STATIC,117,98,106,70,0,WS_EX_TRANSPARENT
-    LTEXT           "Minimum:",IDC_STATIC,126,121,30,8
-    LTEXT           "Maximum:",IDC_STATIC,126,132,32,8
-    LTEXT           "Position:",IDC_STATIC,126,143,28,8
+    LTEXT           "Minimum:",IDC_STATIC,126,121,35,8
+    LTEXT           "Maximum:",IDC_STATIC,126,132,35,8
+    LTEXT           "Position:",IDC_STATIC,126,143,35,8
     LTEXT           "Page Size:",IDC_STATIC,126,154,35,8
-    LTEXT           "State:",IDC_STATIC,15,110,20,8
-    LTEXT           "State:",IDC_STATIC,126,110,20,8
+    LTEXT           "State:",IDC_STATIC,15,110,35,8
+    LTEXT           "State:",IDC_STATIC,126,110,35,8
     EDITTEXT        IDC_HSTATE,50,110,50,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     EDITTEXT        IDC_HMIN,50,121,50,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     EDITTEXT        IDC_HMAX,50,132,50,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
@@ -181,31 +181,31 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Class Name:",IDC_STATIC,7,10,40,8
+    LTEXT           "Class Name:",IDC_STATIC,7,10,60,8
     EDITTEXT        IDC_CLASSNAME,70,7,152,13,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "Class Styles:",IDC_STATIC,7,28,48,8
+    LTEXT           "Class Styles:",IDC_STATIC,7,28,60,8
     EDITTEXT        IDC_STYLE,70,28,35,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     COMBOBOX        IDC_STYLELIST,108,26,114,63,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Class Bytes:",IDC_STATIC,7,44,45,8
+    LTEXT           "Class Bytes:",IDC_STATIC,7,44,60,8
     EDITTEXT        IDC_CLASSBYTES,70,44,35,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     COMBOBOX        IDC_BYTESLIST,108,41,114,54,CBS_DROPDOWNLIST | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Class Atom:",IDC_STATIC,7,60,38,8
+    LTEXT           "Class Atom:",IDC_STATIC,7,60,60,8
     EDITTEXT        IDC_ATOM,70,60,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Window Bytes:",IDC_STATIC,7,72,48,8
+    LTEXT           "Window Bytes:",IDC_STATIC,7,72,60,8
     EDITTEXT        IDC_WINDOWBYTES,70,72,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Menu Handle:",IDC_STATIC,7,84,46,8
+    LTEXT           "Menu Handle:",IDC_STATIC,7,84,60,8
     EDITTEXT        IDC_MENUHANDLE,70,84,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Icon Handle:",IDC_STATIC,7,96,42,8
+    LTEXT           "Icon Handle:",IDC_STATIC,7,96,60,8
     EDITTEXT        IDC_ICONHANDLE,70,96,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Cursor Handle:",IDC_STATIC,7,108,48,8
+    LTEXT           "Cursor Handle:",IDC_STATIC,7,108,60,8
     EDITTEXT        IDC_CURSORHANDLE,70,108,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Bkgnd Brush:",IDC_STATIC,7,120,44,8
+    LTEXT           "Bkgnd Brush:",IDC_STATIC,7,120,60,8
     EDITTEXT        IDC_BKGNDBRUSH,70,120,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Instance Handle:",IDC_STATIC,7,132,55,8
+    LTEXT           "Instance Handle:",IDC_STATIC,7,132,60,8
     EDITTEXT        IDC_INSTANCEHANDLE,70,132,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Window Proc:",IDC_STATIC,7,144,46,8
+    LTEXT           "Window Proc:",IDC_STATIC,7,144,60,8
     EDITTEXT        IDC_WNDPROC,70,144,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "Class Proc:",IDC_STATIC,7,156,36,8
+    LTEXT           "Class Proc:",IDC_STATIC,7,156,60,8
     EDITTEXT        IDC_CLASSPROC,70,156,152,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
 END
 
@@ -214,13 +214,13 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Child Windows:",IDC_STATIC,7,7,50,8
+    LTEXT           "Child Windows:",IDC_STATIC,7,7,60,8
     CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,17,216,64
-    LTEXT           "Sibling Windows:",IDC_STATIC,7,86,55,8
+    LTEXT           "Sibling Windows:",IDC_STATIC,7,86,60,8
     CONTROL         "List1",IDC_LIST2,"SysListView32",LVS_REPORT | LVS_SINGLESEL | WS_BORDER | WS_TABSTOP,7,96,216,58
-    LTEXT           "Parent Window:",IDC_STATIC,7,158,52,8
+    LTEXT           "Parent Window:",IDC_STATIC,7,158,55,8
     LTEXT           "00000000",IDC_PARENT,63,158,45,8,SS_NOTIFY
-    LTEXT           "Owner Window:",IDC_STATIC,119,158,52,8
+    LTEXT           "Owner Window:",IDC_STATIC,119,158,55,8
     CONTROL         "00000000",IDC_OWNER,"Static",SS_LEFTNOWORDWRAP | SS_NOTIFY | WS_GROUP,175,158,45,8
 END
 
@@ -264,7 +264,7 @@ BEGIN
     CONTROL         "&Hidden Windows",IDC_HIDDEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,3,70,10
     CONTROL         "Minimi&ze WinSpy++",IDC_MINIMIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,14,77,10
     CONTROL         "Tab1",IDC_TAB1,"SysTabControl32",TCS_RAGGEDRIGHT | WS_TABSTOP,7,31,242,191
-    CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,261,55,46,55,WS_EX_CLIENTEDGE
+    CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | WS_BORDER | WS_HSCROLL | WS_TABSTOP,261,55,46,55,WS_EX_CLIENTEDGE
     CONTROL         "Tab2",IDC_TAB2,"SysTabControl32",TCS_FOCUSNEVER,258,4,64,44
     PUSHBUTTON      "&Capture",IDC_CAPTURE,7,230,50,14
     CONTROL         "&Autoupdate",IDC_AUTOUPDATE,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,65,230,50,14
@@ -363,15 +363,15 @@ STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPCHILDREN
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "&Module Name:",IDC_STATIC,7,9,47,8
+    LTEXT           "Module &Name:",IDC_STATIC,7,9,60,8
     EDITTEXT        IDC_PROCESSNAME,70,7,136,13,ES_AUTOHSCROLL | ES_READONLY
-    LTEXT           "&Process Id:",IDC_STATIC,7,44,36,8
-    EDITTEXT        IDC_PID,70,44,70,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    LTEXT           "&Thread Id:",IDC_STATIC,7,56,34,8
-    EDITTEXT        IDC_TID,70,56,70,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
-    PUSHBUTTON      "",IDC_PROCESS_MENU,209,7,14,12
-    LTEXT           "&Module Path:",IDC_STATIC,7,25,43,8
+    LTEXT           "&Module Path:",IDC_STATIC,7,25,60,8
     EDITTEXT        IDC_PROCESSPATH,70,23,136,13,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "&Process Id:",IDC_STATIC,7,44,60,8
+    EDITTEXT        IDC_PID,70,44,136,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    LTEXT           "&Thread Id:",IDC_STATIC,7,56,60,8
+    EDITTEXT        IDC_TID,70,56,136,8,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    PUSHBUTTON      "",IDC_PROCESS_MENU,209,7,14,12
 END
 
 IDD_PROPERTY_EDIT DIALOGEX 0, 0, 185, 107
@@ -567,17 +567,17 @@ IDC_CURSOR1             CURSOR                  "cursor1.cur"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "icon1.ico"
+IDI_APP                 ICON                    "icon1.ico"
 
-IDI_ICON5               ICON                    "icon2.ico"
+IDI_DOTS                ICON                    "icon2.ico"
 
-IDI_ICON10              ICON                    "icon3.ico"
+IDI_DOWN_ARROW          ICON                    "icon3.ico"
 
-IDI_ICON17              ICON                    "icon4.ico"
+IDI_ENTER               ICON                    "icon4.ico"
 
-IDI_ICON16              ICON                    "icon5.ico"
+IDI_MORE                ICON                    "icon5.ico"
 
-IDI_ICON18              ICON                    "icon6.ico"
+IDI_LESS                ICON                    "icon6.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

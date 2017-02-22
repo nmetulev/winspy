@@ -195,12 +195,6 @@
     <None Include="resource\selbox2.png">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resource\rt_manif.bin">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="selbox.png">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="resource\winspy.exe.manifest">

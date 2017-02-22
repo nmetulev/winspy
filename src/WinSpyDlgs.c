@@ -225,9 +225,9 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 	case WM_INITDIALOG:
 
 		// Convert standard buttons into bitmapped-buttons
-		MakeDlgBitmapButton(hwnd, IDC_HANDLE_MENU, IDI_ICON10);
-		MakeDlgBitmapButton(hwnd, IDC_EDITSIZE, IDI_ICON5);
-		MakeDlgBitmapButton(hwnd, IDC_SETCAPTION, IDI_ICON17);
+		MakeDlgBitmapButton(hwnd, IDC_HANDLE_MENU, IDI_DOWN_ARROW);
+		MakeDlgBitmapButton(hwnd, IDC_EDITSIZE, IDI_DOTS);
+		MakeDlgBitmapButton(hwnd, IDC_SETCAPTION, IDI_ENTER);
 
 		MakeHyperlink(hwnd, IDC_WINDOWPROC, RGB(0, 0, 255));
 
@@ -372,8 +372,8 @@ LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 	{
 	case WM_INITDIALOG:
 
-		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLE, IDI_ICON5);
-		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLEEX, IDI_ICON5);
+		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLE, IDI_DOTS);
+		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLEEX, IDI_DOTS);
 
 		return TRUE;
 
@@ -731,7 +731,7 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 	switch (iMsg)
 	{
 	case WM_INITDIALOG:
-		MakeDlgBitmapButton(hwnd, IDC_PROCESS_MENU, IDI_ICON10);
+		MakeDlgBitmapButton(hwnd, IDC_PROCESS_MENU, IDI_DOWN_ARROW);
 		return TRUE;
 
 	case WM_COMMAND:
