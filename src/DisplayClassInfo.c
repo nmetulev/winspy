@@ -400,7 +400,8 @@ void SetClassInfo(HWND hwnd)
 		i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
 		if (i != -1)
 		{
-			_stprintf_s(ach + PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle), ARRAYSIZE(ach), _T("  (%s)"), BrushLookup2[i].szName);
+			auto len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
+			_stprintf_s(ach + len, ARRAYSIZE(ach) - len, _T("  (%s)"), BrushLookup2[i].szName);
 		}
 	}
 
