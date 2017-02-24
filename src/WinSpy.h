@@ -39,21 +39,22 @@ extern DialogTab WinSpyTab[];
 #define MAX_STYLE_NAME_CCH 60
 
 //
-//	Simple style-lookup
+//	Simple const value lookup.
+//  Used for class styles and predefined color and brush values.
 //
 typedef struct
 {
-	UINT style;
 	LPCTSTR szName;
-} StyleLookupType;
+	UINT value;
+} ConstLookupType;
 
 //
 //	Handle-lookup
 //
 typedef struct
 {
-	HANDLE handle;
 	LPCTSTR szName;
+	HANDLE handle;
 } HandleLookupType;
 
 //
@@ -61,8 +62,8 @@ typedef struct
 //
 typedef struct
 {
-	DWORD   style;		// Single window style
 	LPCTSTR name;		// Textual name of style
+	DWORD   style;		// Single window style
 
 	DWORD   cmp_mask;	// If zero, then -style- is treated as a single bit-field
 						// Otherwise, cmp_mask is used to make sure that
@@ -73,16 +74,20 @@ typedef struct
 
 } StyleLookupEx;
 
+// Because static_assert is a statement which is not an expression, it cannot be used where an expression is expected.
+// Therefore, we define an expression loosely equivalent to a static_assert here
+// which would cause a compilation error if the condition is false.
+#define value_with_static_assert(value, condition) 1 ? value : (sizeof(int[condition]), value)
+
+#define HANDLE_(handle) _T(#handle), (HANDLE)handle
+
 //
-//	Use this helper-macro to fill in the first two members
+//	Use this helper macro to fill in the first two members
 //  of the style structures.
 //
-//  e.g. STYLE_(WS_CHILD)  ->  WS_CHILD, "WS_CHILD"
+//  e.g. NAMEANDVALUE_(WS_CHILD)  ->  WS_CHILD, "WS_CHILD"
 //
-// We use a loose equivalent of a static_assert here to make sure style name lengths never exceed MAX_STYLE_NAME_CCH
-#define STYLE_(style) 1 ? (UINT)style : sizeof(int[ARRAYSIZE(#style) < MAX_STYLE_NAME_CCH]), _T(#style)
-
-#define HANDLE_(handle) (HANDLE)handle, _T(#handle)
+#define NAMEANDVALUE_(value) _T(#value), value_with_static_assert((UINT)value, ARRAYSIZE(#value) < MAX_STYLE_NAME_CCH)
 
 //
 //  Use this structure to list each window class with its

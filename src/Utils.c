@@ -124,9 +124,12 @@ DWORD_PTR _tstrtoib16(TCHAR *szHexStr)
 
 	while (isxdigit(ch))
 	{
-		UINT x = ch - _T('0');
-		if (x > 9 && x <= 42) x -= 7;		//A-Z
-		else if (x > 42)   x -= 39;			//a-z
+		static_assert(_T('9') < _T('A') && _T('A') < _T('a'), "Incorrect character code values assumption");
+		UINT x = ch <= _T('9') ?
+			ch - _T('0') :
+			10 + (ch < _T('a') ?
+				ch - _T('A') :
+				ch - _T('a'));
 
 		num = (num << 4) | (x & 0x0f);
 		ch = *hexptr++;

@@ -35,21 +35,21 @@ void VerboseClassName(TCHAR ach[], size_t cch)
 //	
 //	Class styles lookup table
 //
-StyleLookupType ClassLookup[] =
+ConstLookupType ClassLookup[] =
 {
-	STYLE_(CS_BYTEALIGNCLIENT),
-	STYLE_(CS_BYTEALIGNWINDOW),
-	STYLE_(CS_OWNDC),
-	STYLE_(CS_CLASSDC),
-	STYLE_(CS_PARENTDC),
-	STYLE_(CS_DBLCLKS),
-	STYLE_(CS_GLOBALCLASS),
-	STYLE_(CS_HREDRAW),
-	STYLE_(CS_VREDRAW),
-	STYLE_(CS_NOCLOSE),
-	STYLE_(CS_SAVEBITS),
+	NAMEANDVALUE_(CS_BYTEALIGNCLIENT),
+	NAMEANDVALUE_(CS_BYTEALIGNWINDOW),
+	NAMEANDVALUE_(CS_OWNDC),
+	NAMEANDVALUE_(CS_CLASSDC),
+	NAMEANDVALUE_(CS_PARENTDC),
+	NAMEANDVALUE_(CS_DBLCLKS),
+	NAMEANDVALUE_(CS_GLOBALCLASS),
+	NAMEANDVALUE_(CS_HREDRAW),
+	NAMEANDVALUE_(CS_VREDRAW),
+	NAMEANDVALUE_(CS_NOCLOSE),
+	NAMEANDVALUE_(CS_SAVEBITS),
 
-	STYLE_(CS_IME)
+	NAMEANDVALUE_(CS_IME)
 };
 
 //
@@ -109,41 +109,41 @@ HandleLookupType CursorLookup[] =
 //
 //	COLOR_xx Brush ID lookup. Needs no conversion
 //
-StyleLookupType BrushLookup[] =
+ConstLookupType BrushLookup[] =
 {
-	STYLE_(COLOR_SCROLLBAR),
-	STYLE_(COLOR_BACKGROUND),
-	STYLE_(COLOR_ACTIVECAPTION),
-	STYLE_(COLOR_INACTIVECAPTION),
-	STYLE_(COLOR_MENU),
-	STYLE_(COLOR_WINDOW),
-	STYLE_(COLOR_WINDOWFRAME),
-	STYLE_(COLOR_MENUTEXT),
-	STYLE_(COLOR_WINDOWTEXT),
-	STYLE_(COLOR_CAPTIONTEXT),
-	STYLE_(COLOR_ACTIVEBORDER),
-	STYLE_(COLOR_INACTIVEBORDER),
-	STYLE_(COLOR_APPWORKSPACE),
-	STYLE_(COLOR_HIGHLIGHT),
-	STYLE_(COLOR_HIGHLIGHTTEXT),
-	STYLE_(COLOR_BTNFACE),
-	STYLE_(COLOR_BTNSHADOW),
-	STYLE_(COLOR_GRAYTEXT),
-	STYLE_(COLOR_BTNTEXT),
-	STYLE_(COLOR_INACTIVECAPTIONTEXT),
-	STYLE_(COLOR_BTNHIGHLIGHT),
+	NAMEANDVALUE_(COLOR_SCROLLBAR),
+	NAMEANDVALUE_(COLOR_BACKGROUND),
+	NAMEANDVALUE_(COLOR_ACTIVECAPTION),
+	NAMEANDVALUE_(COLOR_INACTIVECAPTION),
+	NAMEANDVALUE_(COLOR_MENU),
+	NAMEANDVALUE_(COLOR_WINDOW),
+	NAMEANDVALUE_(COLOR_WINDOWFRAME),
+	NAMEANDVALUE_(COLOR_MENUTEXT),
+	NAMEANDVALUE_(COLOR_WINDOWTEXT),
+	NAMEANDVALUE_(COLOR_CAPTIONTEXT),
+	NAMEANDVALUE_(COLOR_ACTIVEBORDER),
+	NAMEANDVALUE_(COLOR_INACTIVEBORDER),
+	NAMEANDVALUE_(COLOR_APPWORKSPACE),
+	NAMEANDVALUE_(COLOR_HIGHLIGHT),
+	NAMEANDVALUE_(COLOR_HIGHLIGHTTEXT),
+	NAMEANDVALUE_(COLOR_BTNFACE),
+	NAMEANDVALUE_(COLOR_BTNSHADOW),
+	NAMEANDVALUE_(COLOR_GRAYTEXT),
+	NAMEANDVALUE_(COLOR_BTNTEXT),
+	NAMEANDVALUE_(COLOR_INACTIVECAPTIONTEXT),
+	NAMEANDVALUE_(COLOR_BTNHIGHLIGHT),
 
 #if(WINVER >= 0x0400)
-	STYLE_(COLOR_3DDKSHADOW),
-	STYLE_(COLOR_3DLIGHT),
-	STYLE_(COLOR_INFOTEXT),
-	STYLE_(COLOR_INFOBK),
+	NAMEANDVALUE_(COLOR_3DDKSHADOW),
+	NAMEANDVALUE_(COLOR_3DLIGHT),
+	NAMEANDVALUE_(COLOR_INFOTEXT),
+	NAMEANDVALUE_(COLOR_INFOBK),
 #endif
 
 #if(WINVER >= 0x0500)
-	STYLE_(COLOR_HOTLIGHT),
-	STYLE_(COLOR_GRADIENTACTIVECAPTION),
-	STYLE_(COLOR_GRADIENTINACTIVECAPTION),
+	NAMEANDVALUE_(COLOR_HOTLIGHT),
+	NAMEANDVALUE_(COLOR_GRADIENTACTIVECAPTION),
+	NAMEANDVALUE_(COLOR_GRADIENTINACTIVECAPTION),
 #endif
 
 };
@@ -152,14 +152,14 @@ StyleLookupType BrushLookup[] =
 //	GetStockObject brush lookup. These values must be
 //  converted to valid stock brushes.
 //
-StyleLookupType StkBrLookup[] =
+ConstLookupType StkBrLookup[] =
 {
-	STYLE_(WHITE_BRUSH),
-	STYLE_(BLACK_BRUSH),
-	STYLE_(LTGRAY_BRUSH),
-	STYLE_(GRAY_BRUSH),
-	STYLE_(DKGRAY_BRUSH),
-	STYLE_(NULL_BRUSH),
+	NAMEANDVALUE_(WHITE_BRUSH),
+	NAMEANDVALUE_(BLACK_BRUSH),
+	NAMEANDVALUE_(LTGRAY_BRUSH),
+	NAMEANDVALUE_(GRAY_BRUSH),
+	NAMEANDVALUE_(DKGRAY_BRUSH),
+	NAMEANDVALUE_(NULL_BRUSH),
 };
 
 #define NUM_ICON_LOOKUP ARRAYSIZE(IconLookup)
@@ -191,29 +191,29 @@ void InitStockStyleLists()
 
 	for (i = 0; i < NUM_BRUSH_STYLES; i++)
 	{
-		BrushLookup2[i].handle = GetSysColorBrush(BrushLookup[i].style);
+		BrushLookup2[i].handle = GetSysColorBrush(BrushLookup[i].value);
 		BrushLookup2[i].szName = BrushLookup[i].szName;
 	}
 
 	for (i = 0; i < NUM_STKBR_STYLES; i++)
 	{
-		BrushLookup2[i + NUM_BRUSH_STYLES].handle = GetStockObject(StkBrLookup[i].style);
+		BrushLookup2[i + NUM_BRUSH_STYLES].handle = GetStockObject(StkBrLookup[i].value);
 		BrushLookup2[i + NUM_BRUSH_STYLES].szName = StkBrLookup[i].szName;
 	}
 }
 
 //
-//	Lookup the specified value in the style list
+//	Lookup the specified value in the lookup list
 //
-int FormatStyle(TCHAR *ach, size_t cch, StyleLookupType *stylelist, int items, UINT matchthis)
+int FormatConst(TCHAR *ach, size_t cch, ConstLookupType *list, int items, UINT matchthis)
 {
 	int i;
 
 	for (i = 0; i < items; i++)
 	{
-		if (stylelist[i].style == matchthis)
+		if (list[i].value == matchthis)
 		{
-			_tcscpy_s(ach, cch, stylelist[i].szName);
+			_tcscpy_s(ach, cch, list[i].szName);
 			return i;
 		}
 	}
@@ -394,7 +394,7 @@ void SetClassInfo(HWND hwnd)
 
 	//see hbrBackground description at https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
 	//first of all, search by COLOR_xxx value
-	if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatStyle(ach, ARRAYSIZE(ach), BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
+	if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatConst(ach, ARRAYSIZE(ach), BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
 	{
 		//now search by handle value
 		i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
@@ -445,7 +445,7 @@ void SetClassInfo(HWND hwnd)
 	SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_RESETCONTENT, 0, 0);
 	for (i = 0; i < NUM_CLASS_STYLES; i++)
 	{
-		if (spy_WndClassEx.style & ClassLookup[i].style)
+		if (spy_WndClassEx.style & ClassLookup[i].value)
 		{
 			SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
 				(LPARAM)ClassLookup[i].szName);

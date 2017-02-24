@@ -80,7 +80,7 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	static StyleEditState *state;
+	static StyleEditState *pState;
 
 	HWND hwndList;
 
@@ -95,12 +95,12 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	case WM_INITDIALOG:
 
 		// Passed through in call to DialogBoxParam
-		state = (StyleEditState *)lParam;
+		pState = (StyleEditState *)lParam;
 
-		if (state->fExtended)
-			dwStyles = GetWindowLong(state->hwndTarget, GWL_EXSTYLE);
+		if (pState->fExtended)
+			dwStyles = GetWindowLong(pState->hwndTarget, GWL_EXSTYLE);
 		else
-			dwStyles = GetWindowLong(state->hwndTarget, GWL_STYLE);
+			dwStyles = GetWindowLong(pState->hwndTarget, GWL_STYLE);
 
 		_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
 		SetDlgItemText(hwnd, IDC_EDIT1, szText);
@@ -136,10 +136,10 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 				topindex = (int)SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
 				caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 
-				if (state->fExtended)
-					FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyles, FALSE);
+				if (pState->fExtended)
+					FillExStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles, FALSE);
 				else
-					FillStyleLists(state->hwndTarget, hwndList, TRUE, dwStyles);
+					FillStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles);
 
 				SendMessage(hwndList, LB_SETCARETINDEX, caretindex, 0);
 				SendMessage(hwndList, LB_SETTOPINDEX, topindex, 0);
@@ -153,17 +153,17 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 			dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
-			if (state->fExtended)
-				SetWindowLong(state->hwndTarget, GWL_EXSTYLE, dwStyles);
+			if (pState->fExtended)
+				SetWindowLong(pState->hwndTarget, GWL_EXSTYLE, dwStyles);
 			else
-				SetWindowLong(state->hwndTarget, GWL_STYLE, dwStyles);
+				SetWindowLong(pState->hwndTarget, GWL_STYLE, dwStyles);
 
-			SetWindowPos(state->hwndTarget, 0,
+			SetWindowPos(pState->hwndTarget, 0,
 				0, 0, 0, 0,
 				SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
 				SWP_NOACTIVATE | SWP_DRAWFRAME);
 
-			InvalidateRect(state->hwndTarget, 0, TRUE);
+			InvalidateRect(pState->hwndTarget, 0, TRUE);
 
 			return TRUE;
 
@@ -192,10 +192,20 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 				caretidx = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 				cursel = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
 
-				if (cursel)
-					dwStyles |= SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
+				DWORD style;
+				StyleLookupEx *pStyle = (StyleLookupEx *)SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
+				if (pStyle)
+					style = pStyle->style;
 				else
-					dwStyles &= ~SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
+				{
+					// This is the "unrecognized bits" item
+					SendMessage(hwndList, LB_GETTEXT, caretidx, (LONG_PTR)szText);
+					style = (DWORD)_tstrtoib16(szText);
+				}
+				if (cursel)
+					dwStyles |= style;
+				else
+					dwStyles &= ~style;
 
 				_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
 				SetDlgItemText(hwnd, IDC_EDIT1, szText);

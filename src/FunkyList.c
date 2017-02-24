@@ -38,7 +38,6 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 {
 	HWND  hwndList = GetDlgItem(hwnd, uCtrlId);
 	TCHAR szText[MAX_STYLE_NAME_CCH];
-	DWORD dwStyle;
 
 	COLORREF crFG = GetTextColor(dis->hDC);
 	COLORREF crBG = GetBkColor(dis->hDC);
@@ -54,9 +53,10 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 
 		// get the text string to display, and the item state.
 		// In general, calling LB_GETTEXT is not safe unless we are sure the text length does not exceed our buffer.
-		// Therefore, we use a loose equivalent of a static_assert in the definition of the STYLE_ macro to make sure that our style name lengths never exceed MAX_STYLE_NAME_CCH
+		// Therefore, we use a loose equivalent of a static_assert in the definition of the NAMEANDVALUE_ macro to make sure that our style name lengths never exceed MAX_STYLE_NAME_CCH
+		static_assert(ARRAYSIZE(szText) >= MAX_STYLE_NAME_CCH, "Buffer length is smaller than the maximum possible item text length");
 		SendMessage(hwndList, LB_GETTEXT, dis->itemID, (LONG_PTR)szText);
-		dwStyle = (DWORD)dis->itemData;
+		StyleLookupEx *pStyle = (StyleLookupEx *)dis->itemData;
 
 		if ((dis->itemState & ODS_SELECTED))
 		{
@@ -66,7 +66,7 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 		else
 		{
 			// Make the item greyed-out if the style is zero
-			if (dwStyle == 0)
+			if (pStyle && pStyle->style == 0)
 				SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 			else
 				SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
@@ -88,7 +88,8 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 		else
 			SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 
-		_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyle);
+		if (pStyle)
+			_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, pStyle->style); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
 
 		dis->rcItem.right -= 4;
 
