@@ -9,25 +9,27 @@
 //   specified window
 //
 //  void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, 
-//					BOOL fAllStyles, DWORD dwStyle)
+//					BOOL fAllStyles, DWORD dwStyles)
 //
 //  void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, 
-//					BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl)
+//					BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl)
 //
-//	 Fill the list-box with the appropriate styles
-//   for the specified target window.
+//	 Fill the listbox with the appropriate style strings
+//   based on dw[Ex]Styles for the specified target window.
 //
 //	 hwndTarget      - window to find styles for
 //	 hwndStyleList   - listbox to receive standard styles
 //   hwndExStyleList - listbox to receive extended styles
 //  
-//   fAllStyles      - FALSE - just adds the styles that are set
+//   fAllStyles      - FALSE - just adds the styles that are present in dw[Ex]Styles
 //                     TRUE  - adds ALL possible styles, but
-//                             only selects those that are set
+//                             only selects those that are present
+//
+//   dw[Ex]Styles    - the styles value
 //
 //   fExtControl     - include control-specific extended styles
-//                     (i.e. LVS_EX_xxx styles, not present in
-//                     the extended window styles
+//                     (e.g. LVS_EX_xxx styles), not present in
+//                     dwStyleEx
 //
 //
 //	v1.6.1 - fixed small bug thanks to Holger Stenger
@@ -830,12 +832,12 @@ ClassStyleLookup ExtendedControls[] =
 };
 
 //
-// Match the window classname to a
+// Match the window classname to a StyleLookupEx instance in a ClassStyleLookup table
 //
 // pClassList - a lookup table of classname / matching stylelist
 // 
 //
-StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, DWORD *pdwData)
+StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, DWORD *pdwMessage)
 {
 	int i;
 
@@ -843,7 +845,7 @@ StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, D
 	{
 		if (lstrcmpi(szClassName, pClassList[i].szClassName) == 0)
 		{
-			if (pdwData) *pdwData = pClassList[i].dwData;
+			if (pdwMessage) *pdwMessage = pClassList[i].dwMessage;
 			return pClassList[i].stylelist;
 		}
 	}
@@ -858,13 +860,13 @@ StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, D
 //
 //	StyleList  - list of styles
 //  hwndList   - listbox to add styles to
-//  dwStyle    - style for the target window
-//  fAllStyles - 
+//  dwStyles   - styles for the target window
+//  fAllStyles - when true, add all known styles and select those present in the dwStyles value; otherwise, only add the ones present
 //
-DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fAllStyles)
+DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyles, BOOL fAllStyles)
 {
-	// Remember what the style is before we start modifying it
-	DWORD dwOrig = dwStyle;
+	// Remember what the dwStyles was before we start modifying it
+	DWORD dwOrig = dwStyles;
 
 	int            i, idx;
 	BOOL           fAddIt;
@@ -885,15 +887,12 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fA
 		// i.e. the style doesn't just use one bit to decide if it is on/off.
 		if (pStyle->cmp_mask != 0)
 		{
-			//if((StyleList[i].depends & dwStyle) != dwStyle)
-			//	continue;
-
 			// Style is valid if the excludes styles are not set
 			if (pStyle->excludes != 0 && (pStyle->excludes & (dwOrig & pStyle->cmp_mask)) == 0)
 				fAddIt = TRUE;
 
 			// If the style matches exactly (when masked)
-			if (pStyle->style != 0 && (pStyle->cmp_mask & dwStyle) == pStyle->style)
+			if (pStyle->style != 0 && (pStyle->cmp_mask & dwStyles) == pStyle->style)
 				fAddIt = TRUE;
 		}
 		else
@@ -903,15 +902,15 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fA
 				fAddIt = TRUE;
 
 			// If style matches exactly (all bits are set
-			if (pStyle->style != 0 && (pStyle->style & dwStyle) == pStyle->style)
+			if (pStyle->style != 0 && (pStyle->style & dwStyles) == pStyle->style)
 				fAddIt = TRUE;
 
 			// If no bits are set, then we have to skip it
-			else if (pStyle->style != 0 && (pStyle->style & dwStyle) == 0)
+			else if (pStyle->style != 0 && (pStyle->style & dwStyles) == 0)
 				fAddIt = FALSE;
 
 			// If this style depends on others being set..
-			if (dwStyle && (pStyle->depends & dwStyle) == 0)
+			if (dwStyles && (pStyle->depends & dwStyles) == 0)
 				fAddIt = FALSE;
 		}
 
@@ -920,7 +919,7 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fA
 		{
 			// We've added this style, so remove it to stop it appearing again
 			if (fAddIt)
-				dwStyle &= ~(pStyle->style);
+				dwStyles &= ~(pStyle->style);
 
 			// Add to list, and set the list's extra item data to the style's value
 			idx = (int)SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)pStyle->name);
@@ -931,16 +930,16 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fA
 		}
 	}
 
-	// return the style. This will be zero if we decoded all the bits
+	// return the styles. This will be zero if we decoded all the bits
 	// that were set, or non-zero if there are still bits left
-	return dwStyle;
+	return dwStyles;
 }
 
 //
-//	This function takes HWNDs of a ListBox, which we will fill
-//  with the style strings that are set for the specified window
+//  This function takes HWND of a ListBox, which we will fill
+//  with the style strings based on dwStyles
 //
-void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyle)
+void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyles)
 {
 	TCHAR szClassName[256];
 
@@ -956,32 +955,32 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
 
 	// enumerate the standard window styles, for any window no 
 	// matter what class it might be
-	dwStyle = EnumStyles(WindowStyles, hwndStyleList, dwStyle, fAllStyles);
+	dwStyles = EnumStyles(WindowStyles, hwndStyleList, dwStyles, fAllStyles);
 
 	// if the window class is one we know about, then see if we
 	// can decode any more style bits
 	// enumerate the custom control styles
 	StyleList = FindStyleList(StandardControls, szClassName, 0);
 	if (StyleList != 0)
-		dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
+		dwStyles = EnumStyles(StyleList, hwndStyleList, dwStyles, fAllStyles);
 
 	// does the window support the CCS_xxx styles (custom control styles)
 	StyleList = FindStyleList(CustomControls, szClassName, 0);
 	if (StyleList != 0)
-		dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
+		dwStyles = EnumStyles(StyleList, hwndStyleList, dwStyles, fAllStyles);
 
 	// if there are still style bits set in the window style,
 	// then there is something that we can't decode. Just display
 	// a single HEX entry at the end of the list.
-	if (dwStyle != 0)
+	if (dwStyles != 0)
 	{
 		int idx;
 		TCHAR ach[10];
 
-		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyle);
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyles);
 		static_assert(ARRAYSIZE(ach) < MAX_STYLE_NAME_CCH, "Style name exceeds the expected limit");
 		idx = (int)SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
-		SendMessage(hwndStyleList, LB_SETITEMDATA, idx, dwStyle);
+		SendMessage(hwndStyleList, LB_SETITEMDATA, idx, dwStyles);
 
 		if (fAllStyles)
 			SendMessage(hwndStyleList, LB_SETSEL, TRUE, idx);
@@ -991,10 +990,10 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
 }
 
 //
-//	This function takes HWNDs of a ListBox, which we will fill
-//  with the extended style strings that are set for the specified window
+//  This function takes HWND of a ListBox, which we will fill
+//  with the extended style strings based on dwExStyles
 //
-void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl)
+void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl)
 {
 	TCHAR szClassName[256];
 	DWORD dwMessage;
@@ -1009,7 +1008,7 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 	// Empty the list
 	SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
 
-	EnumStyles(StyleExList, hwndExStyleList, dwStyleEx, fAllStyles);
+	EnumStyles(StyleExList, hwndExStyleList, dwExStyles, fAllStyles);
 
 	// Does this window use any custom control extended styles???
 	// If it does, then dwMessage will contain the message identifier to send
@@ -1021,8 +1020,8 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 		// Add them if required
 		if (StyleList != 0)
 		{
-			dwStyleEx = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
-			EnumStyles(StyleList, hwndExStyleList, dwStyleEx, fAllStyles);
+			dwExStyles = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
+			EnumStyles(StyleList, hwndExStyleList, dwExStyles, fAllStyles);
 		}
 	}
 
@@ -1035,8 +1034,8 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 void SetStyleInfo(HWND hwnd)
 {
 	TCHAR ach[12];
-	DWORD dwStyle;
-	DWORD dwExStyle;
+	DWORD dwStyles;
+	DWORD dwExStyles;
 
 	HWND hwndDlg = WinSpyTab[STYLE_TAB].hwnd;
 	HWND hwndStyle, hwndStyleEx;
@@ -1044,13 +1043,13 @@ void SetStyleInfo(HWND hwnd)
 	if (hwnd == 0) return;
 
 	// Display the window style in static label
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyle);
+	dwStyles = GetWindowLong(hwnd, GWL_STYLE);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyles);
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	// Display the extended window style in static label
-	dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwExStyle);
+	dwExStyles = GetWindowLong(hwnd, GWL_EXSTYLE);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwExStyles);
 	SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
 
 	// Find handles to standard and extended style lists
@@ -1058,6 +1057,6 @@ void SetStyleInfo(HWND hwnd)
 	hwndStyleEx = GetDlgItem(hwndDlg, IDC_LIST2);
 
 	// Fill both lists with their styles!
-	FillStyleLists(hwnd, hwndStyle, FALSE, dwStyle);
-	FillExStyleLists(hwnd, hwndStyleEx, FALSE, dwExStyle, TRUE);
+	FillStyleLists(hwnd, hwndStyle, FALSE, dwStyles);
+	FillExStyleLists(hwnd, hwndStyleEx, FALSE, dwExStyles, TRUE);
 }

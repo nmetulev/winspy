@@ -85,14 +85,15 @@ typedef struct
 #define HANDLE_(handle) (HANDLE)handle, _T(#handle)
 
 //
-//	Use this structure to list each window class with its
-//	associated style table
+//  Use this structure to list each window class with its
+//  associated style table and, optionally, a message to send to the window
+//  to retrieve this set of control-specific extended styles
 //
 typedef struct
 {
 	LPCTSTR        szClassName;
 	StyleLookupEx  *stylelist;
-	DWORD			dwData;
+	DWORD			dwMessage;
 } ClassStyleLookup;
 
 #define WINLIST_INCLUDE_HANDLE	1		// handle, classname

@@ -161,7 +161,10 @@ void SetGeneralInfo(HWND hwnd)
 
 	//control ID
 	lp = GetWindowLongPtr(hwnd, GWLP_ID);
-	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt _T("  (%Id)"), (void*)lp, lp);
+	// despite the name "GWLP_ID" suggesting that control ID is pointer-sized,
+	// it would only work properly in WM_COMMAND if it was a WORD,
+	// as it is passed in LOWORD(wParam)
+	_stprintf_s(ach, ARRAYSIZE(ach), _T("%04IX  (%Id)"), lp, lp);
 	SetDlgItemText(hwndDlg, IDC_CONTROLID, ach);
 
 	//extra window bytes

@@ -29,16 +29,16 @@ typedef struct
 	HWND   hwndTarget;	// what window are we looking at??
 	BOOL   fExtended;	// Extended (TRUE) or Normal (FALSE)
 
-	DWORD  dwStyle;		// original style
+	DWORD  dwStyles;	// original styles; not currently used, but could be used to reset the dialog
 
 } StyleEditState;
 
 static StyleEditState state;
 
 void FillStyleLists(HWND hwndTarget, HWND hwndStyleList,
-	BOOL fAllStyles, DWORD dwStyle);
+	BOOL fAllStyles, DWORD dwStyles);
 void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
-	BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl);
+	BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl);
 
 //
 //	Define our callback function for the Window Finder Tool
@@ -84,7 +84,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 	HWND hwndList;
 
-	DWORD dwStyle = 0;
+	DWORD dwStyles;
 	TCHAR szText[32];
 
 	int topindex;
@@ -98,11 +98,11 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		state = (StyleEditState *)lParam;
 
 		if (state->fExtended)
-			dwStyle = GetWindowLong(state->hwndTarget, GWL_EXSTYLE);
+			dwStyles = GetWindowLong(state->hwndTarget, GWL_EXSTYLE);
 		else
-			dwStyle = GetWindowLong(state->hwndTarget, GWL_STYLE);
+			dwStyles = GetWindowLong(state->hwndTarget, GWL_STYLE);
 
-		_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyle);
+		_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
 		SetDlgItemText(hwnd, IDC_EDIT1, szText);
 
 		MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
@@ -122,8 +122,6 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		else
 			return FALSE;
 
-		//if clicked on one of the underlined static controls, then
-	//display window info..
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
@@ -131,7 +129,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 			switch (HIWORD(wParam))
 			{
 			case EN_CHANGE:
-				dwStyle = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+				dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
 				hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
@@ -139,9 +137,9 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 				caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 
 				if (state->fExtended)
-					FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle, FALSE);
+					FillExStyleLists(state->hwndTarget, hwndList, TRUE, dwStyles, FALSE);
 				else
-					FillStyleLists(state->hwndTarget, hwndList, TRUE, dwStyle);
+					FillStyleLists(state->hwndTarget, hwndList, TRUE, dwStyles);
 
 				SendMessage(hwndList, LB_SETCARETINDEX, caretindex, 0);
 				SendMessage(hwndList, LB_SETTOPINDEX, topindex, 0);
@@ -153,12 +151,12 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 		case IDC_APPLY:
 
-			dwStyle = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+			dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
 			if (state->fExtended)
-				SetWindowLong(state->hwndTarget, GWL_EXSTYLE, dwStyle);
+				SetWindowLong(state->hwndTarget, GWL_EXSTYLE, dwStyles);
 			else
-				SetWindowLong(state->hwndTarget, GWL_STYLE, dwStyle);
+				SetWindowLong(state->hwndTarget, GWL_STYLE, dwStyles);
 
 			SetWindowPos(state->hwndTarget, 0,
 				0, 0, 0, 0,
@@ -189,17 +187,17 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 				hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
-				dwStyle = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+				dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
 				caretidx = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 				cursel = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
 
 				if (cursel)
-					dwStyle |= SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
+					dwStyles |= SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
 				else
-					dwStyle &= ~SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
+					dwStyles &= ~SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
 
-				_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyle);
+				_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
 				SetDlgItemText(hwnd, IDC_EDIT1, szText);
 
 				return TRUE;
@@ -217,7 +215,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 {
 	state.hwndTarget = hwndTarget;
-	state.dwStyle = 0;
+	state.dwStyles = 0;
 	state.fExtended = fExtended;
 
 	DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);

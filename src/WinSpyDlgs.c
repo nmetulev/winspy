@@ -278,8 +278,6 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		{
 			// added in 1.6: windowproc URL control
 		case IDC_WINDOWPROC:
-			//RemoveHyperlink(hwnd, IDC_WINDOWPROC);
-			//InvalidateRect(GetDlgItem(hwnd, IDC_WINDOWPROC), 0, 0);
 			ShowDlgItem(hwnd, IDC_WINDOWPROC, SW_HIDE);
 			ShowDlgItem(hwnd, IDC_WINDOWPROC2, SW_SHOW);
 			GetRemoteInfo(spy_hCurWnd);
@@ -487,13 +485,14 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		ListView_SetBkColor(GetDlgItem(hwnd, IDC_LIST2), GetSysColor(COLOR_WINDOW));
 		return 0;
 
-		// if clicked on one of the underlined static controls, then
-		// display window info..
+	// if clicked on one of the underlined static controls, then
+	// display window info.
 	case WM_COMMAND:
 
 		switch (LOWORD(wParam))
 		{
-		case IDC_PARENT: case IDC_OWNER:
+		case IDC_PARENT:
+		case IDC_OWNER:
 			GetDlgItemText(hwnd, LOWORD(wParam), ach, ARRAYSIZE(ach));
 			DisplayWindowInfo((HWND)_tstrtoib16(ach));
 			return TRUE;

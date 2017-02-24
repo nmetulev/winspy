@@ -90,8 +90,6 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 		EndDialog(hwnd, 0);
 		return TRUE;
 
-		//if clicked on one of the underlined static controls, then
-		//display window info..
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{

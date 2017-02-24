@@ -104,12 +104,9 @@ void DisplayWindowInfo(HWND hwnd)
 
 	GetClassName(hwnd, spy_szClassName, 70);
 
-	if (IsWindowUnicode(hwnd))
-		spy_WndProc = (WNDPROC)GetWindowLongPtrW(hwnd, GWLP_WNDPROC);
-	else
-		spy_WndProc = (WNDPROC)GetWindowLongPtrA(hwnd, GWLP_WNDPROC);
+	spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
 
-	// If an password-edit control, then we can
+	// If a password-edit control, then we can
 	// inject our thread to get the password text!
 	if (lstrcmpi(spy_szClassName, _T("Edit")) == 0)
 	{

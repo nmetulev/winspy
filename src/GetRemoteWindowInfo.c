@@ -23,10 +23,9 @@
 
 #include "InjectThread.h"
 
-typedef BOOL(WINAPI *PROCGETCLASSINFOEX)(HINSTANCE, LPTSTR, WNDCLASSEX*);
+typedef BOOL(WINAPI *PROCGETCLASSINFOEX)(HINSTANCE, LPCTSTR, WNDCLASSEX*);
 typedef LONG_PTR(WINAPI *PROCGETWINDOWLONGPTR)(HWND, int);
-typedef int(WINAPI *PROCGETWINDOWTEXT)(HWND, LPTSTR, int);
-typedef UINT(WINAPI *PROCSENDMESSAGETO)(HWND, UINT, WPARAM, LPARAM, UINT, UINT, DWORD*);
+typedef LRESULT(WINAPI *PROCSENDMESSAGETO)(HWND, UINT, WPARAM, LPARAM, UINT, UINT, PDWORD_PTR);
 
 //
 //	Define a structure for the remote thread to use
@@ -35,14 +34,11 @@ typedef struct
 {
 	PROCGETCLASSINFOEX    fnGetClassInfoEx;
 	PROCGETWINDOWLONGPTR  fnGetWindowLongPtr;
-	PROCGETWINDOWTEXT     fnGetWindowText;
 	PROCSENDMESSAGETO     fnSendMessageTimeout;
 
 	HWND        hwnd; //window we want to get class info for
 	ATOM        atom; //class atom of window
 	HINSTANCE   hInst;
-
-	TCHAR       szClassName[128];
 
 	WNDCLASSEX  wcOutput;
 	WNDPROC     wndproc;
@@ -77,25 +73,22 @@ static DWORD WINAPI GetClassInfoExProc(LPVOID *pParam)
 {
 	INJDATA *pInjData = (INJDATA *)pParam;
 	BOOL    fRet = 0;
-	DWORD   dwResult;
+	DWORD_PTR dwpResult;
 
 	if (pInjData->fnGetWindowLongPtr)
 		pInjData->wndproc = (WNDPROC)pInjData->fnGetWindowLongPtr(pInjData->hwnd, GWLP_WNDPROC);
 
 	if (pInjData->fnGetClassInfoEx)
-		fRet = pInjData->fnGetClassInfoEx(pInjData->hInst, (LPTSTR)pInjData->szClassName, &pInjData->wcOutput);
-
-	//if(pInjData->fnGetWindowText)
-	//	pInjData->fnGetWindowText(pInjData->hwnd, pInjData->szText, pInjData->nTextSize);
+		fRet = pInjData->fnGetClassInfoEx(pInjData->hInst, (LPCTSTR)pInjData->atom, &pInjData->wcOutput);
 
 	if (pInjData->fnSendMessageTimeout)
 	{
-		// Nul-terminate in case the gettext fails
+		// Null-terminate in case the gettext fails
 		pInjData->szText[0] = _T('\0');
 
 		pInjData->fnSendMessageTimeout(pInjData->hwnd, WM_GETTEXT,
 			pInjData->nTextSize, (LPARAM)pInjData->szText,
-			SMTO_ABORTIFHUNG, 100, &dwResult);
+			SMTO_ABORTIFHUNG, 100, &dwpResult);
 	}
 
 	return fRet;
@@ -113,8 +106,6 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	INJDATA InjData;
 	BOOL    fReturn;
 
-	DWORD   dwThreadId;
-
 	// Calculate how many bytes the injected code takes
 	DWORD_PTR cbCodeSize = ((BYTE *)AfterThreadProc - (BYTE *)GetClassInfoExProc);
 
@@ -124,43 +115,17 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	ZeroMemory(&InjData, sizeof(InjData));
 
 	// Get pointers to the API calls we will be using in the remote thread
-	InjData.fnSendMessageTimeout = (PROCSENDMESSAGETO)SendMessageTimeout;
-	//InjData.fnGetWindowText  = (PROCGETWINDOWTEXT) GetWindowText;
+	InjData.fnSendMessageTimeout = SendMessageTimeout;
 
-	if (IsWindowUnicode(hwnd))
-	{
-		InjData.fnGetWindowLongPtr = (PROCGETWINDOWLONGPTR)GetWindowLongPtrW;
-		InjData.fnGetClassInfoEx = (PROCGETCLASSINFOEX)GetClassInfoExW;
-
-		GetClassNameW(hwnd, (LPWSTR)InjData.szClassName, sizeof(InjData.szClassName) / sizeof(LPWSTR*));
-	}
-	else
-	{
-		InjData.fnGetWindowLongPtr = (PROCGETWINDOWLONGPTR)GetWindowLongPtrA;
-		InjData.fnGetClassInfoEx = (PROCGETCLASSINFOEX)GetClassInfoExA;
-
-		GetClassNameA(hwnd, (LPSTR)InjData.szClassName, sizeof(InjData.szClassName) / sizeof(LPSTR*));
-	}
+	InjData.fnGetWindowLongPtr = IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA;
+	InjData.fnGetClassInfoEx = IsWindowUnicode(hwnd) ? GetClassInfoExW : (PROCGETCLASSINFOEX)GetClassInfoExA;
 
 	// Setup the data the API calls will need
 	InjData.hwnd = (HWND)hwnd;
 	InjData.atom = (ATOM)GetClassLong(hwnd, GCW_ATOM);
-	InjData.hInst = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
+	InjData.hInst = (HINSTANCE)GetClassLongPtr(hwnd, GCLP_HMODULE);
 	InjData.wndproc = 0;
 	InjData.nTextSize = ARRAYSIZE(InjData.szText);
-
-
-	// if we are injecting into THIS process, DO NOT RUN GETWINDOWTEXT!!!
-	// This is because GetWindowText uses SendMessage internally,
-	// which will send (and wait for) a message to THIS PROCESS. Because
-	// we wait for the remote thread to terminate, we cannot process any
-	// messages, and we get locked up. Took me two days to realise this :-(
-	dwThreadId = GetWindowThreadProcessId(hwnd, 0);
-
-	if (dwThreadId == GetCurrentThreadId())
-	{
-		InjData.fnGetWindowText = 0;
-	}
 
 	//
 	// Inject the GetClassInfoExProc function, and our InjData structure!
@@ -178,6 +143,8 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	else
 	{
 		*pClass = InjData.wcOutput;
+		// As these pointers come from another process, zero them out to avoid accidental misuse
+		pClass->lpszClassName = pClass->lpszMenuName = NULL;
 		*pProc = InjData.wndproc;
 
 		lstrcpyn(pszText, InjData.szText, 200);
