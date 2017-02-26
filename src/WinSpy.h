@@ -60,34 +60,76 @@ typedef struct
 //
 //	Extended Style table. 1 per window class
 //
+
+//
+// There are 2 sorts of "style constants":
+// 1. Single style. This is a logical "property" of the window (e.g.: WS_OVERLAPPED).
+// The presence of that property in a window's styles value is determined by a set of bits and a mask containing those bits.
+// Essentially, by masking the styles value with the mask, we obtain an "enum" value, and this style represents one value for that enum.
+// In most cases (e.g.: WS_MINIMIZE), that mask contains just one bit whose value of "1" indicates presence of this style
+// and "0" - absence of this style. But sometimes, the "0" value has its own style constant (e.g.: SBS_HORZ).
+// And sometimes, the mask contains more than 1 bit (e.g.: WS_OVERLAPPED).
+// 2. Combination style. This is a constant that represents a set of several single styles with non-overlapping masks
+// (e.g.: WS_OVERLAPPEDWINDOW). For such style to be present in the styles value, each of its components must be present.
+// Therefore, its presence can be checked using the value that is the "|" of all contained styles' values
+// and the mask that is the "|" of all contained styles' masks.
+//
+// Thus, the presence of any style in the styles value can be defined by 2 DWORD numbers: the mask and the matching value.
+//
+// Sometimes, applicability of a style depends on presence of another style.
+// For instance, the same bit would mean WS_TABSTOP if WS_CHILD is present or WS_MAXIMIZEBOX if WS_SYSMENU is present
+// (and, as experiment showed, even mean both if both those dependencies are present, which is obviously unintended and confusing).
+// Hopefully we can find a dependency style (not necessarily one of the predefined constants)
+// with no nesting dependencies for every style that we want to be able to display.
+// This way, we can implement a smart "set the style" functionality: not only set the actual value of the style's bits,
+// but also set its dependency's bits so that we make the style applicable and present at once.
+// This way, a comprehensive definition of a style will contain:
+// - style's value
+// - style's mask
+// - [optional] dependency style's value
+// - [optional] dependency style's mask
+//
+// To simplify style definitions, the "extraMask" fields will contain the bits that need to be "|"'ed with the value
+// in order to get the actual mask. This allows this field to default to 0 for the vast majority of typical cases
+// where the mask is equal to the value.
+
 typedef struct
 {
 	LPCTSTR name;		// Textual name of style
-	DWORD   style;		// Single window style
+	DWORD   value;		// The value of the style
+	DWORD   extraMask;	// The extra bits determining the mask for testing presence of the style
 
-	DWORD   cmp_mask;	// If zero, then -style- is treated as a single bit-field
-						// Otherwise, cmp_mask is used to make sure that
-						// ALL the bits in the mask match -style-
-
-	DWORD   depends;	// Style is only valid if includes these styles
-	DWORD   excludes;	// Style is only valid if these aren't set
-
+	// This style is only applicable if the following style is present:
+	DWORD dependencyValue;
+	DWORD dependencyExtraMask;
 } StyleLookupEx;
+
+inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
+{
+	if (((pStyle->dependencyValue | pStyle->dependencyExtraMask) & value) != pStyle->dependencyValue)
+		return FALSE;
+	return ((pStyle->value | pStyle->extraMask) & value) == pStyle->value;
+}
 
 // Because static_assert is a statement which is not an expression, it cannot be used where an expression is expected.
 // Therefore, we define an expression loosely equivalent to a static_assert here
 // which would cause a compilation error if the condition is false.
-#define value_with_static_assert(value, condition) 1 ? value : (sizeof(int[condition]), value)
+#define value_with_static_assert(value, condition) 1 ? (value) : (sizeof(int[condition]), (value))
 
 #define HANDLE_(handle) _T(#handle), (HANDLE)handle
 
 //
-//	Use this helper macro to fill in the first two members
-//  of the style structures.
+//	Use these helper macros to fill in the style structures.
 //
-//  e.g. NAMEANDVALUE_(WS_CHILD)  ->  WS_CHILD, "WS_CHILD"
-//
-#define NAMEANDVALUE_(value) _T(#value), value_with_static_assert((UINT)value, ARRAYSIZE(#value) < MAX_STYLE_NAME_CCH)
+#define CHECKEDNAMEANDVALUE_(name, value) _T(name), value_with_static_assert((UINT)(value), ARRAYSIZE(name) < MAX_STYLE_NAME_CCH)
+#define NAMEANDVALUE_(value) CHECKEDNAMEANDVALUE_(#value, value)
+
+#define STYLE_MASK_DEPENDS(style, extraMask, dependencyStyle, dependencyExtraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, dependencyStyle, dependencyExtraMask
+#define STYLE_SIMPLE_DEPENDS(style, dependencyStyle) CHECKEDNAMEANDVALUE_(#style, style), 0, dependencyStyle, 0
+#define STYLE_MASK(style, extraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, 0, 0
+#define STYLE_SIMPLE(style) CHECKEDNAMEANDVALUE_(#style, style), 0, 0, 0
+#define STYLE_COMBINATION(style) CHECKEDNAMEANDVALUE_(#style, style), 0, 0, 0
+#define STYLE_COMBINATION_MASK(style, extraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, 0, 0
 
 //
 //  Use this structure to list each window class with its

@@ -183,29 +183,40 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		case LBN_SELCHANGE:
 			if (LOWORD(wParam) == IDC_LIST1)
 			{
-				int cursel, caretidx;
-
 				hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
 				dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
-				caretidx = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
-				cursel = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
+				int caretidx = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
+				int cursel = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
 
-				DWORD style;
 				StyleLookupEx *pStyle = (StyleLookupEx *)SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
-				if (pStyle)
-					style = pStyle->style;
+				if (cursel)
+				{
+					// The user has just selected this item. This means this item has a style definition:
+					// the only one that does not is the "unrecognized bits" item,
+					// and that one is always selected on every repopulation of the list.
+
+					// If there is a dependency, set the dependency style to be present
+					dwStyles &= ~(pStyle->dependencyValue | pStyle->dependencyExtraMask);
+					dwStyles |= pStyle->dependencyValue;
+					// Now set the style itself to be present
+					dwStyles &= ~(pStyle->value | pStyle->extraMask);
+					dwStyles |= pStyle->value;
+				}
 				else
 				{
-					// This is the "unrecognized bits" item
-					SendMessage(hwndList, LB_GETTEXT, caretidx, (LONG_PTR)szText);
-					style = (DWORD)_tstrtoib16(szText);
-				}
-				if (cursel)
-					dwStyles |= style;
-				else
+					DWORD style;
+					if (pStyle)
+						style = pStyle->value;
+					else
+					{
+						// This is the "unrecognized bits" item
+						SendMessage(hwndList, LB_GETTEXT, caretidx, (LONG_PTR)szText);
+						style = (DWORD)_tstrtoib16(szText);
+					}
 					dwStyles &= ~style;
+				}
 
 				_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
 				SetDlgItemText(hwnd, IDC_EDIT1, szText);

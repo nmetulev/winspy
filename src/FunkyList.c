@@ -66,7 +66,7 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 		else
 		{
 			// Make the item greyed-out if the style is zero
-			if (pStyle && pStyle->style == 0)
+			if (pStyle && pStyle->value == 0)
 				SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 			else
 				SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
@@ -89,7 +89,7 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 			SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 
 		if (pStyle)
-			_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, pStyle->style); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
+			_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, pStyle->value); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
 
 		dis->rcItem.right -= 4;
 
