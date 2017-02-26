@@ -1,10 +1,10 @@
 //
-//	Poster Dialog.
+//  Poster Dialog.
 //
 //  Copyright (c)
 //  Freeware
 //
-//	Just a simple dialog which allows you to
+//  Just a simple dialog which allows you to
 //  send / post messages to a window
 //
 
@@ -417,8 +417,8 @@ static const MessageLookup WindowMessages[] = {
 
 static void SetInitialGuiInfo(HWND hwnd, HWND hwndTarget)
 {
-	HWND	 hwndMsgsCombo;
-	TCHAR	 ach[256];
+	HWND     hwndMsgsCombo;
+	TCHAR    ach[256];
 
 	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwndTarget);
 	SetDlgItemText(hwnd, IDC_POSTER_HANDLE, ach);
@@ -436,8 +436,8 @@ static void SetInitialGuiInfo(HWND hwnd, HWND hwndTarget)
 
 static void GetGuiInfo(HWND hwnd, HWND *phwndTarget, UINT *puMsg, WPARAM *pwParam, LPARAM *plParam)
 {
-	HWND	 hwndMsgsCombo;
-	int		 nComboIndex;
+	HWND     hwndMsgsCombo;
+	int      nComboIndex;
 
 	*phwndTarget = (HWND)GetDlgItemBaseInt(hwnd, IDC_POSTER_HANDLE, 16);
 
@@ -458,11 +458,11 @@ static void GetGuiInfo(HWND hwnd, HWND *phwndTarget, UINT *puMsg, WPARAM *pwPara
 
 static void PosterSendMessage(HWND hwnd)
 {
-	HWND	 hwndTarget;
-	UINT	 uMsg;
-	WPARAM	 wParam;
-	LPARAM	 lParam;
-	TCHAR	 ach[256];
+	HWND     hwndTarget;
+	UINT     uMsg;
+	WPARAM   wParam;
+	LPARAM   lParam;
+	TCHAR    ach[256];
 	DWORD_PTR dwResult;
 
 	GetGuiInfo(hwnd, &hwndTarget, &uMsg, &wParam, &lParam);
@@ -490,11 +490,11 @@ static void PosterSendMessage(HWND hwnd)
 
 static void PosterPostMessage(HWND hwnd)
 {
-	HWND	 hwndTarget;
-	UINT	 uMsg;
-	WPARAM	 wParam;
-	LPARAM	 lParam;
-	TCHAR	 ach[256];
+	HWND     hwndTarget;
+	UINT     uMsg;
+	WPARAM   wParam;
+	LPARAM   lParam;
+	TCHAR    ach[256];
 
 	GetGuiInfo(hwnd, &hwndTarget, &uMsg, &wParam, &lParam);
 
@@ -520,11 +520,11 @@ static void PosterPostMessage(HWND hwnd)
 }
 
 //
-//	Dialog procedure for the poster window
+//  Dialog procedure for the poster window
 //
 INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	HWND hwndTarget;	// target window!
+	HWND hwndTarget;    // target window!
 
 	switch (iMsg)
 	{

@@ -1,10 +1,10 @@
 //
-//	StyleEdit.c
+//  StyleEdit.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Implements the Style Editor dialog box
+//  Implements the Style Editor dialog box
 //
 //  void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 //
@@ -26,10 +26,10 @@
 
 typedef struct
 {
-	HWND   hwndTarget;	// what window are we looking at??
-	BOOL   fExtended;	// Extended (TRUE) or Normal (FALSE)
+	HWND   hwndTarget;  // what window are we looking at??
+	BOOL   fExtended;   // Extended (TRUE) or Normal (FALSE)
 
-	DWORD  dwStyles;	// original styles; not currently used, but could be used to reset the dialog
+	DWORD  dwStyles;    // original styles; not currently used, but could be used to reset the dialog
 
 } StyleEditState;
 
@@ -41,7 +41,7 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
 	BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl);
 
 //
-//	Define our callback function for the Window Finder Tool
+//  Define our callback function for the Window Finder Tool
 //
 UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 {
@@ -241,7 +241,7 @@ void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 
 	DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
 
-	// Update the main display 
+	// Update the main display
 	SetGeneralInfo(hwndTarget);
 	SetStyleInfo(hwndTarget);
 }

@@ -12,10 +12,10 @@ extern "C" {
 #include <tchar.h>
 #include <Strsafe.h>
 
-#define IDM_WINSPY_ABOUT	100
+#define IDM_WINSPY_ABOUT    100
 
 //
-//	Define a structure for each property page in
+//  Define a structure for each property page in
 //  the main window
 //
 typedef struct
@@ -33,13 +33,13 @@ extern DialogTab WinSpyTab[];
 #define PROPERTY_TAB       2
 #define CLASS_TAB          3
 #define WINDOW_TAB         4
-#define PROCESS_TAB	       5
+#define PROCESS_TAB        5
 #define NUMTABCONTROLITEMS 6
 
 #define MAX_STYLE_NAME_CCH 60
 
 //
-//	Simple const value lookup.
+//  Simple const value lookup.
 //  Used for class styles and predefined color and brush values.
 //
 typedef struct
@@ -49,7 +49,7 @@ typedef struct
 } ConstLookupType;
 
 //
-//	Handle-lookup
+//  Handle-lookup
 //
 typedef struct
 {
@@ -58,7 +58,7 @@ typedef struct
 } HandleLookupType;
 
 //
-//	Extended Style table. 1 per window class
+//  Extended Style table. 1 per window class
 //
 
 //
@@ -95,9 +95,9 @@ typedef struct
 
 typedef struct
 {
-	LPCTSTR name;		// Textual name of style
-	DWORD   value;		// The value of the style
-	DWORD   extraMask;	// The extra bits determining the mask for testing presence of the style
+	LPCTSTR name;       // Textual name of style
+	DWORD   value;      // The value of the style
+	DWORD   extraMask;  // The extra bits determining the mask for testing presence of the style
 
 	// This style is only applicable if the following style is present:
 	DWORD dependencyValue;
@@ -119,7 +119,7 @@ inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
 #define HANDLE_(handle) _T(#handle), (HANDLE)handle
 
 //
-//	Use these helper macros to fill in the style structures.
+//  Use these helper macros to fill in the style structures.
 //
 #define CHECKEDNAMEANDVALUE_(name, value) _T(name), value_with_static_assert((UINT)(value), ARRAYSIZE(name) < MAX_STYLE_NAME_CCH)
 #define NAMEANDVALUE_(value) CHECKEDNAMEANDVALUE_(#value, value)
@@ -140,21 +140,21 @@ typedef struct
 {
 	LPCTSTR        szClassName;
 	StyleLookupEx  *stylelist;
-	DWORD			dwMessage;
+	DWORD           dwMessage;
 } ClassStyleLookup;
 
-#define WINLIST_INCLUDE_HANDLE	1		// handle, classname
-#define WINLIST_INCLUDE_CLASS   2		// classname, caption
-#define WINLIST_INCLUDE_ALL		3		// handle, caption, classname
+#define WINLIST_INCLUDE_HANDLE  1       // handle, classname
+#define WINLIST_INCLUDE_CLASS   2       // classname, caption
+#define WINLIST_INCLUDE_ALL     3       // handle, caption, classname
 
 //
-//	Useful functions!
+//  Useful functions!
 //
 BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis);
 BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis);
 
 //
-//	WinSpy layout functions
+//  WinSpy layout functions
 //
 void ToggleWindowLayout(HWND hwnd);
 void SetWindowLayout(HWND hwnd, UINT uLayout);
@@ -164,11 +164,11 @@ void ForceVisibleDisplay(HWND hwnd);
 #define WINSPY_MINIMIZED 1
 #define WINSPY_NORMAL    2
 #define WINSPY_EXPANDED  3
-#define WINSPY_LASTMAX	 4	// Only use with SetWindowLayout 
+#define WINSPY_LASTMAX   4  // Only use with SetWindowLayout
 // (chooses between normal/expanded)
 
 //
-//	WinSpy message handler functions
+//  WinSpy message handler functions
 //
 
 UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam);
@@ -194,7 +194,7 @@ int WINAPI GetRectHeight(RECT *rect);
 BOOL IsMinimized(HWND hwnd);
 
 //
-//	Dialog box procedures for each dialog tab.
+//  Dialog box procedures for each dialog tab.
 //
 LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
@@ -217,7 +217,7 @@ void SetProcessInfo(HWND hwnd);
 void ExitWinSpy(HWND hwnd, UINT uCode);
 
 //
-//	Menu and System Menu functions
+//  Menu and System Menu functions
 //
 //
 void CheckSysMenu(HWND hwnd, UINT uItemId, BOOL fChecked);
@@ -246,28 +246,28 @@ void InitStockStyleLists();
 BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize);
 
 //
-//	Pinned-window support
+//  Pinned-window support
 //
 void GetPinnedPosition(HWND, POINT *);
 BOOL WinSpy_ZoomTo(HWND hwnd, UINT uCorner);
 void SetPinState(BOOL fPinned);
 
 //
-//	Pinned-window constants
+//  Pinned-window constants
 //
-#define PINNED_TOPLEFT      0		// notice the bit-positions:
-#define PINNED_TOPRIGHT     1		// (bit 0 -> 0 = left, 1 = right)
-#define PINNED_BOTTOMRIGHT  3		// (bit 1 -> 0 = top,  1 = bottom)
+#define PINNED_TOPLEFT      0       // notice the bit-positions:
+#define PINNED_TOPRIGHT     1       // (bit 0 -> 0 = left, 1 = right)
+#define PINNED_BOTTOMRIGHT  3       // (bit 1 -> 0 = top,  1 = bottom)
 #define PINNED_BOTTOMLEFT   2
 
-#define PINNED_NONE			PINNED_TOPLEFT
-#define PINNED_LEFT			0
-#define PINNED_RIGHT		1
-#define PINNED_TOP			0
-#define PINNED_BOTTOM		2
+#define PINNED_NONE         PINNED_TOPLEFT
+#define PINNED_LEFT         0
+#define PINNED_RIGHT        1
+#define PINNED_TOP          0
+#define PINNED_BOTTOM       2
 
 //
-//	Global variables!! These just control WinSpy behaviour
+//  Global variables!! These just control WinSpy behaviour
 //
 extern BOOL fAlwaysOnTop;
 extern BOOL fClassThenText;
@@ -285,7 +285,7 @@ extern POINT ptPinPos;
 extern UINT  uPinnedCorner;
 
 //
-//	Application global variables
+//  Application global variables
 //
 extern HINSTANCE hInst;
 
@@ -294,13 +294,13 @@ extern HINSTANCE hInst;
 #define szPtrFmt _T("%p")
 #define szAppName _T("WinSpy++")
 
-extern HWND	 hwndPin;		// Toolbar with pin bitmap
-extern HWND	 hwndSizer;		// Sizing grip for bottom-right corner
-extern HWND	 hwndToolTip;	// tooltip for main window controls only
+extern HWND  hwndPin;       // Toolbar with pin bitmap
+extern HWND  hwndSizer;     // Sizing grip for bottom-right corner
+extern HWND  hwndToolTip;   // tooltip for main window controls only
 
 //
-//	Spy-window globals
-//	
+//  Spy-window globals
+//
 //
 extern HWND       spy_hCurWnd;
 extern WNDCLASSEX spy_WndClassEx;
@@ -310,7 +310,7 @@ extern TCHAR      spy_szPassword[];
 extern TCHAR      spy_szClassName[];
 
 //
-//	Useful SetWindowPos constants (saves space!)
+//  Useful SetWindowPos constants (saves space!)
 //
 #define SWP_SIZEONLY  (SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE)
 #define SWP_MOVEONLY  (SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)

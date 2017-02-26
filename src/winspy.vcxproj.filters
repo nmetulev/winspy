@@ -18,9 +18,6 @@
     <ClCompile Include="BitmapButton.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CatpureWindow.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DisplayClassInfo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -43,9 +40,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EditSize.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EditWindow.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FindTool.c">
@@ -108,11 +102,11 @@
     <ClCompile Include="Poster.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CaptureWindow.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AggressiveOptimize.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BitmapButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>

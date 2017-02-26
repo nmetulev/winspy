@@ -1,10 +1,10 @@
 //
-//	WinSpyCommand.c
+//  WinSpyCommand.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Menu / Control Command handler
+//  Menu / Control Command handler
 //
 
 #define STRICT
@@ -58,7 +58,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
 	HTREEITEM   hItem;
 	TVITEM      item;
-	NMHDR		hdr;
+	NMHDR       hdr;
 	UINT        uLayout;
 
 	HWND hwndGeneral;
@@ -137,7 +137,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		SendMessage(hwndPin, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
 			MAKELPARAM(fPinWindow, 0));
 
-		// if from an accelerator, then we have to manually check the 
+		// if from an accelerator, then we have to manually check the
 		if (HIWORD(wParam) == 1)
 		{
 			SendMessage(hwndPin, TB_CHECKBUTTON, IDM_WINSPY_PIN,

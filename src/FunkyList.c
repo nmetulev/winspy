@@ -1,10 +1,10 @@
 //
-//	WinSpy Finder Tool.
+//  WinSpy Finder Tool.
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Nice-looking owner-drawn list (used for style-lists).
+//  Nice-looking owner-drawn list (used for style-lists).
 //
 
 #define STRICT
@@ -13,7 +13,7 @@
 #include "WinSpy.h"
 
 //
-//	Called from WM_MEASUREITEM
+//  Called from WM_MEASUREITEM
 //
 BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis)
 {
@@ -22,17 +22,17 @@ BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis)
 }
 
 //
-//	Super owner-drawn list!
+//  Super owner-drawn list!
 //
-//	All we do is draw the list normally, but with a couple of minor changes:
+//  All we do is draw the list normally, but with a couple of minor changes:
 //
-//	Each list item will have it's user-defined dataitem set to the value
+//  Each list item will have it's user-defined dataitem set to the value
 //  of each style.
 //
 //  If this style is zero, this means that it is an implicit style, so
 //  draw the whole line gray.
 //
-//  Also, at the end of every line, right-align the hex-values of each style  
+//  Also, at the end of every line, right-align the hex-values of each style
 //
 BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 {

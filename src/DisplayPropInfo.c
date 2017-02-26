@@ -1,11 +1,11 @@
 //
-//	DisplayPropInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayPropInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void SetPropertyInfo(HWND hwnd)
+//  void SetPropertyInfo(HWND hwnd)
 //
-//	Fill the properties-tab-pane with class info for the
+//  Fill the properties-tab-pane with class info for the
 //  specified window
 //
 
@@ -19,7 +19,7 @@
 #include "WinSpy.h"
 
 //
-//	Called once for each window property
+//  Called once for each window property
 //
 BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_PTR dwUser)
 {
@@ -55,7 +55,7 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_P
 }
 
 //
-//	Display the window properties (SetProp API)
+//  Display the window properties (SetProp API)
 //
 void EnumWindowProps(HWND hwnd, HWND hwndList)
 {

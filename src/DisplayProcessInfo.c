@@ -1,12 +1,12 @@
 //
-//	DisplayProcessInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayProcessInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void SetProcesInfo(HWND hwnd)
+//  void SetProcesInfo(HWND hwnd)
 //
-//	Fill the process-tab-pane with proces info for the
-//  specified window. 
+//  Fill the process-tab-pane with proces info for the
+//  specified window.
 //
 
 #define STRICT
@@ -70,11 +70,11 @@ BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TC
 // This uses PSAPI.DLL, which is only available under NT/2000/XP I think,
 // so we dynamically load this library, so that we can still run under 9x.
 //
-//	dwProcessId  [in]
+//  dwProcessId  [in]
 //  szName       [out]
 //  nNameSize    [in]
 //  szPath       [out]
-//  nPathSize    [in]	
+//  nPathSize    [in]
 //
 BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
@@ -108,7 +108,7 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
 
 	fnEnumProcessModules = (EnumProcessModulesProc)GetProcAddress(hPSAPI, "EnumProcessModules");
 
-#ifdef UNICODE	
+#ifdef UNICODE
 	fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameW");
 	fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExW");
 #else
@@ -157,7 +157,7 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 
 	if (!fnQueryFullProcessImageName)
 	{
-#ifdef UNICODE	
+#ifdef UNICODE
 		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameW");
 #else
 		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameA");
@@ -191,7 +191,7 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 }
 
 //
-//	Update the Process tab for the specified window
+//  Update the Process tab for the specified window
 //
 void SetProcessInfo(HWND hwnd)
 {

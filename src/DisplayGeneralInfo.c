@@ -1,11 +1,11 @@
 //
-//	DisplayGeneralInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayGeneralInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void SetGeneralInfo(HWND hwnd)
+//  void SetGeneralInfo(HWND hwnd)
 //
-//	Fill the general-tab-pane with general info for the
+//  Fill the general-tab-pane with general info for the
 //  specified window
 //
 
@@ -32,11 +32,11 @@ void FillBytesList(
 
 void SetGeneralInfo(HWND hwnd)
 {
-	TCHAR	ach[256];
-	HWND	hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
-	RECT	rect;
-	int		x1, y1;
-	int		numbytes;
+	TCHAR   ach[256];
+	HWND    hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
+	RECT    rect;
+	int     x1, y1;
+	int     numbytes;
 	LONG_PTR lp;
 
 	if (hwnd == 0) return;
@@ -53,13 +53,13 @@ void SetGeneralInfo(HWND hwnd)
 
 	if (!IsWindow(hwnd))
 	{
-		SetDlgItemText(hwndDlg, IDC_CAPTION1, L"(invalid window)");	// edit box
-		SetDlgItemText(hwndDlg, IDC_CAPTION2, L"(invalid window)");	// combo box
+		SetDlgItemText(hwndDlg, IDC_CAPTION1, L"(invalid window)"); // edit box
+		SetDlgItemText(hwndDlg, IDC_CAPTION2, L"(invalid window)"); // combo box
 		SetDlgItemText(hwndDlg, IDC_CLASS, L"(invalid window)");
 		return;
 	}
 
-	// SendMessage is better than GetWindowText, 
+	// SendMessage is better than GetWindowText,
 	// because it gets text of children in other processes
 	if (spy_fPassword == FALSE)
 	{
@@ -71,13 +71,13 @@ void SetGeneralInfo(HWND hwnd)
 			GetWindowText(hwnd, ach, ARRAYSIZE(ach));
 		}
 
-		SetDlgItemText(hwndDlg, IDC_CAPTION1, ach);	// edit box
-		SetDlgItemText(hwndDlg, IDC_CAPTION2, ach);	// combo box
+		SetDlgItemText(hwndDlg, IDC_CAPTION1, ach); // edit box
+		SetDlgItemText(hwndDlg, IDC_CAPTION2, ach); // combo box
 	}
 	else
 	{
-		SetDlgItemText(hwndDlg, IDC_CAPTION1, spy_szPassword);	// edit box
-		SetDlgItemText(hwndDlg, IDC_CAPTION2, spy_szPassword);	// combo box
+		SetDlgItemText(hwndDlg, IDC_CAPTION1, spy_szPassword);  // edit box
+		SetDlgItemText(hwndDlg, IDC_CAPTION2, spy_szPassword);  // combo box
 	}
 
 	//class name

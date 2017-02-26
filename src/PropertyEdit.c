@@ -1,10 +1,10 @@
 //
-//	PropertyEdit.c
+//  PropertyEdit.c
 //
 //  Copyright (c)
 //  Freeware
 //
-//	Implements the Property Editor dialog box
+//  Implements the Property Editor dialog box
 //
 //  void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget)
 //
@@ -24,7 +24,7 @@
 
 typedef struct
 {
-	HWND   hwndTarget;	// what window are we looking at??
+	HWND   hwndTarget;  // what window are we looking at??
 	BOOL   bAddNew;
 
 	TCHAR  szString[256];
@@ -164,6 +164,6 @@ void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew)
 
 	DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_PROPERTY_EDIT), hwndParent, PropertyEditProc, (LPARAM)&state);
 
-	// Update the main display 
+	// Update the main display
 	SetPropertyInfo(hwndTarget);
 }

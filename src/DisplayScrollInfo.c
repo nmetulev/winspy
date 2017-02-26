@@ -1,11 +1,11 @@
 //
-//	DisplayScrollInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayScrollInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void SetScrollInfo(HWND hwnd)
+//  void SetScrollInfo(HWND hwnd)
 //
-//	Fill the scrollbar-tab-pane with scrollbar info for the
+//  Fill the scrollbar-tab-pane with scrollbar info for the
 //  specified window
 //
 

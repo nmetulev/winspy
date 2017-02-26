@@ -1,11 +1,11 @@
 //
-//	DisplayWindowInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayWindowInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
 //  void SetWindowInfo(HWND hwnd)
 //
-//	Fill the window-tab-pane with list of child+siblings
+//  Fill the window-tab-pane with list of child+siblings
 //
 
 #define STRICT
@@ -25,7 +25,7 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 	TCHAR  wname[256];
 	LVITEM lvitem;
 
-	//only display 1st generation (1-deep) children - 
+	//only display 1st generation (1-deep) children -
 	//(don't display child windows of child windows)
 	if (GetRealParent(hwnd) == spy_hCurWnd)
 	{
@@ -79,7 +79,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 }
 
 //
-//	Get a list of all Child + Siblings for the specified window - 
+//  Get a list of all Child + Siblings for the specified window -
 //  Update the Windows tab accordingly
 //
 void SetWindowInfo(HWND hwnd)

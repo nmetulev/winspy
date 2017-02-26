@@ -1,16 +1,16 @@
 //
-//	DisplayClassInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayClassInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void SetClassInfo(HWND hwnd)
+//  void SetClassInfo(HWND hwnd)
 //
-//	Fill the class-tab-pane with class info for the
+//  Fill the class-tab-pane with class info for the
 //  specified window
 //
-//	History:
+//  History:
 //
-//	1.7.1 - fixed bug where 'resolve' window-proc wasn't getting updated
+//  1.7.1 - fixed bug where 'resolve' window-proc wasn't getting updated
 //
 
 #define STRICT
@@ -32,8 +32,8 @@ void VerboseClassName(TCHAR ach[], size_t cch)
 	else if (lstrcmpi(ach, _T("#32772")) == 0) _tcscat_s(ach, cch, _T(" (Icon title)"));
 }
 
-//	
-//	Class styles lookup table
+//
+//  Class styles lookup table
 //
 ConstLookupType ClassLookup[] =
 {
@@ -53,9 +53,9 @@ ConstLookupType ClassLookup[] =
 };
 
 //
-//	Stock Icon lookup table. These values must be converted to
-//	stock icon handle values by calling LoadIcon(NULL, ID) before
-//	the list can be searched.
+//  Stock Icon lookup table. These values must be converted to
+//  stock icon handle values by calling LoadIcon(NULL, ID) before
+//  the list can be searched.
 //
 HandleLookupType IconLookup[] =
 {
@@ -71,7 +71,7 @@ HandleLookupType IconLookup[] =
 };
 
 //
-//	Stock Cursor lookup table. These values must also be 
+//  Stock Cursor lookup table. These values must also be
 //  converted to stock cursor handles.
 //
 HandleLookupType CursorLookup[] =
@@ -95,7 +95,7 @@ HandleLookupType CursorLookup[] =
 };
 
 //
-//	COLOR_xx Brush ID lookup. Needs no conversion
+//  COLOR_xx Brush ID lookup. Needs no conversion
 //
 ConstLookupType BrushLookup[] =
 {
@@ -130,7 +130,7 @@ ConstLookupType BrushLookup[] =
 };
 
 //
-//	GetStockObject brush lookup. These values must be
+//  GetStockObject brush lookup. These values must be
 //  converted to valid stock brushes.
 //
 ConstLookupType StkBrLookup[] =
@@ -150,15 +150,15 @@ ConstLookupType StkBrLookup[] =
 #define NUM_STKBR_STYLES ARRAYSIZE(StkBrLookup)
 
 //
-//	This table is a combination of the BrushLookup and StkBrLookup tables.
-//	All values are handles to stock brushes.
+//  This table is a combination of the BrushLookup and StkBrLookup tables.
+//  All values are handles to stock brushes.
 //
 HandleLookupType BrushLookup2[NUM_BRUSH_STYLES + NUM_STKBR_STYLES];
 
 #define NUM_BRUSH2_LOOKUP ARRAYSIZE(BrushLookup2)
 
 //
-//	Prepare the resource lookup tables by obtaining the 
+//  Prepare the resource lookup tables by obtaining the
 //  internal handle values for all stock objects.
 //
 void InitStockStyleLists()
@@ -184,7 +184,7 @@ void InitStockStyleLists()
 }
 
 //
-//	Lookup the specified value in the lookup list
+//  Lookup the specified value in the lookup list
 //
 int FormatConst(TCHAR *ach, size_t cch, ConstLookupType *list, int items, UINT matchthis)
 {
@@ -209,7 +209,7 @@ int PrintHandle(TCHAR *ach, size_t cch, ULONG_PTR value)
 }
 
 //
-//	Lookup the specified value in the handle list
+//  Lookup the specified value in the handle list
 //
 int FormatHandle(TCHAR *ach, size_t cch, HandleLookupType *handlelist, int items, ULONG_PTR matchthis)
 {
@@ -319,7 +319,7 @@ void FillBytesList(
 }
 
 //
-//	Set the class information on the Class Tab, for the specified window
+//  Set the class information on the Class Tab, for the specified window
 //
 void SetClassInfo(HWND hwnd)
 {

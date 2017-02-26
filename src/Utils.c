@@ -1,10 +1,10 @@
 //
-//	Utils.c
+//  Utils.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Lots of utility and general helper functions.
+//  Lots of utility and general helper functions.
 //
 
 #define STRICT
@@ -18,13 +18,13 @@
 int atoi(const char *string);
 
 //
-//	Enable/Disable privilege with specified name (for current process)
+//  Enable/Disable privilege with specified name (for current process)
 //
 BOOL EnablePrivilege(TCHAR *szPrivName, BOOL fEnable)
 {
 	TOKEN_PRIVILEGES tp;
-	LUID	luid;
-	HANDLE	hToken;
+	LUID    luid;
+	HANDLE  hToken;
 
 	if (!LookupPrivilegeValue(NULL, szPrivName, &luid))
 		return FALSE;
@@ -99,7 +99,7 @@ int WINAPI GetRectWidth(RECT *rect)
 
 
 //
-//	Convert the specified string 
+//  Convert the specified string
 //  into the equivalent decimal value
 //
 DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
@@ -112,7 +112,7 @@ DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
 }
 
 //
-//	Convert the specified string (with a hex-number in it)
+//  Convert the specified string (with a hex-number in it)
 //  into the equivalent hex-value
 //
 DWORD_PTR _tstrtoib16(TCHAR *szHexStr)
@@ -147,11 +147,11 @@ DWORD_PTR GetNumericValue(HWND hwnd, int base)
 	switch (base)
 	{
 	case 1:
-	case 16:			//base is currently hex
+	case 16:            //base is currently hex
 		return _tstrtoib16(szAddressText);
 
 	case 0:
-	case 10:			//base is currently decimal
+	case 10:            //base is currently decimal
 		return _tstrtoib10(szAddressText);
 
 	default:
@@ -165,7 +165,7 @@ DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base)
 }
 
 //
-//	Copied from uxtheme.h
+//  Copied from uxtheme.h
 //  If you have this new header, then delete these and
 //  #include <uxtheme.h> instead!
 //
@@ -174,11 +174,11 @@ DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base)
 #define ETDT_USETABTEXTURE  0x00000004
 #define ETDT_ENABLETAB      (ETDT_ENABLE  | ETDT_USETABTEXTURE)
 
-// 
+//
 typedef HRESULT(WINAPI * ETDTProc) (HWND, DWORD);
 
 //
-//	Try to call EnableThemeDialogTexture, if uxtheme.dll is present
+//  Try to call EnableThemeDialogTexture, if uxtheme.dll is present
 //
 BOOL EnableDialogTheme(HWND hwnd)
 {
@@ -216,11 +216,11 @@ BOOL EnableDialogTheme(HWND hwnd)
 #pragma comment(lib, "version.lib")
 
 //
-//	Get the specified file-version information string from a file
-//	
-//	szItem	- version item string, e.g:
-//		"FileDescription", "FileVersion", "InternalName", 
-//		"ProductName", "ProductVersion", etc  (see MSDN for others)
+//  Get the specified file-version information string from a file
+//
+//  szItem  - version item string, e.g:
+//      "FileDescription", "FileVersion", "InternalName",
+//      "ProductName", "ProductVersion", etc  (see MSDN for others)
 //
 TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULONG nLength)
 {
@@ -259,7 +259,7 @@ TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULON
 
 
 //
-//	Compare Arch (32 or 64 bit) of our process with the process of the input window
+//  Compare Arch (32 or 64 bit) of our process with the process of the input window
 //
 BOOL ProcessArchMatches(HWND hwnd)
 {

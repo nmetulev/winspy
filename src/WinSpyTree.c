@@ -1,10 +1,10 @@
 //
-//	WinSpyTree.c
+//  WinSpyTree.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Populate the treeview control on the main 
+//  Populate the treeview control on the main
 //  window with the system window hierarchy.
 //
 
@@ -27,35 +27,35 @@ static HIMAGELIST hImgList = 0;
 
 
 //
-//	Treeview image indices
+//  Treeview image indices
 //
-#define DESKTOP_IMAGE	  0			// general images indices
-#define WINDOW_IMAGE	  1
-#define DIALOG_IMAGE	  2
-#define CHILD_IMAGE		  3
-#define POPUP_IMAGE		  4
-#define CONTROL_START     5			// where the control images start
-#define NUM_CLASS_BITMAPS 35		// (35 for visible, another 35 for invisible windows)
+#define DESKTOP_IMAGE     0         // general images indices
+#define WINDOW_IMAGE      1
+#define DIALOG_IMAGE      2
+#define CHILD_IMAGE       3
+#define POPUP_IMAGE       4
+#define CONTROL_START     5         // where the control images start
+#define NUM_CLASS_BITMAPS 35        // (35 for visible, another 35 for invisible windows)
 
 //
-//	Use this structure+variables to help us popuplate the treeview
+//  Use this structure+variables to help us popuplate the treeview
 //
 #define MAX_WINDOW_DEPTH 500
 
 typedef struct
 {
 	HTREEITEM hRoot;
-	HWND	  hwnd;
+	HWND      hwnd;
 
 }  WinStackType;
 
 typedef struct
 {
-	DWORD		 dwProcessId;
-	HTREEITEM    hRoot;			    //Main root. Not used?
+	DWORD        dwProcessId;
+	HTREEITEM    hRoot;             //Main root. Not used?
 
 	WinStackType windowStack[MAX_WINDOW_DEPTH];
-	int          nWindowZ;			//Current position in the window stack
+	int          nWindowZ;          //Current position in the window stack
 
 } WinProc;
 
@@ -63,72 +63,72 @@ static WinProc *WinStackList;
 int WinStackCount;
 
 //static WinStackType WindowStack[MAX_WINDOW_DEPTH];
-//static int          nWindowZ = 0;		//Current position in the window stack
-//static HTREEITEM    hRoot;			    //Main root. Not used?
+//static int          nWindowZ = 0;     //Current position in the window stack
+//static HTREEITEM    hRoot;                //Main root. Not used?
 
 //
-//	Define a lookup table, of windowclass to image index
+//  Define a lookup table, of windowclass to image index
 //
 typedef struct
 {
-	LPCTSTR szName;			// Class name
-	int   index;			// Index into image list
-	ATOM  atom;             // (Unused) Might use for fast lookups. 
+	LPCTSTR szName;         // Class name
+	int   index;            // Index into image list
+	ATOM  atom;             // (Unused) Might use for fast lookups.
 
-	DWORD  dwAdjustStyles;	// Only valid if one of these styles is set
+	DWORD  dwAdjustStyles;  // Only valid if one of these styles is set
 							// Default = 0 (don't care)
 
-	DWORD  dwMask;			// Compare
+	DWORD  dwMask;          // Compare
 
 }  ClassImageLookup;
 
 ClassImageLookup ClassImage[] =
 {
 	_T("#32770"),               0,  0, 0, 0,
-	_T("Button"),               4,  0, BS_GROUPBOX,			0xF,
-	_T("Button"),				2,  0, BS_CHECKBOX,			0xF,
-	_T("Button"),				2,  0, BS_AUTOCHECKBOX,		0xF,
-	_T("Button"),				2,  0, BS_AUTO3STATE,		0xF,
-	_T("Button"),				2,  0, BS_3STATE,			0xF,
-	_T("Button"),				3,  0, BS_RADIOBUTTON,		0xF,
-	_T("Button"),				3,  0, BS_AUTORADIOBUTTON,	0xF,
-	_T("Button"),               1,  0, 0, 0,	// (default push-button)
+	_T("Button"),               4,  0, BS_GROUPBOX,         0xF,
+	_T("Button"),               2,  0, BS_CHECKBOX,         0xF,
+	_T("Button"),               2,  0, BS_AUTOCHECKBOX,     0xF,
+	_T("Button"),               2,  0, BS_AUTO3STATE,       0xF,
+	_T("Button"),               2,  0, BS_3STATE,           0xF,
+	_T("Button"),               3,  0, BS_RADIOBUTTON,      0xF,
+	_T("Button"),               3,  0, BS_AUTORADIOBUTTON,  0xF,
+	_T("Button"),               1,  0, 0, 0,    // (default push-button)
 	_T("ComboBox"),             5,  0, 0, 0,
 	_T("Edit"),                 6,  0, 0, 0,
 	_T("ListBox"),              7,  0, 0, 0,
 
-	_T("RICHEDIT"),				8,  0, 0, 0,
-	_T("RichEdit20A"),			8,  0, 0, 0,
-	_T("RichEdit20W"),			8,  0, 0, 0,
+	_T("RICHEDIT"),             8,  0, 0, 0,
+	_T("RichEdit20A"),          8,  0, 0, 0,
+	_T("RichEdit20W"),          8,  0, 0, 0,
 
-	_T("Scrollbar"),			9,  0, SBS_VERT, 0,
-	_T("Scrollbar"),			11, 0, SBS_SIZEBOX | SBS_SIZEGRIP, 0,
-	_T("Scrollbar"),			10, 0, 0, 0,  // (default horizontal)
-	_T("Static"),				12, 0, 0, 0,
+	_T("Scrollbar"),            9,  0, SBS_VERT, 0,
+	_T("Scrollbar"),            11, 0, SBS_SIZEBOX | SBS_SIZEGRIP, 0,
+	_T("Scrollbar"),            10, 0, 0, 0,  // (default horizontal)
+	_T("Static"),               12, 0, 0, 0,
 
-	_T("SysAnimate32"),			13, 0, 0, 0,
-	_T("SysDateTimePick32"),	14, 0, 0, 0,
-	_T("SysHeader32"),			15, 0, 0, 0,
-	_T("IPAddress"),			16, 0, 0, 0,
-	_T("SysListView32"),		17, 0, 0, 0,
-	_T("SysMonthCal32"),		18, 0, 0, 0,
-	_T("SysPager"),				19, 0, 0, 0,
-	_T("msctls_progress32"),	20, 0, 0, 0,
-	_T("ReBarWindow32"),		21, 0, 0, 0,
-	_T("msctls_statusbar32"),	22, 0, 0, 0,
-	_T("SysLink"),				23, 0, 0, 0,
-	_T("SysTabControl32"),		24, 0, 0, 0,
-	_T("ToolbarWindow32"),		25, 0, 0, 0,
-	_T("tooltips_class32"),		26, 0, 0, 0,
-	_T("msctls_trackbar32"),	27, 0, 0, 0,
-	_T("SysTreeView32"),		28, 0, 0, 0,
-	_T("msctls_updown32"),		29, 0, 0, 0,
+	_T("SysAnimate32"),         13, 0, 0, 0,
+	_T("SysDateTimePick32"),    14, 0, 0, 0,
+	_T("SysHeader32"),          15, 0, 0, 0,
+	_T("IPAddress"),            16, 0, 0, 0,
+	_T("SysListView32"),        17, 0, 0, 0,
+	_T("SysMonthCal32"),        18, 0, 0, 0,
+	_T("SysPager"),             19, 0, 0, 0,
+	_T("msctls_progress32"),    20, 0, 0, 0,
+	_T("ReBarWindow32"),        21, 0, 0, 0,
+	_T("msctls_statusbar32"),   22, 0, 0, 0,
+	_T("SysLink"),              23, 0, 0, 0,
+	_T("SysTabControl32"),      24, 0, 0, 0,
+	_T("ToolbarWindow32"),      25, 0, 0, 0,
+	_T("tooltips_class32"),     26, 0, 0, 0,
+	_T("msctls_trackbar32"),    27, 0, 0, 0,
+	_T("SysTreeView32"),        28, 0, 0, 0,
+	_T("msctls_updown32"),      29, 0, 0, 0,
 
 	_T(""), 0, 0, 0,
 };
 
 //
-//	Not used at present (doesn't work!)
+//  Not used at present (doesn't work!)
 //
 //  Could be used to perform fast classname lookups, if we
 //  precalculate all the class atoms, then all we need to
@@ -137,13 +137,13 @@ ClassImageLookup ClassImage[] =
 //
 void InitAtomList()
 {
-	int		i;
+	int     i;
 	ATOM    atom;
 
 	INITCOMMONCONTROLSEX ice;
 
 	ice.dwSize = sizeof(ice);
-	ice.dwICC = ICC_COOL_CLASSES;//-1;	//all classes
+	ice.dwICC = ICC_COOL_CLASSES;//-1;  //all classes
 
 	i = InitCommonControlsEx(&ice);
 
@@ -156,7 +156,7 @@ void InitAtomList()
 }
 
 //
-//	Find the image index (in TreeView imagelist), given a
+//  Find the image index (in TreeView imagelist), given a
 //  window classname. dwStyle lets us differentiate further
 //  when we find a match.
 //
@@ -202,7 +202,7 @@ int IconFromClassName(TCHAR *szName, DWORD dwStyle)
 #define MIN_FORMAT_LEN  (32 + MAX_VERBOSE_LEN + MAX_CLASS_LEN + MAX_WINTEXT_LEN)
 
 //
-//	szTotal must be MIN_FORMAT_LEN characters
+//  szTotal must be MIN_FORMAT_LEN characters
 //
 int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 {
@@ -281,15 +281,15 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 //
 WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 {
-	DWORD			pid;
-	int				i;
-	TVINSERTSTRUCT	tv;
-	TCHAR			ach[MIN_FORMAT_LEN];
-	TCHAR			name[100] = _T("");
-	TCHAR			path[MAX_PATH] = _T("");
-	SHFILEINFO		shfi = { 0 };
-	HIMAGELIST		hImgList;
-	HTREEITEM		hRoot;
+	DWORD           pid;
+	int             i;
+	TVINSERTSTRUCT  tv;
+	TCHAR           ach[MIN_FORMAT_LEN];
+	TCHAR           name[100] = _T("");
+	TCHAR           path[MAX_PATH] = _T("");
+	SHFILEINFO      shfi = { 0 };
+	HIMAGELIST      hImgList;
+	HTREEITEM       hRoot;
 
 	GetWindowThreadProcessId(hwnd, &pid);
 
@@ -358,12 +358,12 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	// Keep track of the last window to be inserted, so
 	// we know the z-order of the current window
 	static HTREEITEM hTreeLast;
-	static HWND		 hwndLast;
+	static HWND      hwndLast;
 
 	TVINSERTSTRUCT tv;
 
 	//
-	//	
+	//
 	//
 	//
 	WinProc *winProc = GetProcessWindowStack(hwndTree, hwnd);
@@ -421,9 +421,9 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	//
 	// Decide where to place this item
 	//
-	//	If this window is in a different Z-order than the last one, then
+	//  If this window is in a different Z-order than the last one, then
 	//  we need to either start a sub-hierarchy (if it is a child),
-	//	or return back up the existing hierarchy.
+	//  or return back up the existing hierarchy.
 	//
 	if (winProc->nWindowZ > 0 && hwndParent != WindowStack[winProc->nWindowZ - 1].hwnd)
 	{
@@ -469,9 +469,9 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 }
 
 //
-//	Populate the treeview control by using EnumChildWindows,
+//  Populate the treeview control by using EnumChildWindows,
 //  starting from the desktop window
-//	HWND - handle to the dialog containing the tree
+//  HWND - handle to the dialog containing the tree
 //
 void FillGlobalWindowTree(HWND hwndTree)
 {
@@ -501,12 +501,12 @@ void FillGlobalWindowTree(HWND hwndTree)
 	//nWindowZ = 1;
 
 	// EnumChildWindows does the hard work for us
-	// 
+	//
 	EnumChildWindows(GetDesktopWindow(), AllWindowProc, (LPARAM)hwndTree);
 }
 
 //
-//	Initialize the TreeView resource
+//  Initialize the TreeView resource
 //
 void InitGlobalWindowTree(HWND hwndTree)
 {
@@ -548,7 +548,7 @@ void InitGlobalWindowTree(HWND hwndTree)
 }
 
 //
-//	Clean up TreeView resources
+//  Clean up TreeView resources
 //
 void DeInitGlobalWindowTree(HWND hwndTree)
 {
@@ -557,7 +557,7 @@ void DeInitGlobalWindowTree(HWND hwndTree)
 }
 
 //
-//	Find the specified window (hwndTarget) in the TreeView.
+//  Find the specified window (hwndTarget) in the TreeView.
 //  Set hItem = NULL to start.
 //
 HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem)
@@ -607,7 +607,7 @@ HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem)
 }
 
 //
-//	Update the TreeView with current window list
+//  Update the TreeView with current window list
 //
 void RefreshTreeView(HWND hwndTree)
 {

@@ -1,20 +1,20 @@
 //
-//	BitmapButton.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  BitmapButton.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void MakeBitmapButton(HWND hwnd, UINT uIconId)
+//  void MakeBitmapButton(HWND hwnd, UINT uIconId)
 //
 //  Converts the specified button into an owner-drawn button
-//	(supports a small icon + text to the right)
+//  (supports a small icon + text to the right)
 //
-//	 hwnd    - handle to button
+//   hwnd    - handle to button
 //   uIconId - icon resource ID (loaded from THIS module)
 //
 //
 //  BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 //
-//	You must call this when the parent (dialog?) window receives a
+//  You must call this when the parent (dialog?) window receives a
 //  WM_DRAWITEM for the button.
 //
 
@@ -32,7 +32,7 @@
 #pragma comment(lib,    "Delayimp.lib")
 //#pragma comment(linker, "/delayload:Uxtheme.dll")
 
-BOOL	g_fThemeApiAvailable = FALSE;
+BOOL    g_fThemeApiAvailable = FALSE;
 
 HTHEME _OpenThemeData(HWND hwnd, LPCWSTR pszClassList)
 {
@@ -55,13 +55,13 @@ HRESULT _CloseThemeData(HTHEME hTheme)
 #endif
 
 #ifndef DT_HIDEPREFIX
-#define DT_HIDEPREFIX		0x100000
+#define DT_HIDEPREFIX       0x100000
 #endif
 
-#define X_ICON_BORDER	3	// 3 pixels
+#define X_ICON_BORDER   3   // 3 pixels
 
 //
-//	Subclass procedure for an owner-drawn button.
+//  Subclass procedure for an owner-drawn button.
 //  All this does is to re-enable double-click behaviour for
 //  an owner-drawn button.
 //
@@ -149,17 +149,17 @@ static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 }*/
 
 //
-//	Call this function whenever you get a WM_DRAWITEM in the parent dialog..
+//  Call this function whenever you get a WM_DRAWITEM in the parent dialog..
 //
 BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 {
-	RECT rect;			// Drawing rectangle
+	RECT rect;          // Drawing rectangle
 	POINT pt;
 
-	int ix, iy;			// Icon offset
-	int bx, by;			// border sizes
-	int sxIcon, syIcon;	// Icon size
-	int xoff, yoff;		// 
+	int ix, iy;         // Icon offset
+	int bx, by;         // border sizes
+	int sxIcon, syIcon; // Icon size
+	int xoff, yoff;     //
 
 	TCHAR szText[100];
 	size_t nTextLen;
@@ -287,7 +287,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		// Draw the icon
 		DrawIconEx(dis->hDC, ix + xoff, iy + yoff, hIcon, sxIcon, syIcon, 0, 0, DI_NORMAL);
 
-		// Adjust position of window text 
+		// Adjust position of window text
 		if (fRightAlign)
 		{
 			rect.left += bx + X_ICON_BORDER;
@@ -331,7 +331,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 }
 
 //
-//	Convert the specified button into an owner-drawn button.
+//  Convert the specified button into an owner-drawn button.
 //  The button does NOT need owner-draw or icon styles set
 //  in the resource editor - this function sets these
 //  styles automatically
@@ -362,7 +362,7 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 }
 
 //
-//	Just a helper function really
+//  Just a helper function really
 //
 void MakeDlgBitmapButton(HWND hwndDlg, UINT uCtrlId, UINT uIconId)
 {

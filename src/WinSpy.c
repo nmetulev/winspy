@@ -1,12 +1,12 @@
 //
-//	WinSpy.c
+//  WinSpy.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Main implementation.
+//  Main implementation.
 //
-//	v 1.7.1	- moved system-menu items to appear before the Close item
+//  v 1.7.1 - moved system-menu items to appear before the Close item
 //
 
 #define STRICT
@@ -19,18 +19,17 @@
 #include "resource.h"
 #include "WinSpy.h"
 #include "FindTool.h"
-//#include "AggressiveOptimize.h"
 #include "CaptureWindow.h"
 #include "BitmapButton.h"
 #include "Utils.h"
 
-HWND		hwndPin;		// Toolbar with pin bitmap
-HWND		hwndSizer;		// Sizing grip for bottom-right corner
-HWND		hwndToolTip;	// tooltip for main window controls only
-HINSTANCE	hInst;			// Current application instance
+HWND        hwndPin;        // Toolbar with pin bitmap
+HWND        hwndSizer;      // Sizing grip for bottom-right corner
+HWND        hwndToolTip;    // tooltip for main window controls only
+HINSTANCE   hInst;          // Current application instance
 
 //
-//	Current window being spied on
+//  Current window being spied on
 //
 HWND       spy_hCurWnd = 0;
 WNDCLASSEX spy_WndClassEx;
@@ -42,28 +41,28 @@ TCHAR      spy_szClassName[70];
 
 static TBBUTTON tbbPin[] =
 {
-	{	0,	IDM_WINSPY_PIN,		TBSTATE_ENABLED, TBSTYLE_CHECK,  0, 0	},
+	{   0,  IDM_WINSPY_PIN,     TBSTATE_ENABLED, TBSTYLE_CHECK,  0, 0   },
 };
 
 #define IDC_PIN_TOOLBAR 2000 // must be unique, so check resource.h
-#define TOOLBAR_PIN_STYLES  (TBSTYLE_FLAT |	WS_CHILD | WS_VISIBLE | \
-						CCS_NOPARENTALIGN | CCS_NORESIZE | CCS_NODIVIDER)
+#define TOOLBAR_PIN_STYLES  (TBSTYLE_FLAT | WS_CHILD | WS_VISIBLE | \
+                        CCS_NOPARENTALIGN | CCS_NORESIZE | CCS_NODIVIDER)
 
 DialogTab WinSpyTab[NUMTABCONTROLITEMS] =
 {
-	0, _T("General"),		IDD_TAB_GENERAL,	GeneralDlgProc,
-	0, _T("Styles"),		IDD_TAB_STYLES,		StyleDlgProc,
-	0, _T("Properties"),	IDD_TAB_PROPERTIES, PropertyDlgProc,
-	0, _T("Class"),			IDD_TAB_CLASS,		ClassDlgProc,
-	0, _T("Windows"),		IDD_TAB_WINDOWS,	WindowDlgProc,
-	0, _T("Process"),		IDD_TAB_PROCESS,    ProcessDlgProc,
+	0, _T("General"),       IDD_TAB_GENERAL,    GeneralDlgProc,
+	0, _T("Styles"),        IDD_TAB_STYLES,     StyleDlgProc,
+	0, _T("Properties"),    IDD_TAB_PROPERTIES, PropertyDlgProc,
+	0, _T("Class"),         IDD_TAB_CLASS,      ClassDlgProc,
+	0, _T("Windows"),       IDD_TAB_WINDOWS,    WindowDlgProc,
+	0, _T("Process"),       IDD_TAB_PROCESS,    ProcessDlgProc,
 };
 
 static int nCurrentTab = 0;
 
 //
-//	Try to get class information normally - if
-//  it's a private application class, then we need to 
+//  Try to get class information normally - if
+//  it's a private application class, then we need to
 //  do this remotely
 //
 void GetRemoteInfo(HWND hwnd)
@@ -94,7 +93,7 @@ void GetRemoteInfo(HWND hwnd)
 }
 
 //
-//	Top-level function for retrieving+displaying a window's
+//  Top-level function for retrieving+displaying a window's
 //  information (styles/class/properties etc)
 //
 void DisplayWindowInfo(HWND hwnd)
@@ -138,7 +137,7 @@ void DisplayWindowInfo(HWND hwnd)
 }
 
 //
-//	User-defined callback function for the Find Tool
+//  User-defined callback function for the Find Tool
 //
 UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 {
@@ -271,7 +270,7 @@ BOOL IsSysMenuChecked(HWND hwnd, UINT uItemId)
 }
 
 //
-//	Toggle the checked status for specified item
+//  Toggle the checked status for specified item
 //
 BOOL ToggleSysMenuCheck(HWND hwnd, UINT uItemId)
 {
@@ -288,7 +287,7 @@ BOOL ToggleSysMenuCheck(HWND hwnd, UINT uItemId)
 }
 
 //
-//	Determine the window layout and check/uncheck  the
+//  Determine the window layout and check/uncheck  the
 //  maximized menu item accordingly
 //
 void SetSysMenuIconFromLayout(HWND hwnd, UINT layout)
@@ -300,7 +299,7 @@ void SetSysMenuIconFromLayout(HWND hwnd, UINT layout)
 }
 
 //
-//	Create a sizing grip for the lower-right corner
+//  Create a sizing grip for the lower-right corner
 //
 HWND CreateSizeGrip(HWND hwndDlg)
 {
@@ -319,7 +318,7 @@ HWND CreateSizeGrip(HWND hwndDlg)
 }
 
 //
-//	Create a tooltip control, 
+//  Create a tooltip control,
 //
 HWND CreateTooltip(HWND hwndDlg)
 {
@@ -330,7 +329,7 @@ HWND CreateTooltip(HWND hwndDlg)
 
 	struct CtrlTipsTag
 	{
-		UINT  uDlgId;	// -1 for main window, 0-n for tab dialogs
+		UINT  uDlgId;   // -1 for main window, 0-n for tab dialogs
 		UINT  uCtrlId;
 		TCHAR szText[50];
 
@@ -339,9 +338,9 @@ HWND CreateTooltip(HWND hwndDlg)
 		-1, IDC_DRAGGER,    _T("Window Finder Tool"),
 		-1, IDC_PIN_TOOLBAR,_T("Keep On-Screen (F4)"),
 		-1, IDC_MINIMIZE,   _T("Minimize On Use"),
-		-1, IDC_HIDDEN,		_T("Display Hidden Windows"),
+		-1, IDC_HIDDEN,     _T("Display Hidden Windows"),
 		-1, IDC_CAPTURE,    _T("Capture Current Window (Alt+C)"),
-		-1, IDC_AUTOUPDATE,	_T("Update data every second"),
+		-1, IDC_AUTOUPDATE, _T("Update data every second"),
 		-1, IDC_EXPAND,     _T("Expand / Collapse (F3)"),
 		-1, IDC_REFRESH,    _T("Refresh Window List (F6)"),
 		-1, IDC_LOCATE,     _T("Locate Current Window"),
@@ -350,7 +349,7 @@ HWND CreateTooltip(HWND hwndDlg)
 		GENERAL_TAB, IDC_HANDLE_MENU,  _T("Window Commands"),
 		GENERAL_TAB, IDC_SETCAPTION,   _T("Set Window Caption"),
 		GENERAL_TAB, IDC_EDITSIZE,     _T("Adjust Window Position"),
-		STYLE_TAB,	 IDC_EDITSTYLE,    _T("Edit Styles"),
+		STYLE_TAB,   IDC_EDITSTYLE,    _T("Edit Styles"),
 		STYLE_TAB,   IDC_EDITSTYLEEX,  _T("Edit Extended Styles"),
 		PROCESS_TAB, IDC_PROCESS_MENU, _T("Process Commands"),
 		WINDOW_TAB,  IDC_PARENT,       _T("Parent Window"),
@@ -372,9 +371,9 @@ HWND CreateTooltip(HWND hwndDlg)
 		NULL
 	);
 
-	//	
-	//	Add tooltips to every control (above)
-	//	
+	//
+	//  Add tooltips to every control (above)
+	//
 	for (i = 0; i < ARRAYSIZE(CtrlTips); i++)
 	{
 		HWND hwnd;
@@ -401,25 +400,25 @@ HWND CreateTooltip(HWND hwndDlg)
 }
 
 //
-//	Create a toolbar with one button in it, for
+//  Create a toolbar with one button in it, for
 //  the pin-button
 //
 HWND CreatePinToolbar(HWND hwndDlg)
 {
 	RECT    rect;
-	HWND	hwndTB;
+	HWND    hwndTB;
 
 	// Create the toolbar to hold pin bitmap
 	hwndTB = CreateToolbarEx(
 		hwndDlg,
-		TOOLBAR_PIN_STYLES,				//,
-		IDC_PIN_TOOLBAR,				//toolbar ID (don't need)
-		2,								//number of button images
-		hInst,							//where the bitmap is
-		IDB_PIN_BITMAP,					//bitmap resource name
-		tbbPin,							//TBBUTTON structure
+		TOOLBAR_PIN_STYLES,             //,
+		IDC_PIN_TOOLBAR,                //toolbar ID (don't need)
+		2,                              //number of button images
+		hInst,                          //where the bitmap is
+		IDB_PIN_BITMAP,                 //bitmap resource name
+		tbbPin,                         //TBBUTTON structure
 		ARRAYSIZE(tbbPin),
-		15, 14, 15, 14,					//0,0,//16,18, 16, 18,
+		15, 14, 15, 14,                 //0,0,//16,18, 16, 18,
 		sizeof(TBBUTTON));
 
 
@@ -442,7 +441,7 @@ HWND CreatePinToolbar(HWND hwndDlg)
 }
 
 //
-//	WM_INITDIALOG handler
+//  WM_INITDIALOG handler
 //
 BOOL WinSpy_InitDlg(HWND hwnd)
 {
@@ -487,7 +486,7 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 
 	InitStockStyleLists();
 
-	// 
+	//
 	CheckDlgButton(hwnd, IDC_MINIMIZE, fMinimizeWinSpy);
 	CheckDlgButton(hwnd, IDC_HIDDEN, fShowHidden);
 
@@ -520,7 +519,7 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	SetWindowPos(WinSpyTab[0].hwnd, 0, 0, 0, 0, 0, SWP_SHOWONLY);
 
 	//
-	//	Customize this window's system menu by adding our own
+	//  Customize this window's system menu by adding our own
 	//  commands.
 	//
 	hSysMenu = GetSystemMenu(hwnd, FALSE);
@@ -536,12 +535,12 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 		_T("Always On &Top\tShift+Y"));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, -1, _T(""));
 
-	/*	AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
+	/*  AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
 		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT,   _T("&About"));
 		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
 		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_HELP,    _T("&Help\tF1"));
 		AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
-		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING	|
+		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING |
 			(fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
 			_T("Always On &Top\tShift+Y"));*/
 
@@ -567,12 +566,12 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 
 	ForceVisibleDisplay(hwnd);
 
-	// Set focus to first item		
+	// Set focus to first item
 	return TRUE;
 }
 
 //
-//	WM_NOTIFY handler
+//  WM_NOTIFY handler
 //
 UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
 {
@@ -607,7 +606,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
 	case NM_DBLCLK:
 	case NM_RCLICK:
 
-		// Find out where in the TreeView the mouse has been clicked		
+		// Find out where in the TreeView the mouse has been clicked
 		GetCursorPos(&pt);
 
 		hti.pt = pt;
@@ -678,7 +677,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
 }
 
 //
-//	WM_SYSCOLORCHANGE handler
+//  WM_SYSCOLORCHANGE handler
 //
 BOOL WinSpyDlg_SysColorChange(HWND hwnd)
 {
@@ -719,7 +718,7 @@ void DumpRect(HWND hwnd)
 #endif
 
 //
-//	Dialog procedure for main window
+//  Dialog procedure for main window
 //
 INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -789,12 +788,12 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 //
-//	The only reason I do this is to "obfuscate" the main
+//  The only reason I do this is to "obfuscate" the main
 //  window. All the windows are just dialogs (#32770), but
 //  I use this function to make a new dialog class with
 //  a different name..no other reason.
 //
-//	Check the dialog resources to see how the new name
+//  Check the dialog resources to see how the new name
 //  is specified. (MFC extensions must be turned off for the resource
 //  to enable this feature).
 //
@@ -815,13 +814,13 @@ void RegisterDialogClass(TCHAR szNewName[])
 	RegisterClassEx(&wc);
 }
 //
-//	This is where the fun begins
+//  This is where the fun begins
 //
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	HWND	hwndMain;
-	HACCEL	hAccelTable;
-	MSG		msg;
+	HWND    hwndMain;
+	HACCEL  hAccelTable;
+	MSG     msg;
 
 	INITCOMMONCONTROLSEX ice;
 	hInst = hInstance;
@@ -849,7 +848,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	//
 	// UPDATED (fix for Matrox CenterPOPUP feature :)
 	//
-	//	If we use ShowWindow, then my Matrox card automatically centers WinSpy
+	//  If we use ShowWindow, then my Matrox card automatically centers WinSpy
 	//  on the current monitor (even if we restored WinSpy to it's position last
 	//  time we ran). Therefore we use SetWindowPos to display the dialog, as
 	//  Matrox don't seem to hook this in their display driver..

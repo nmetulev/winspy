@@ -1,12 +1,12 @@
 //
-//	GetRemoteClassInfoEx.c
+//  GetRemoteClassInfoEx.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
 //  BOOL GetRemoteClassInfoEx(HWND hwnd)
 //
-//  In order to retrieve private class information for a 
+//  In order to retrieve private class information for a
 //  window in another process, we have to create
 //  a remote thread in that process and call GetClassInfoEx from
 //  there.
@@ -28,7 +28,7 @@ typedef LONG_PTR(WINAPI *PROCGETWINDOWLONGPTR)(HWND, int);
 typedef LRESULT(WINAPI *PROCSENDMESSAGETO)(HWND, UINT, WPARAM, LPARAM, UINT, UINT, PDWORD_PTR);
 
 //
-//	Define a structure for the remote thread to use
+//  Define a structure for the remote thread to use
 //
 typedef struct
 {
@@ -65,7 +65,7 @@ typedef struct
 // that we need to call for initialization.
 
 //
-//	Thread to inject to remote process. Must not
+//  Thread to inject to remote process. Must not
 //  make ANY calls to code in THIS process.
 //
 __declspec(code_seg(".inject$a"))

@@ -1,7 +1,7 @@
 //
-//	InjectThread.c
+//  InjectThread.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
 //  InjectThread uses the CreateRemoteThread API call
@@ -24,12 +24,12 @@ typedef PVOID(WINAPI * VA_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD, DWORD);
 typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
 
 //
-//	Inject a thread into the process which owns the specified window.
+//  Inject a thread into the process which owns the specified window.
 //
-//	lpCode     - address of function to inject. (See CreateRemoteThread)
+//  lpCode     - address of function to inject. (See CreateRemoteThread)
 //  cbCodeSize - size (in bytes) of the function
 //
-//	lpData     - address of a user-defined structure to be passed to the injected thread
+//  lpData     - address of a user-defined structure to be passed to the injected thread
 //  cbDataSize - size (in bytes) of the structure
 //
 //  The user-defined structure is also injected into the target process' address space.
@@ -37,13 +37,13 @@ typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
 //
 DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbCodeSize, LPVOID lpData, DWORD cbDataSize)
 {
-	DWORD  dwProcessId;			//id of remote process
-	DWORD  dwThreadId;			//id of the thread in remote process 
-	HANDLE hProcess;			//handle to the remote process
+	DWORD  dwProcessId;         //id of remote process
+	DWORD  dwThreadId;          //id of the thread in remote process
+	HANDLE hProcess;            //handle to the remote process
 
-	HANDLE hRemoteThread;		//handle to the injected thread
+	HANDLE hRemoteThread;       //handle to the injected thread
 
-	SIZE_T dwWritten;			// Number of bytes written to the remote process
+	SIZE_T dwWritten;           // Number of bytes written to the remote process
 	SIZE_T dwRead;
 	DWORD  dwExitCode;
 

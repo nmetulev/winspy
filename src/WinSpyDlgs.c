@@ -1,10 +1,10 @@
 //
-//	WinSpyDlgs.c
+//  WinSpyDlgs.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Contains all the dialog box procedures for
+//  Contains all the dialog box procedures for
 //  each tab-pane dialog control.
 //
 
@@ -41,7 +41,7 @@ extern TCHAR szPath[];
 //
 
 //
-//	Destroy specified window
+//  Destroy specified window
 //
 /*BOOL RemoteDestroyWindow(HWND hwnd)
 {
@@ -139,8 +139,8 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 		return 0;
 
 		//case IDM_POPUP_DESTROY:
-		//	RemoteDestroyWindow(hwndTarget);
-		//	return 0;
+		//  RemoteDestroyWindow(hwndTarget);
+		//  return 0;
 
 		// new for 1.6
 	case IDM_POPUP_COPY:
@@ -148,7 +148,7 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 		return 0;
 
 	case IDM_POPUP_SAVE:
-		//	SaveTreeStructure(hwndDlg, hwndTarget);
+		//  SaveTreeStructure(hwndDlg, hwndTarget);
 		return 0;
 
 	default:
@@ -158,7 +158,7 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 }
 
 //
-//	Configure the popup menu
+//  Configure the popup menu
 //
 void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 {
@@ -205,7 +205,7 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 }
 
 //
-//	General tab
+//  General tab
 //
 LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -362,7 +362,7 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 }
 
 //
-//	Style tab
+//  Style tab
 //
 LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -415,7 +415,7 @@ LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 }
 
 //
-//	Window tab
+//  Window tab
 //
 LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -485,8 +485,8 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		ListView_SetBkColor(GetDlgItem(hwnd, IDC_LIST2), GetSysColor(COLOR_WINDOW));
 		return 0;
 
-	// if clicked on one of the underlined static controls, then
-	// display window info.
+		// if clicked on one of the underlined static controls, then
+		// display window info.
 	case WM_COMMAND:
 
 		switch (LOWORD(wParam))
@@ -504,7 +504,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 }
 
 //
-//	Properties tab
+//  Properties tab
 //
 LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -529,7 +529,7 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 		hwndList1 = GetDlgItem(hwnd, IDC_LIST1);
 		ListView_SetExtendedListViewStyle(hwndList1, LVS_EX_FULLROWSELECT);
 
-		// Work out how big the header-items need to be 
+		// Work out how big the header-items need to be
 		GetClientRect(hwndList1, &rect);
 		width = rect.right;
 		width -= GetSystemMetrics(SM_CXVSCROLL);
@@ -717,7 +717,7 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 }
 
 //
-//	Process Tab
+//  Process Tab
 //
 LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {

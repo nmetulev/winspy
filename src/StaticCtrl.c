@@ -1,14 +1,14 @@
 //
-//	StaticCtrl.c
+//  StaticCtrl.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
 //  void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 //
 //  Creates a very basic hyperlink control from a standard
 //  static label.
-//  
+//
 //  Use the standard control notifications (WM_COMMAND) to
 //  detect mouse clicks.
 //
@@ -131,18 +131,18 @@ void FreeHyperlink(HWND hwnd)
 static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
-	HDC		hdc;
+	HDC     hdc;
 
 	URLCtrl *url = (URLCtrl *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	WNDPROC oldproc = url->oldproc;
 
-	RECT	rect;
-	UINT	dtstyle = 0;
-	SIZE	sz;
-	int		nTextLen;
-	HANDLE	hOld;
+	RECT    rect;
+	UINT    dtstyle = 0;
+	SIZE    sz;
+	int     nTextLen;
+	HANDLE  hOld;
 
-	static	TCHAR szWinText[MAX_PATH];
+	static  TCHAR szWinText[MAX_PATH];
 
 	switch (iMsg)
 	{
