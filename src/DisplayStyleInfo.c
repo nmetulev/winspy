@@ -839,7 +839,7 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyles, BOOL f
 
 		fPresent = StyleApplicableAndPresent(dwOrig, pStyle);
 
-		// Now add the style..
+		// Now add the style.
 		if (fPresent || fAllStyles)
 		{
 			// We've added this style, so remove it to stop it appearing again

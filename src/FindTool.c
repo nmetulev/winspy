@@ -483,7 +483,7 @@ BOOL MakeFinderTool(HWND hwnd, WNDFINDPROC wfp)
 	dwStyle |= SS_NOTIFY;
 	dwStyle |= SS_BITMAP;
 
-	// Now apply them..
+	// Now apply them.
 	SetWindowLong(hwnd, GWL_STYLE, dwStyle);
 
 	// Set the default bitmap

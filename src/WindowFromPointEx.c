@@ -100,7 +100,7 @@ static HWND FindBestChild(HWND hwndFound, POINT pt)
 	dwStyle = GetWindowLong(hwndFound, GWL_STYLE);
 
 	// The original window might already be a top-level window,
-	// so we don't want to start at *it's* parent
+	// so we don't want to start at *its* parent
 	if (hwnd == 0 || (dwStyle & WS_POPUP))
 		hwnd = hwndFound;
 

@@ -26,10 +26,10 @@ BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis)
 //
 //  All we do is draw the list normally, but with a couple of minor changes:
 //
-//  Each list item will have it's user-defined dataitem set to the value
-//  of each style.
+//  Each list item will have its user-defined dataitem set to the definition
+//  of the style it represents.
 //
-//  If this style is zero, this means that it is an implicit style, so
+//  If this style's value is zero, this means that it is an implicit style, so
 //  draw the whole line gray.
 //
 //  Also, at the end of every line, right-align the hex-values of each style

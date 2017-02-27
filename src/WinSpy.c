@@ -617,7 +617,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
 			(hti.flags & (TVHT_ONITEM | TVHT_ONITEMRIGHT)))
 		{
 			// Now get the window handle, which is stored in the lParam
-			// portion of the TVITEM structure..
+			// portion of the TVITEM structure.
 			ZeroMemory(&tvi, sizeof(tvi));
 			tvi.mask = TVIF_HANDLE | TVIF_PARAM;
 			tvi.hItem = hti.hItem;
@@ -849,9 +849,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// UPDATED (fix for Matrox CenterPOPUP feature :)
 	//
 	//  If we use ShowWindow, then my Matrox card automatically centers WinSpy
-	//  on the current monitor (even if we restored WinSpy to it's position last
+	//  on the current monitor (even if we restored WinSpy to its position last
 	//  time we ran). Therefore we use SetWindowPos to display the dialog, as
-	//  Matrox don't seem to hook this in their display driver..
+	//  Matrox don't seem to hook this in their display driver.
 	//
 	SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 

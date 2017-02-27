@@ -32,7 +32,7 @@ static LRESULT CALLBACK NoFlickerTabProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 	switch (msg)
 	{
 	case WM_NCDESTROY:
-		//do any de-init here..
+		//do any de-init here.
 		break;
 
 	case WM_ERASEBKGND:
@@ -61,7 +61,7 @@ static LRESULT CALLBACK NoFlickerTabProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		n = TabCtrl_GetItemCount(hwnd);
 		TabCtrl_GetItemRect(hwnd, n - 1, &rect);
 
-		// Now fill the long horz rectangle to the right of the tab..
+		// Now fill the long horz rectangle to the right of the tab.
 		rect.left = rect.right + 2;
 		rect.right = width;
 		rect.top = 0;

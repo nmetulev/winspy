@@ -31,8 +31,8 @@ void SetupEdits(HWND hwndDlg, HWND hwndTarget, RECT *prect)
 	// Is this window a child control or not??
 	dwStyle = GetWindowLong(hwndTarget, GWL_STYLE);
 
-	// If this is a child window, then make it's coords
-	// relative to it's parent.
+	// If this is a child window, then make its coords
+	// relative to its parent.
 	if (dwStyle & WS_CHILD)
 		MapWindowPoints(NULL, GetParent(hwndTarget), (POINT *)&rect, 2);
 

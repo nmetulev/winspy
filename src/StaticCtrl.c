@@ -19,7 +19,7 @@
 #include <windows.h>
 #include <tchar.h>
 
-// Keep track of how many URL controls we have..
+// Keep track of how many URL controls we have.
 static LONG    lRefCount = 0;
 
 //

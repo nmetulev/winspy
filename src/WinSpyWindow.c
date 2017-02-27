@@ -131,7 +131,6 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 	GetWindowRect(hwnd, &rect);
 
 	// get
-//  SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDisplay, FALSE);
 	GetWorkArea(&rect, &rcDisplay);
 
 	uPinnedCorner = PINNED_NONE;
@@ -177,7 +176,7 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 	// Sanity check!!!
 	//
 	// If the window is in an expanded state, and it is
-	// moved so that it's lower-right edge extends off the screen,
+	// moved so that its lower-right edge extends off the screen,
 	// then when it is minimized, it will disappear (i.e. position
 	// itself off-screen!). This check stops that
 	//
@@ -266,7 +265,7 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 	int nDesiredTabWidth;
 
 	// HARD-CODED sizes for each window layout.
-	// These are DIALOG UNITS, so it's not too bad..
+	// These are DIALOG UNITS, so it's not too bad.
 	duMinimized.cx = 254;
 	duMinimized.cy = 25;//6;
 
@@ -380,7 +379,7 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 		HWND_BOTTOM, 0, 0, 0, 0, SWP_ZONLY);
 
 	// Finally, move the little expand / shrink button
-	// so it is right-aligned with the edge of the tab..
+	// so it is right-aligned with the edge of the tab.
 	hwndCtrl = GetDlgItem(hwnd, IDC_EXPAND);
 	GetWindowRect(hwndCtrl, &rect);
 	MapWindowPoints(0, hwnd, (POINT *)&rect, 2);

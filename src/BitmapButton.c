@@ -149,7 +149,7 @@ static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
 }*/
 
 //
-//  Call this function whenever you get a WM_DRAWITEM in the parent dialog..
+//  Call this function whenever you get a WM_DRAWITEM in the parent dialog.
 //
 BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 {
@@ -186,7 +186,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	switch (dis->itemAction)
 	{
 		// We need to redraw the whole button, no
-		// matter what DRAWITEM event we receive..
+		// matter what DRAWITEM event we receive.
 	case ODA_FOCUS:
 	case ODA_SELECT:
 	case ODA_DRAWENTIRE:
