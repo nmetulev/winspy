@@ -1,6 +1,6 @@
 @echo off
 
-SET vcvars="%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat"
+SET vcvars="%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat"
 SET version_h=".\version.h"
 SET resource_rc="..\src\resource\WinSpy.rc"
 

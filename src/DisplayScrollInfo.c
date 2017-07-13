@@ -1,11 +1,11 @@
 //
-//	DisplayScrollInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayScrollInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void SetScrollInfo(HWND hwnd)
+//  void SetScrollInfo(HWND hwnd)
 //
-//	Fill the scrollbar-tab-pane with scrollbar info for the
+//  Fill the scrollbar-tab-pane with scrollbar info for the
 //  specified window
 //
 
@@ -26,42 +26,42 @@ void SetScrollbarInfo(HWND hwnd)
 	TCHAR  ach[256];
 	HWND   hwndDlg = WinSpyTab[PROPERTY_TAB].hwnd;
 
-	if(hwnd == 0) return;
+	if (hwnd == 0) return;
 
 	si.cbSize = sizeof(SCROLLINFO);
-	si.fMask  = SIF_ALL;
+	si.fMask = SIF_ALL;
 
 	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
 	bartype = SB_HORZ;
 
-	GetClassName(hwnd, ach, sizeof(ach) / sizeof(TCHAR));
-	
-	if(lstrcmpi(ach, _T("ScrollBar")) == 0)
+	GetClassName(hwnd, ach, ARRAYSIZE(ach));
+
+	if (lstrcmpi(ach, _T("ScrollBar")) == 0)
 	{
-		if((dwStyle & SBS_VERT) == 0)
+		if ((dwStyle & SBS_VERT) == 0)
 			bartype = SB_CTL;
-	
+
 		SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Visible"));
 	}
 	else
 	{
-		if(dwStyle & WS_HSCROLL)
+		if (dwStyle & WS_HSCROLL)
 			SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Visible"));
 		else
 			SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Disabled"));
 	}
 
-	if(GetScrollInfo(hwnd, bartype, &si))
+	if (GetScrollInfo(hwnd, bartype, &si))
 	{
 		SetDlgItemInt(hwndDlg, IDC_HMIN, si.nMin, TRUE);
 		SetDlgItemInt(hwndDlg, IDC_HMAX, si.nMax, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_HPOS, si.nPos, TRUE);	
+		SetDlgItemInt(hwndDlg, IDC_HPOS, si.nPos, TRUE);
 		SetDlgItemInt(hwndDlg, IDC_HPAGE, si.nPage, TRUE);
 
-		if(bartype == SB_HORZ)
+		if (bartype == SB_HORZ)
 		{
-			if(dwStyle & WS_HSCROLL)
+			if (dwStyle & WS_HSCROLL)
 				SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Visible"));
 			else
 				SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Hidden"));
@@ -78,31 +78,31 @@ void SetScrollbarInfo(HWND hwnd)
 
 	bartype = SB_VERT;
 
-	if(lstrcmpi(ach, _T("ScrollBar")) == 0)
+	if (lstrcmpi(ach, _T("ScrollBar")) == 0)
 	{
-		if((dwStyle & SBS_VERT) == SB_VERT)
+		if ((dwStyle & SBS_VERT) == SB_VERT)
 			bartype = SB_CTL;
-	
+
 		SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Visible"));
 	}
 	else
 	{
-		if(dwStyle & WS_VSCROLL)
+		if (dwStyle & WS_VSCROLL)
 			SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Visible"));
 		else
 			SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Disabled"));
 	}
 
-	if(GetScrollInfo(hwnd, bartype, &si))
+	if (GetScrollInfo(hwnd, bartype, &si))
 	{
 		SetDlgItemInt(hwndDlg, IDC_VMIN, si.nMin, TRUE);
 		SetDlgItemInt(hwndDlg, IDC_VMAX, si.nMax, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_VPOS, si.nPos, TRUE);	
+		SetDlgItemInt(hwndDlg, IDC_VPOS, si.nPos, TRUE);
 		SetDlgItemInt(hwndDlg, IDC_VPAGE, si.nPage, TRUE);
 
-		if(bartype == SB_VERT)
+		if (bartype == SB_VERT)
 		{
-			if(dwStyle & WS_VSCROLL)
+			if (dwStyle & WS_VSCROLL)
 				SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Visible"));
 			else
 				SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Hidden"));

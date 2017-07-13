@@ -1,10 +1,10 @@
 //
-//	WinSpyDlgs.c
+//  WinSpyDlgs.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Contains all the dialog box procedures for
+//  Contains all the dialog box procedures for
 //  each tab-pane dialog control.
 //
 
@@ -23,16 +23,16 @@
 #include "CaptureWindow.h"
 #include "Utils.h"
 
-void  MakeHyperlink     (HWND hwnd, UINT staticid, COLORREF crLink);
-void  RemoveHyperlink	(HWND hwnd, UINT staticid);
-void  GetRemoteInfo		(HWND hwnd);
+void  MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink);
+void  RemoveHyperlink(HWND hwnd, UINT staticid);
+void  GetRemoteInfo(HWND hwnd);
 
 TCHAR szWarning1[] = _T("Are you sure you want to close this process?");
 TCHAR szWarning2[] = _T("WARNING: Terminating a process can cause undesired\r\n")\
-					 _T("results including loss of data and system instability. The\r\n")\
-					 _T("process will not be given the chance to save its state or\r\n")\
-					 _T("data before it is terminated. Are you sure you want to\r\n")\
-					 _T("terminate the process?");
+_T("results including loss of data and system instability. The\r\n")\
+_T("process will not be given the chance to save its state or\r\n")\
+_T("data before it is terminated. Are you sure you want to\r\n")\
+_T("terminate the process?");
 
 extern TCHAR szPath[];
 
@@ -41,7 +41,7 @@ extern TCHAR szPath[];
 //
 
 //
-//	Destroy specified window
+//  Destroy specified window
 //
 /*BOOL RemoteDestroyWindow(HWND hwnd)
 {
@@ -63,7 +63,7 @@ extern TCHAR szPath[];
 	ZwAlertResumeThread(hThread, 0);
 
 	CloseHandle(hThread);
-	
+
 
 	return exitcode;
 }*/
@@ -77,41 +77,41 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 	DWORD dwSWPflags;
 	HWND  hwndZ;
 
-	dwStyle   = GetWindowLong(hwndTarget, GWL_STYLE);
+	dwStyle = GetWindowLong(hwndTarget, GWL_STYLE);
 	dwStyleEx = GetWindowLong(hwndTarget, GWL_EXSTYLE);
 
-	switch(uCmdId)		
+	switch (uCmdId)
 	{
-	// Show / Hide
+		// Show / Hide
 	case IDM_POPUP_VISIBLE:
-		
-		dwSWPflags = SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_NOZORDER;
 
-		if(dwStyle & WS_VISIBLE)
+		dwSWPflags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER;
+
+		if (dwStyle & WS_VISIBLE)
 			dwSWPflags |= SWP_HIDEWINDOW;
 		else
 			dwSWPflags |= SWP_SHOWWINDOW;
 
-		SetWindowPos(hwndTarget, 0, 0,0,0,0, dwSWPflags);
-		
+		SetWindowPos(hwndTarget, 0, 0, 0, 0, 0, dwSWPflags);
+
 		return 0;
-		
-	// Enable / Disable
+
+		// Enable / Disable
 	case IDM_POPUP_ENABLED:
 		EnableWindow(hwndTarget, (dwStyle & WS_DISABLED) ? TRUE : FALSE);
 		return 0;
-		
-	// Ontop / Not ontop
+
+		// Ontop / Not ontop
 	case IDM_POPUP_ONTOP:
 
-		dwSWPflags = SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE;
+		dwSWPflags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE;
 
-		if(dwStyleEx & WS_EX_TOPMOST)
+		if (dwStyleEx & WS_EX_TOPMOST)
 			hwndZ = HWND_NOTOPMOST;
 		else
 			hwndZ = HWND_TOPMOST;
 
-		SetWindowPos(hwndTarget, hwndZ,	0,0,0,0, dwSWPflags);
+		SetWindowPos(hwndTarget, hwndZ, 0, 0, 0, 0, dwSWPflags);
 
 		return 0;
 
@@ -119,9 +119,9 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 		ShowPosterDlg(hwndDlg, hwndTarget);
 		return 0;
 
-	// Show the edit-size dialog
+		// Show the edit-size dialog
 	case IDM_POPUP_SETPOS:
-		
+
 		ShowEditSizeDlg(hwndDlg, hwndTarget);
 		return 0;
 
@@ -133,32 +133,32 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
 		SetWindowPos(hwndTarget, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		return 0;
 
-	// Close window
+		// Close window
 	case IDM_POPUP_CLOSE:
 		PostMessage(hwndTarget, WM_CLOSE, 0, 0);
 		return 0;
 
-	//case IDM_POPUP_DESTROY:
-	//	RemoteDestroyWindow(hwndTarget);
-	//	return 0;
+		//case IDM_POPUP_DESTROY:
+		//  RemoteDestroyWindow(hwndTarget);
+		//  return 0;
 
-	// new for 1.6
+		// new for 1.6
 	case IDM_POPUP_COPY:
 		CaptureWindow(hwndDlg, hwndTarget);
 		return 0;
 
 	case IDM_POPUP_SAVE:
-	//	SaveTreeStructure(hwndDlg, hwndTarget);
+		//  SaveTreeStructure(hwndDlg, hwndTarget);
 		return 0;
-		
+
 	default:
 		return 0;
-		
+
 	}
 }
 
 //
-//	Configure the popup menu
+//  Configure the popup menu
 //
 void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 {
@@ -169,11 +169,11 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 	DWORD dwStyle;
 	DWORD dwStyleEx;
 
-	dwStyle   = GetWindowLong(hwndTarget, GWL_STYLE);
+	dwStyle = GetWindowLong(hwndTarget, GWL_STYLE);
 	dwStyleEx = GetWindowLong(hwndTarget, GWL_EXSTYLE);
 
 	hParentWnd = GetRealParent(hwndTarget);
-	if(hParentWnd)
+	if (hParentWnd)
 	{
 		fParentVisible = IsWindowVisible(hParentWnd);
 		fParentEnabled = IsWindowEnabled(hParentWnd);
@@ -183,29 +183,29 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 		fParentVisible = TRUE;
 		fParentEnabled = TRUE;
 	}
-	
-	if(dwStyle & WS_VISIBLE)
+
+	if (dwStyle & WS_VISIBLE)
 		CheckMenuItem(hMenu, IDM_POPUP_VISIBLE, MF_BYCOMMAND | MF_CHECKED);
 	else
 		CheckMenuItem(hMenu, IDM_POPUP_VISIBLE, MF_BYCOMMAND | MF_UNCHECKED);
-	
-	if(dwStyle & WS_DISABLED)
+
+	if (dwStyle & WS_DISABLED)
 		CheckMenuItem(hMenu, IDM_POPUP_ENABLED, MF_BYCOMMAND | MF_UNCHECKED);
 	else
 		CheckMenuItem(hMenu, IDM_POPUP_ENABLED, MF_BYCOMMAND | MF_CHECKED);
-	
-	if(dwStyleEx & WS_EX_TOPMOST)
+
+	if (dwStyleEx & WS_EX_TOPMOST)
 		CheckMenuItem(hMenu, IDM_POPUP_ONTOP, MF_BYCOMMAND | MF_CHECKED);
 	else
 		CheckMenuItem(hMenu, IDM_POPUP_ONTOP, MF_BYCOMMAND | MF_UNCHECKED);
-	
-	EnableMenuItem(hMenu, IDM_POPUP_VISIBLE, MF_BYCOMMAND | (fParentVisible ? MF_ENABLED : MF_DISABLED|MF_GRAYED));
-	EnableMenuItem(hMenu, IDM_POPUP_ONTOP,   MF_BYCOMMAND | (fParentVisible ? MF_ENABLED : MF_DISABLED|MF_GRAYED));
-	EnableMenuItem(hMenu, IDM_POPUP_ENABLED, MF_BYCOMMAND | (fParentEnabled ? MF_ENABLED : MF_DISABLED|MF_GRAYED));
+
+	EnableMenuItem(hMenu, IDM_POPUP_VISIBLE, MF_BYCOMMAND | (fParentVisible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
+	EnableMenuItem(hMenu, IDM_POPUP_ONTOP, MF_BYCOMMAND | (fParentVisible ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
+	EnableMenuItem(hMenu, IDM_POPUP_ENABLED, MF_BYCOMMAND | (fParentEnabled ? MF_ENABLED : MF_DISABLED | MF_GRAYED));
 }
 
 //
-//	General tab
+//  General tab
 //
 LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -220,39 +220,39 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 	POINT    pt;
 	RECT     rc;
 
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
 
 		// Convert standard buttons into bitmapped-buttons
-		MakeDlgBitmapButton(hwnd, IDC_HANDLE_MENU,	IDI_ICON10);
-		MakeDlgBitmapButton(hwnd, IDC_EDITSIZE,		IDI_ICON5);
-		MakeDlgBitmapButton(hwnd, IDC_SETCAPTION,	IDI_ICON17);
+		MakeDlgBitmapButton(hwnd, IDC_HANDLE_MENU, IDI_DOWN_ARROW);
+		MakeDlgBitmapButton(hwnd, IDC_EDITSIZE, IDI_DOTS);
+		MakeDlgBitmapButton(hwnd, IDC_SETCAPTION, IDI_ENTER);
 
-		MakeHyperlink(hwnd, IDC_WINDOWPROC, RGB(0,0,255));
+		MakeHyperlink(hwnd, IDC_WINDOWPROC, RGB(0, 0, 255));
 
 		return TRUE;
 
 	case WM_CONTEXTMENU:
-		if((HWND)wParam == GetDlgItem(hwnd, IDC_WINDOWBYTES))
+		if ((HWND)wParam == GetDlgItem(hwnd, IDC_BYTESLIST))
 		{
-			index = (int)SendDlgItemMessage(hwnd, IDC_WINDOWBYTES, CB_GETCURSEL, 0, 0);
-			if(index == CB_ERR)
+			index = (int)SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETCURSEL, 0, 0);
+			if (index == CB_ERR)
 				break;
 
-			lp = SendDlgItemMessage(hwnd, IDC_WINDOWBYTES, CB_GETITEMDATA, index, 0);
+			lp = SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETITEMDATA, index, 0);
 
-			pt.x = (long)(short)LOWORD(lParam);
-			pt.y = (long)(short)HIWORD(lParam);
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
 
 			// Calculate x, y if using keyboard
-			if(pt.x == -1 && pt.y == -1)
+			if (pt.x == -1 && pt.y == -1)
 			{
-				GetClientRect(GetDlgItem(hwnd, IDC_WINDOWBYTES), &rc);
+				GetClientRect(GetDlgItem(hwnd, IDC_BYTESLIST), &rc);
 				pt.x = rc.left + (rc.right - rc.left) / 2;
 				pt.y = rc.top + (rc.bottom - rc.top) / 2;
 
-				ClientToScreen(GetDlgItem(hwnd, IDC_WINDOWBYTES), &pt);
+				ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
 			}
 
 			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU5));
@@ -261,10 +261,10 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
 
 			// Act accordingly
-			switch(uCmd)
+			switch (uCmd)
 			{
 			case IDM_BYTES_COPY:
-				wsprintf(ach, _T("%p"), lp);
+				_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)lp);
 				CopyTextToClipboard(hwnd, ach);
 				break;
 			}
@@ -274,12 +274,10 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		break;
 
 	case WM_COMMAND:
-		switch(LOWORD(wParam))
+		switch (LOWORD(wParam))
 		{
-		// added in 1.6: windowproc URL control
-		case IDC_WINDOWPROC: 
-			//RemoveHyperlink(hwnd, IDC_WINDOWPROC);
-			//InvalidateRect(GetDlgItem(hwnd, IDC_WINDOWPROC), 0, 0);
+			// added in 1.6: windowproc URL control
+		case IDC_WINDOWPROC:
 			ShowDlgItem(hwnd, IDC_WINDOWPROC, SW_HIDE);
 			ShowDlgItem(hwnd, IDC_WINDOWPROC2, SW_SHOW);
 			GetRemoteInfo(spy_hCurWnd);
@@ -304,7 +302,7 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 			WinSpy_SetupPopupMenu(hPopup, hCtrl);
 
-			uCmd = TrackPopupMenu(hPopup, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, 
+			uCmd = TrackPopupMenu(hPopup, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_RETURNCMD,
 				rect.right, rect.bottom, 0, hwnd, 0);
 
 			WinSpy_PopupCommandHandler(hwnd, uCmd, hCtrl);
@@ -321,10 +319,10 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			hwndEdit2 = GetDlgItem(hwnd, IDC_CAPTION2);
 
 			// Show the combo box and hide the edit box
-			if(IsWindowVisible(hwndEdit1))
+			if (IsWindowVisible(hwndEdit1))
 			{
 				// Copy the contents of the edit box to the combo box
-				GetWindowText(hwndEdit1, ach, sizeof(ach) / sizeof(TCHAR));
+				GetWindowText(hwndEdit1, ach, ARRAYSIZE(ach));
 				SetWindowText(hwndEdit2, ach);
 
 				ShowWindow(hwndEdit2, SW_SHOW);
@@ -335,15 +333,15 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			hCtrl = (HWND)spy_hCurWnd;
 
 			// get the original text and add it to the combo list
-			GetWindowText(hCtrl, ach, sizeof(ach) / sizeof(TCHAR));
+			GetWindowText(hCtrl, ach, ARRAYSIZE(ach));
 
 			SendMessage(hwndEdit2, CB_ADDSTRING, 0, (LPARAM)ach);
 
 			// now see what the new caption is to be
-			GetWindowText(hwndEdit2, ach, sizeof(ach) / sizeof(TCHAR));
+			GetWindowText(hwndEdit2, ach, ARRAYSIZE(ach));
 
 			// set the text to the new string
-			if(hCtrl != 0 && IsWindow(hCtrl))
+			if (hCtrl != 0 && IsWindow(hCtrl))
 				SendMessage(hCtrl, WM_SETTEXT, 0, (LPARAM)ach);
 
 			return TRUE;
@@ -353,27 +351,27 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 	case WM_DRAWITEM:
 
-		if(wParam == IDC_EDITSIZE || wParam == IDC_HANDLE_MENU || wParam == IDC_SETCAPTION)
+		if (wParam == IDC_EDITSIZE || wParam == IDC_HANDLE_MENU || wParam == IDC_SETCAPTION)
 			return DrawBitmapButton((DRAWITEMSTRUCT *)lParam);
 		else
 			break;
 
 	}
-	
+
 	return FALSE;
 }
 
 //
-//	Style tab
+//  Style tab
 //
 LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
 
-		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLE,   IDI_ICON5);
-		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLEEX, IDI_ICON5);
+		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLE, IDI_DOTS);
+		MakeDlgBitmapButton(hwnd, IDC_EDITSTYLEEX, IDI_DOTS);
 
 		return TRUE;
 
@@ -382,11 +380,11 @@ LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 
 	case WM_DRAWITEM:
 
-		if(wParam == IDC_LIST1 || wParam == IDC_LIST2)
+		if (wParam == IDC_LIST1 || wParam == IDC_LIST2)
 		{
 			return FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam);
 		}
-		else if(wParam == IDC_EDITSTYLE || wParam == IDC_EDITSTYLEEX)
+		else if (wParam == IDC_EDITSTYLE || wParam == IDC_EDITSTYLEEX)
 		{
 			return DrawBitmapButton((DRAWITEMSTRUCT *)lParam);
 		}
@@ -396,8 +394,8 @@ LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 		}
 
 	case WM_COMMAND:
-		
-		switch(LOWORD(wParam))
+
+		switch (LOWORD(wParam))
 		{
 		case IDC_EDITSTYLE:
 			ShowWindowStyleEditor(hwnd, spy_hCurWnd, FALSE);
@@ -417,7 +415,7 @@ LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 }
 
 //
-//	Window tab
+//  Window tab
 //
 LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -429,7 +427,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	TCHAR     ach[10];
 	NMITEMACTIVATE *nmatv;
 
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
 
@@ -447,36 +445,36 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		width -= GetSystemMetrics(SM_CXVSCROLL);
 
 		lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-		lvcol.cx   = 64;
+		lvcol.cx = 64;
 		lvcol.iSubItem = 0;
 		lvcol.pszText = _T("Handle");
 		ListView_InsertColumn(hwndList1, 0, &lvcol);
 		ListView_InsertColumn(hwndList2, 0, &lvcol);
 		width -= lvcol.cx;
-		
+
 		lvcol.pszText = _T("Class Name");
-		lvcol.cx   = 100;
+		lvcol.cx = 100;
 		ListView_InsertColumn(hwndList1, 1, &lvcol);
 		ListView_InsertColumn(hwndList2, 1, &lvcol);
 		width -= lvcol.cx;
 
 		lvcol.pszText = _T("Window Text");
-		lvcol.cx   = max(width, 64);
+		lvcol.cx = max(width, 64);
 		ListView_InsertColumn(hwndList1, 2, &lvcol);
 		ListView_InsertColumn(hwndList2, 2, &lvcol);
 
 		// Make hyperlinks from our two static controls
-		MakeHyperlink(hwnd, IDC_PARENT, RGB(0,0,255));
-		MakeHyperlink(hwnd, IDC_OWNER,  RGB(0,0,255));
+		MakeHyperlink(hwnd, IDC_PARENT, RGB(0, 0, 255));
+		MakeHyperlink(hwnd, IDC_OWNER, RGB(0, 0, 255));
 
 		return TRUE;
 
 	case WM_NOTIFY:
 		nmatv = (NMITEMACTIVATE *)lParam;
 
-		if(nmatv->hdr.code == NM_DBLCLK)
+		if (nmatv->hdr.code == NM_DBLCLK)
 		{
-			ListView_GetItemText(nmatv->hdr.hwndFrom, nmatv->iItem, 0, ach, sizeof(ach) / sizeof(TCHAR));
+			ListView_GetItemText(nmatv->hdr.hwndFrom, nmatv->iItem, 0, ach, ARRAYSIZE(ach));
 			DisplayWindowInfo((HWND)_tstrtoib16(ach));
 		}
 
@@ -487,14 +485,15 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		ListView_SetBkColor(GetDlgItem(hwnd, IDC_LIST2), GetSysColor(COLOR_WINDOW));
 		return 0;
 
-	// if clicked on one of the underlined static controls, then
-	// display window info..
+		// if clicked on one of the underlined static controls, then
+		// display window info.
 	case WM_COMMAND:
 
-		switch(LOWORD(wParam))
+		switch (LOWORD(wParam))
 		{
-		case IDC_PARENT: case IDC_OWNER: 
-			GetDlgItemText(hwnd, LOWORD(wParam), ach, sizeof(ach)/sizeof(TCHAR));
+		case IDC_PARENT:
+		case IDC_OWNER:
+			GetDlgItemText(hwnd, LOWORD(wParam), ach, ARRAYSIZE(ach));
 			DisplayWindowInfo((HWND)_tstrtoib16(ach));
 			return TRUE;
 		}
@@ -505,7 +504,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 }
 
 //
-//	Properties tab
+//  Properties tab
 //
 LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -522,7 +521,7 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 	LVITEM    lvitem;
 	TCHAR     ach[256];
 
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
 
@@ -530,44 +529,44 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 		hwndList1 = GetDlgItem(hwnd, IDC_LIST1);
 		ListView_SetExtendedListViewStyle(hwndList1, LVS_EX_FULLROWSELECT);
 
-		// Work out how big the header-items need to be 
+		// Work out how big the header-items need to be
 		GetClientRect(hwndList1, &rect);
 		width = rect.right;
 		width -= GetSystemMetrics(SM_CXVSCROLL);
-		
+
 		// Insert "Property" header-item
 		lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 		lvcol.iSubItem = 0;
-		lvcol.cx   = width - (20+12*sizeof(LONG_PTR));
+		lvcol.cx = width - (20 + 12 * sizeof(LONG_PTR));
 		lvcol.pszText = _T("Property Name");
 		ListView_InsertColumn(hwndList1, 0, &lvcol);
 
 		// Insert "Handle" header-item
-		lvcol.cx   = 20+12*sizeof(LONG_PTR);
+		lvcol.cx = 20 + 12 * sizeof(LONG_PTR);
 		lvcol.pszText = _T("Handle");
 		ListView_InsertColumn(hwndList1, 1, &lvcol);
 
 		return TRUE;
-	
+
 	case WM_CONTEXTMENU:
 		hwndList1 = GetDlgItem(hwnd, IDC_LIST1);
 
-		if((HWND)wParam == hwndList1)
+		if ((HWND)wParam == hwndList1)
 		{
 			// ListView has been right-clicked, so show the popup menu
 
-			if(ListView_GetSelectedCount(hwndList1) == 1)
+			if (ListView_GetSelectedCount(hwndList1) == 1)
 				selected = ListView_GetNextItem(hwndList1, -1, LVNI_SELECTED);
 			else
 				selected = -1;
 
-			pt.x = (long)(short)LOWORD(lParam);
-			pt.y = (long)(short)HIWORD(lParam);
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
 
 			// Calculate x, y if using keyboard
-			if(pt.x == -1 && pt.y == -1)
+			if (pt.x == -1 && pt.y == -1)
 			{
-				if(selected == -1)
+				if (selected == -1)
 				{
 					GetClientRect(hwndList1, &rc);
 					pt.x = rc.left + (rc.right - rc.left) / 2;
@@ -589,19 +588,19 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
 
 			// Act accordingly
-			switch(uCmd)
+			switch (uCmd)
 			{
 			case IDM_PROPERTY_ADD:
 				ShowWindowPropertyEditor(hwnd, spy_hCurWnd, TRUE);
 				break;
 
 			case IDM_PROPERTY_EDIT:
-				if(selected != -1)
+				if (selected != -1)
 					ShowWindowPropertyEditor(hwnd, spy_hCurWnd, FALSE);
 				break;
 
 			case IDM_PROPERTY_REMOVE:
-				if(selected != -1)
+				if (selected != -1)
 				{
 					lvitem.mask = LVIF_TEXT | LVIF_PARAM;
 					lvitem.iItem = selected;
@@ -611,7 +610,7 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 
 					ListView_GetItem(hwndList1, &lvitem);
 
-					if(RemoveProp(spy_hCurWnd, lvitem.lParam ? MAKEINTATOM(lvitem.lParam) : lvitem.pszText))
+					if (RemoveProp(spy_hCurWnd, lvitem.lParam ? MAKEINTATOM(lvitem.lParam) : lvitem.pszText))
 						ListView_DeleteItem(hwndList1, selected);
 				}
 				break;
@@ -623,9 +622,9 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 		return TRUE;
 
 	case WM_NOTIFY:
-		if(((NMHDR *)lParam)->idFrom == IDC_LIST1)
+		if (((NMHDR *)lParam)->idFrom == IDC_LIST1)
 		{
-			switch(((NMHDR *)lParam)->code)
+			switch (((NMHDR *)lParam)->code)
 			{
 			case NM_DBLCLK:
 				ShowWindowPropertyEditor(hwnd, spy_hCurWnd, FALSE);
@@ -658,35 +657,35 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 	RECT     rc;
 	LONG_PTR lp;
 
-	switch(iMsg)
+	switch (iMsg)
 	{
-	// Just make the class-name edit-box look normal, even
-	// though it is read-only
+		// Just make the class-name edit-box look normal, even
+		// though it is read-only
 	case WM_CTLCOLORSTATIC:
 
-		if((HWND)lParam == GetDlgItem(hwnd, IDC_CLASSNAME))
+		if ((HWND)lParam == GetDlgItem(hwnd, IDC_CLASSNAME))
 		{
 			SetTextColor((HDC)wParam, GetSysColor(COLOR_WINDOWTEXT));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-			return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+			return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
 		}
 		else
 			return FALSE;
 
 	case WM_CONTEXTMENU:
-		if((HWND)wParam == GetDlgItem(hwnd, IDC_BYTESLIST))
+		if ((HWND)wParam == GetDlgItem(hwnd, IDC_BYTESLIST))
 		{
 			index = (int)SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETCURSEL, 0, 0);
-			if(index == CB_ERR)
+			if (index == CB_ERR)
 				break;
 
 			lp = SendDlgItemMessage(hwnd, IDC_BYTESLIST, CB_GETITEMDATA, index, 0);
 
-			pt.x = (long)(short)LOWORD(lParam);
-			pt.y = (long)(short)HIWORD(lParam);
+			pt.x = GET_X_LPARAM(lParam);
+			pt.y = GET_Y_LPARAM(lParam);
 
 			// Calculate x, y if using keyboard
-			if(pt.x == -1 && pt.y == -1)
+			if (pt.x == -1 && pt.y == -1)
 			{
 				GetClientRect(GetDlgItem(hwnd, IDC_BYTESLIST), &rc);
 				pt.x = rc.left + (rc.right - rc.left) / 2;
@@ -701,10 +700,10 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
 
 			// Act accordingly
-			switch(uCmd)
+			switch (uCmd)
 			{
 			case IDM_BYTES_COPY:
-				wsprintf(ach, _T("%p"), lp);
+				_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)lp);
 				CopyTextToClipboard(hwnd, ach);
 				break;
 			}
@@ -718,7 +717,7 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 }
 
 //
-//	Process Tab
+//  Process Tab
 //
 LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -728,15 +727,15 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 	DWORD  dwThreadId;
 	DWORD  dwProcessId;
 
-	switch(iMsg)
+	switch (iMsg)
 	{
 	case WM_INITDIALOG:
-		MakeDlgBitmapButton(hwnd, IDC_PROCESS_MENU, IDI_ICON10);
+		MakeDlgBitmapButton(hwnd, IDC_PROCESS_MENU, IDI_DOWN_ARROW);
 		return TRUE;
 
 	case WM_COMMAND:
 
-		switch(LOWORD(wParam))
+		switch (LOWORD(wParam))
 		{
 		case IDC_PROCESS_MENU:
 
@@ -751,57 +750,52 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			//
 			// Display a popup menu underneath the close button
 			//
-			uCmd = TrackPopupMenu(hPopup, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, 
+			uCmd = TrackPopupMenu(hPopup, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_RETURNCMD,
 				rect.right, rect.bottom, 0, hwnd, 0);
 
-			switch(uCmd)
+			switch (uCmd)
 			{
 			case IDM_WINSPY_FINDEXE:
-			
-				{
-					TCHAR szExplorer[MAX_PATH];
-					TCHAR szPath[MAX_PATH];
+			{
+				TCHAR szExplorer[MAX_PATH];
+				TCHAR szPath[MAX_PATH];
 
-					GetDlgItemText(hwnd, IDC_PROCESSPATH, szPath, sizeof(szPath)/sizeof(TCHAR));
+				GetDlgItemText(hwnd, IDC_PROCESSPATH, szPath, ARRAYSIZE(szPath));
 
-					wsprintf(szExplorer, _T("/select,\"%s\""), szPath);
-					ShellExecute(0, _T("open"), _T("explorer"), szExplorer, 0, SW_SHOW);
-
-				}
-
-				break;
+				_stprintf_s(szExplorer, ARRAYSIZE(szExplorer), _T("/select,\"%s\""), szPath);
+				ShellExecute(0, _T("open"), _T("explorer"), szExplorer, 0, SW_SHOW);
+			}
+			break;
 
 			// Forcibly terminate!
 			case IDM_WINSPY_TERMINATE:
 
-				if(MessageBox(hwnd, szWarning2, szAppName, MB_YESNO|MB_ICONWARNING) == IDYES)
+				if (MessageBox(hwnd, szWarning2, szAppName, MB_YESNO | MB_ICONWARNING) == IDYES)
 				{
 					HANDLE hProcess;
-					
+
 					hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
-					
-					
-					if(hProcess != 0)
+
+
+					if (hProcess != 0)
 					{
 						TerminateProcess(hProcess, -1);
 						CloseHandle(hProcess);
 					}
 					else
 					{
-						MessageBox(hwnd, _T("Invalid Process Id"), szAppName, MB_OK|MB_ICONWARNING);
+						MessageBox(hwnd, _T("Invalid Process Id"), szAppName, MB_OK | MB_ICONWARNING);
 					}
 				}
-
 				break;
 
-			// Cleanly exit. Won't work if app. is hung
+				// Cleanly exit. Won't work if app. is hung
 			case IDM_WINSPY_POSTQUIT:
-				
-				if(MessageBox(hwnd, szWarning1, szAppName, MB_YESNO|MB_ICONWARNING) == IDYES)
+
+				if (MessageBox(hwnd, szWarning1, szAppName, MB_YESNO | MB_ICONWARNING) == IDYES)
 				{
 					PostThreadMessage(dwThreadId, WM_QUIT, 0, 0);
 				}
-				
 				break;
 
 			}
@@ -815,12 +809,12 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 	case WM_CTLCOLORSTATIC:
 
-		if((HWND)lParam == GetDlgItem(hwnd, IDC_PROCESSNAME) ||
-		   (HWND)lParam == GetDlgItem(hwnd, IDC_PROCESSPATH) )
+		if ((HWND)lParam == GetDlgItem(hwnd, IDC_PROCESSNAME) ||
+			(HWND)lParam == GetDlgItem(hwnd, IDC_PROCESSPATH))
 		{
-			SetTextColor ((HDC)wParam, GetSysColor(COLOR_WINDOWTEXT));
-			SetBkColor   ((HDC)wParam, GetSysColor(COLOR_WINDOW));
-			return (BOOL)GetSysColorBrush(COLOR_WINDOW);
+			SetTextColor((HDC)wParam, GetSysColor(COLOR_WINDOWTEXT));
+			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
+			return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
 		}
 
 

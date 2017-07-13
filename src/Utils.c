@@ -1,10 +1,10 @@
 //
-//	Utils.c
+//  Utils.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Lots of utility and general helper functions.
+//  Lots of utility and general helper functions.
 //
 
 #define STRICT
@@ -15,27 +15,27 @@
 #include <malloc.h>
 #include "Utils.h"
 
-int atoi( const char *string );
+int atoi(const char *string);
 
 //
-//	Enable/Disable privilege with specified name (for current process)
+//  Enable/Disable privilege with specified name (for current process)
 //
 BOOL EnablePrivilege(TCHAR *szPrivName, BOOL fEnable)
 {
 	TOKEN_PRIVILEGES tp;
-	LUID	luid;
-	HANDLE	hToken;
+	LUID    luid;
+	HANDLE  hToken;
 
-	if(!LookupPrivilegeValue(NULL, szPrivName, &luid))
+	if (!LookupPrivilegeValue(NULL, szPrivName, &luid))
 		return FALSE;
 
-	if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
 		return FALSE;
-	
-	tp.PrivilegeCount			= 1;
-	tp.Privileges[0].Luid		= luid;
+
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Luid = luid;
 	tp.Privileges[0].Attributes = fEnable ? SE_PRIVILEGE_ENABLED : 0;
-	
+
 	AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
 
 	CloseHandle(hToken);
@@ -56,7 +56,7 @@ BOOL EnableDebugPrivilege()
 UINT AddStyle(HWND hwnd, UINT style)
 {
 	UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
-	SetWindowLong(hwnd, GWL_STYLE,  oldstyle | style);
+	SetWindowLong(hwnd, GWL_STYLE, oldstyle | style);
 	return oldstyle;
 }
 
@@ -99,7 +99,7 @@ int WINAPI GetRectWidth(RECT *rect)
 
 
 //
-//	Convert the specified string 
+//  Convert the specified string
 //  into the equivalent decimal value
 //
 DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
@@ -112,7 +112,7 @@ DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
 }
 
 //
-//	Convert the specified string (with a hex-number in it)
+//  Convert the specified string (with a hex-number in it)
 //  into the equivalent hex-value
 //
 DWORD_PTR _tstrtoib16(TCHAR *szHexStr)
@@ -122,16 +122,19 @@ DWORD_PTR _tstrtoib16(TCHAR *szHexStr)
 	TCHAR *hexptr = szHexStr;
 	UINT  ch = *hexptr++;
 
-	while(isxdigit(ch))
+	while (isxdigit(ch))
 	{
-		UINT x = ch - _T('0');
-		if(x > 9 && x <= 42) x -= 7;		//A-Z
-		else if(x > 42)   x -= 39;			//a-z
-					
+		static_assert(_T('9') < _T('A') && _T('A') < _T('a'), "Incorrect character code values assumption");
+		UINT x = ch <= _T('9') ?
+			ch - _T('0') :
+			10 + (ch < _T('a') ?
+				ch - _T('A') :
+				ch - _T('a'));
+
 		num = (num << 4) | (x & 0x0f);
 		ch = *hexptr++;
 	}
-	
+
 	return num;
 }
 
@@ -139,16 +142,16 @@ DWORD_PTR GetNumericValue(HWND hwnd, int base)
 {
 	TCHAR szAddressText[128];
 
-	GetWindowText(hwnd, szAddressText, sizeof(szAddressText) / sizeof(TCHAR));
+	GetWindowText(hwnd, szAddressText, ARRAYSIZE(szAddressText));
 
-	switch(base)
+	switch (base)
 	{
 	case 1:
-	case 16:			//base is currently hex
+	case 16:            //base is currently hex
 		return _tstrtoib16(szAddressText);
 
 	case 0:
-	case 10:			//base is currently decimal
+	case 10:            //base is currently decimal
 		return _tstrtoib10(szAddressText);
 
 	default:
@@ -162,7 +165,7 @@ DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base)
 }
 
 //
-//	Copied from uxtheme.h
+//  Copied from uxtheme.h
 //  If you have this new header, then delete these and
 //  #include <uxtheme.h> instead!
 //
@@ -171,11 +174,11 @@ DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base)
 #define ETDT_USETABTEXTURE  0x00000004
 #define ETDT_ENABLETAB      (ETDT_ENABLE  | ETDT_USETABTEXTURE)
 
-// 
-typedef HRESULT (WINAPI * ETDTProc) (HWND, DWORD);
+//
+typedef HRESULT(WINAPI * ETDTProc) (HWND, DWORD);
 
 //
-//	Try to call EnableThemeDialogTexture, if uxtheme.dll is present
+//  Try to call EnableThemeDialogTexture, if uxtheme.dll is present
 //
 BOOL EnableDialogTheme(HWND hwnd)
 {
@@ -184,15 +187,15 @@ BOOL EnableDialogTheme(HWND hwnd)
 
 	hUXTheme = LoadLibrary(_T("uxtheme.dll"));
 
-	if(hUXTheme)
+	if (hUXTheme)
 	{
-		fnEnableThemeDialogTexture = 
+		fnEnableThemeDialogTexture =
 			(ETDTProc)GetProcAddress(hUXTheme, "EnableThemeDialogTexture");
 
-		if(fnEnableThemeDialogTexture)
+		if (fnEnableThemeDialogTexture)
 		{
 			fnEnableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
-			
+
 			FreeLibrary(hUXTheme);
 			return TRUE;
 		}
@@ -213,36 +216,36 @@ BOOL EnableDialogTheme(HWND hwnd)
 #pragma comment(lib, "version.lib")
 
 //
-//	Get the specified file-version information string from a file
-//	
-//	szItem	- version item string, e.g:
-//		"FileDescription", "FileVersion", "InternalName", 
-//		"ProductName", "ProductVersion", etc  (see MSDN for others)
+//  Get the specified file-version information string from a file
+//
+//  szItem  - version item string, e.g:
+//      "FileDescription", "FileVersion", "InternalName",
+//      "ProductName", "ProductVersion", etc  (see MSDN for others)
 //
 TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULONG nLength)
 {
 	DWORD  len;
-	PVOID  ver;	
+	PVOID  ver;
 	DWORD  *codepage;
 	TCHAR  fmt[0x40];
 	PVOID  ptr = 0;
 	BOOL   result = FALSE;
-	
+
 	szBuffer[0] = '\0';
 
 	len = GetFileVersionInfoSize(szFileName, 0);
 
-	if(len == 0 || (ver = malloc(len)) == 0)
+	if (len == 0 || (ver = malloc(len)) == 0)
 		return NULL;
 
-	if(GetFileVersionInfo(szFileName, 0, len, ver))
+	if (GetFileVersionInfo(szFileName, 0, len, ver))
 	{
-		if(VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), &codepage, &len))
+		if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), &codepage, &len))
 		{
-			wsprintf(fmt, TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF, 
-					(*codepage) >> 16, szValue);
-			
-			if(VerQueryValue(ver, fmt, &ptr, &len))
+			wsprintf(fmt, TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
+				(*codepage) >> 16, szValue);
+
+			if (VerQueryValue(ver, fmt, &ptr, &len))
 			{
 				lstrcpyn(szBuffer, (TCHAR*)ptr, min(nLength, len));
 				result = TRUE;
@@ -256,7 +259,7 @@ TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULON
 
 
 //
-//	Compare Arch (32 or 64 bit) of our process with the process of the input window
+//  Compare Arch (32 or 64 bit) of our process with the process of the input window
 //
 BOOL ProcessArchMatches(HWND hwnd)
 {
@@ -267,12 +270,12 @@ BOOL ProcessArchMatches(HWND hwnd)
 	BOOL bIsWow64Process;
 	BOOL bSuccess;
 
-	if(GetProcessorArchitecture() == PROCESSOR_ARCHITECTURE_INTEL)
+	if (GetProcessorArchitecture() == PROCESSOR_ARCHITECTURE_INTEL)
 		return TRUE;
 
-	if(!fnIsWow64Process)
+	if (!fnIsWow64Process)
 	{
-		if(bIsWow64ProcessAbsents)
+		if (bIsWow64ProcessAbsents)
 		{
 #ifdef _WIN64
 			return FALSE;
@@ -282,7 +285,7 @@ BOOL ProcessArchMatches(HWND hwnd)
 		}
 
 		fnIsWow64Process = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-		if(!fnIsWow64Process)
+		if (!fnIsWow64Process)
 		{
 			bIsWow64ProcessAbsents = TRUE;
 
@@ -297,14 +300,14 @@ BOOL ProcessArchMatches(HWND hwnd)
 	GetWindowThreadProcessId(hwnd, &dwProcessId);
 
 	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
-	if(!hProcess)
+	if (!hProcess)
 		return FALSE; // assume no match, to be on the safe side
 
-	bSuccess = ((BOOL (WINAPI *)(HANDLE, PBOOL))fnIsWow64Process)(hProcess, &bIsWow64Process);
+	bSuccess = ((BOOL(WINAPI *)(HANDLE, PBOOL))fnIsWow64Process)(hProcess, &bIsWow64Process);
 
 	CloseHandle(hProcess);
 
-	if(bSuccess)
+	if (bSuccess)
 	{
 #ifdef _WIN64
 		return !bIsWow64Process;
@@ -327,16 +330,16 @@ WORD GetProcessorArchitecture()
 #else // ifndef _WIN64
 	static WORD wProcessorArchitecture = PROCESSOR_ARCHITECTURE_UNKNOWN;
 
-	if(wProcessorArchitecture == PROCESSOR_ARCHITECTURE_UNKNOWN)
+	if (wProcessorArchitecture == PROCESSOR_ARCHITECTURE_UNKNOWN)
 	{
 		FARPROC fnGetNativeSystemInfo = NULL;
 		SYSTEM_INFO siSystemInfo;
 
 		fnGetNativeSystemInfo = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetNativeSystemInfo");
 
-		if(fnGetNativeSystemInfo)
+		if (fnGetNativeSystemInfo)
 		{
-			((VOID (WINAPI *)(LPSYSTEM_INFO))fnGetNativeSystemInfo)(&siSystemInfo);
+			((VOID(WINAPI *)(LPSYSTEM_INFO))fnGetNativeSystemInfo)(&siSystemInfo);
 
 			wProcessorArchitecture = siSystemInfo.wProcessorArchitecture;
 		}
@@ -358,7 +361,7 @@ HWND GetRealParent(HWND hWnd)
 	HWND hParent;
 
 	hParent = GetAncestor(hWnd, GA_PARENT);
-	if(!hParent || hParent == GetDesktopWindow())
+	if (!hParent || hParent == GetDesktopWindow())
 		return NULL;
 
 	return hParent;
@@ -374,24 +377,24 @@ BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
 	TCHAR *pszText;
 	size_t nTextSize;
 
-	nTextSize = lstrlen(psz);
+	nTextSize = _tcslen(psz);
 
-	hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize+1)*sizeof(TCHAR));
-	if(!hText)
+	hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize + 1) * sizeof(TCHAR));
+	if (!hText)
 		return FALSE;
 
 	pszText = (TCHAR *)GlobalLock(hText);
 	lstrcpy(pszText, psz);
 	GlobalUnlock(hText);
 
-	if(OpenClipboard(hWnd))
+	if (OpenClipboard(hWnd))
 	{
-		if(EmptyClipboard())
+		if (EmptyClipboard())
 		{
 #ifdef UNICODE
-			if(SetClipboardData(CF_UNICODETEXT, hText))
+			if (SetClipboardData(CF_UNICODETEXT, hText))
 #else
-			if(SetClipboardData(CF_TEXT, hText))
+			if (SetClipboardData(CF_TEXT, hText))
 #endif
 			{
 				CloseClipboard();

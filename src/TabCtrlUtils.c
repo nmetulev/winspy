@@ -1,10 +1,10 @@
 //
-//	TabCtrlUtils.c
+//  TabCtrlUtils.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Basic support to remove the flicker from a TAB control
+//  Basic support to remove the flicker from a TAB control
 //  when it gets resized. This is achieved by subclassing the
 //  tab control and handling the WM_ERASEBKGND message, so
 //  that only the necessary parts of the window are actually
@@ -29,10 +29,10 @@ static LRESULT CALLBACK NoFlickerTabProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 	WNDPROC OldTabProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-	switch(msg)
+	switch (msg)
 	{
 	case WM_NCDESTROY:
-		//do any de-init here..
+		//do any de-init here.
 		break;
 
 	case WM_ERASEBKGND:
@@ -53,18 +53,18 @@ static LRESULT CALLBACK NoFlickerTabProc(HWND hwnd, UINT msg, WPARAM wParam, LPA
 		//the 3d-look border around the edge.
 		InflateRect(&rect, 1, 1);
 		FrameRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
-		
+
 		InflateRect(&rect, 1, 1);
 		FrameRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
 
-		// Get coords of last TAB. 
+		// Get coords of last TAB.
 		n = TabCtrl_GetItemCount(hwnd);
 		TabCtrl_GetItemRect(hwnd, n - 1, &rect);
 
-		// Now fill the long horz rectangle to the right of the tab..
-		rect.left  = rect.right + 2;
+		// Now fill the long horz rectangle to the right of the tab.
+		rect.left = rect.right + 2;
 		rect.right = width;
-		rect.top   = 0;
+		rect.top = 0;
 		FillRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
 
 		//prevent erasure of window
@@ -78,9 +78,9 @@ BOOL RemoveTabCtrlFlicker(HWND hwndTab)
 {
 	//Subclass the tab control
 	WNDPROC oldproc = (WNDPROC)SetWindowLongPtr(hwndTab, GWLP_WNDPROC, (LONG_PTR)NoFlickerTabProc);
-	
+
 	//Store the old window procedure
 	SetWindowLongPtr(hwndTab, GWLP_USERDATA, (LONG_PTR)oldproc);
-	
+
 	return TRUE;
 }

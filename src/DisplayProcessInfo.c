@@ -1,12 +1,12 @@
 //
-//	DisplayProcessInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayProcessInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
-//	void SetProcesInfo(HWND hwnd)
+//  void SetProcesInfo(HWND hwnd)
 //
-//	Fill the process-tab-pane with proces info for the
-//  specified window. 
+//  Fill the process-tab-pane with proces info for the
+//  specified window.
 //
 
 #define STRICT
@@ -22,11 +22,11 @@
 #include <tlhelp32.h>
 
 
-typedef BOOL  (WINAPI * EnumProcessModulesProc )(HANDLE, HMODULE *, DWORD, LPDWORD);
-typedef DWORD (WINAPI * GetModuleBaseNameProc  )(HANDLE, HMODULE, LPTSTR, DWORD);
-typedef DWORD (WINAPI * GetModuleFileNameExProc)(HANDLE, HMODULE, LPTSTR, DWORD);
+typedef BOOL(WINAPI * EnumProcessModulesProc)(HANDLE, HMODULE *, DWORD, LPDWORD);
+typedef DWORD(WINAPI * GetModuleBaseNameProc)(HANDLE, HMODULE, LPTSTR, DWORD);
+typedef DWORD(WINAPI * GetModuleFileNameExProc)(HANDLE, HMODULE, LPTSTR, DWORD);
 
-typedef BOOL  (WINAPI * QueryFullProcessImageNameProc)(HANDLE hProcess, DWORD dwFlags, LPTSTR lpExeName, PDWORD lpdwSize);
+typedef BOOL(WINAPI * QueryFullProcessImageNameProc)(HANDLE hProcess, DWORD dwFlags, LPTSTR lpExeName, PDWORD lpdwSize);
 
 BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
@@ -37,18 +37,18 @@ BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TC
 	szPath[0] = '\0';
 	szName[0] = '\0';
 
-	if(Process32First(h, &pe))
+	if (Process32First(h, &pe))
 	{
 		do
 		{
-			if(pe.th32ProcessID == dwProcessId)
+			if (pe.th32ProcessID == dwProcessId)
 			{
-				if(szName)
+				if (szName)
 				{
 					lstrcpyn(szName, pe.szExeFile, nNameSize);
 				}
 
-				if(szPath)
+				if (szPath)
 				{
 					//OpenProcess(
 					lstrcpyn(szPath, pe.szExeFile, nPathSize);
@@ -57,8 +57,7 @@ BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TC
 				fFound = TRUE;
 				break;
 			}
-		}
-		while(Process32Next(h, &pe));
+		} while (Process32Next(h, &pe));
 	}
 
 	CloseHandle(h);
@@ -71,11 +70,11 @@ BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TC
 // This uses PSAPI.DLL, which is only available under NT/2000/XP I think,
 // so we dynamically load this library, so that we can still run under 9x.
 //
-//	dwProcessId  [in]
+//  dwProcessId  [in]
 //  szName       [out]
 //  nNameSize    [in]
 //  szPath       [out]
-//  nPathSize    [in]	
+//  nPathSize    [in]
 //
 BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
@@ -88,51 +87,51 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
 	EnumProcessModulesProc  fnEnumProcessModules;
 	GetModuleBaseNameProc   fnGetModuleBaseName;
 	GetModuleFileNameExProc fnGetModuleFileNameEx;
-	
+
 	// Attempt to load Process Helper library
 	hPSAPI = LoadLibrary(_T("psapi.dll"));
 
-	if(!hPSAPI) 
+	if (!hPSAPI)
 	{
 		szName[0] = '\0';
 		return FALSE;
 	}
-	
+
 	// OK, we have access to the PSAPI functions, so open the process
 	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwProcessId);
-	if(!hProcess) 
+	if (!hProcess)
 	{
 		FreeLibrary(hPSAPI);
 		return FALSE;
 	}
 
 
-	fnEnumProcessModules  = (EnumProcessModulesProc)GetProcAddress(hPSAPI, "EnumProcessModules");
+	fnEnumProcessModules = (EnumProcessModulesProc)GetProcAddress(hPSAPI, "EnumProcessModules");
 
-#ifdef UNICODE	
-	fnGetModuleBaseName   = (GetModuleBaseNameProc)  GetProcAddress(hPSAPI, "GetModuleBaseNameW");
+#ifdef UNICODE
+	fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameW");
 	fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExW");
 #else
-	fnGetModuleBaseName   = (GetModuleBaseNameProc)  GetProcAddress(hPSAPI, "GetModuleBaseNameA");
+	fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameA");
 	fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExA");
 #endif
 
-	if(!fnEnumProcessModules || !fnGetModuleBaseName)
+	if (!fnEnumProcessModules || !fnGetModuleBaseName)
 	{
 		CloseHandle(hProcess);
 		FreeLibrary(hPSAPI);
 		return FALSE;
 	}
-	
+
 	// Find the first module
-	if(fnEnumProcessModules(hProcess, &hModule, sizeof(hModule), &dwNumModules))
+	if (fnEnumProcessModules(hProcess, &hModule, sizeof(hModule), &dwNumModules))
 	{
 		// Now get the module name
-		if(szName)
+		if (szName)
 			fnGetModuleBaseName(hProcess, hModule, szName, nNameSize);
 
 		// get module filename
-		if(szPath)
+		if (szPath)
 			fnGetModuleFileNameEx(hProcess, hModule, szPath, nPathSize);
 	}
 	else
@@ -141,7 +140,7 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
 		FreeLibrary(hPSAPI);
 		return FALSE;
 	}
-	
+
 	CloseHandle(hProcess);
 	FreeLibrary(hPSAPI);
 
@@ -156,31 +155,31 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 	TCHAR *pName;
 	BOOL bSucceeded;
 
-	if(!fnQueryFullProcessImageName)
+	if (!fnQueryFullProcessImageName)
 	{
-#ifdef UNICODE	
+#ifdef UNICODE
 		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameW");
 #else
 		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameA");
 #endif
 
-		if(!fnQueryFullProcessImageName)
+		if (!fnQueryFullProcessImageName)
 			return GetProcessNameByPid_BelowVista(dwProcessId, szName, nNameSize, szPath, nPathSize);
 	}
 
 	bSucceeded = FALSE;
 
 	hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, dwProcessId);
-	if(hProcess)
+	if (hProcess)
 	{
 		dwSize = nPathSize;
 
-		if(fnQueryFullProcessImageName(hProcess, 0, szPath, &dwSize))
+		if (fnQueryFullProcessImageName(hProcess, 0, szPath, &dwSize))
 		{
 			pName = _tcsrchr(szPath, '\\');
-			if(pName)
+			if (pName)
 			{
-				_tcsncpy_s(szName, nNameSize, pName+1, _TRUNCATE);
+				_tcsncpy_s(szName, nNameSize, pName + 1, _TRUNCATE);
 				bSucceeded = TRUE;
 			}
 		}
@@ -192,7 +191,7 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 }
 
 //
-//	Update the Process tab for the specified window
+//  Update the Process tab for the specified window
 //
 void SetProcessInfo(HWND hwnd)
 {
@@ -201,21 +200,21 @@ void SetProcessInfo(HWND hwnd)
 	TCHAR ach[32];
 	TCHAR szPath[MAX_PATH];
 
-	HWND  hwndDlg = WinSpyTab[PROCESS_TAB].hwnd; 
+	HWND  hwndDlg = WinSpyTab[PROCESS_TAB].hwnd;
 
 	dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
 
 	// Process Id
-	wsprintf(ach, _T("%08X  (%u)"), dwProcessId, dwProcessId);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwProcessId, dwProcessId);
 	SetDlgItemText(hwndDlg, IDC_PID, ach);
 
 	// Thread Id
-	wsprintf(ach, _T("%08X  (%u)"), dwThreadId, dwThreadId);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwThreadId, dwThreadId);
 	SetDlgItemText(hwndDlg, IDC_TID, ach);
 
 	// Try to get process name and path
-	if(GetProcessNameByPid(dwProcessId, ach,    sizeof(ach)    / sizeof(TCHAR),
-										szPath, sizeof(szPath) / sizeof(TCHAR)))
+	if (GetProcessNameByPid(dwProcessId, ach, ARRAYSIZE(ach),
+		szPath, ARRAYSIZE(szPath)))
 	{
 		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, ach);
 		SetDlgItemText(hwndDlg, IDC_PROCESSPATH, szPath);

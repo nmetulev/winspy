@@ -14,9 +14,9 @@
 *.res
 *.sbr
 *.sdf
-*.suo
 *.user
 *.zip
+*.VC.db
 
 # ignore the following files:
 BuildLog.htm
@@ -29,5 +29,4 @@ Debug/
 Release/
 ipch/
 
-
-
+.vs

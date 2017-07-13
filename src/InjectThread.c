@@ -1,7 +1,7 @@
 //
-//	InjectThread.c
+//  InjectThread.c
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
 //  InjectThread uses the CreateRemoteThread API call
@@ -20,37 +20,37 @@
 
 #define INJECT_PRIVELIDGE (PROCESS_CREATE_THREAD|PROCESS_QUERY_INFORMATION|PROCESS_VM_OPERATION|PROCESS_VM_READ|PROCESS_VM_WRITE)
 
-typedef PVOID (WINAPI * VA_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD, DWORD);
-typedef PVOID (WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
+typedef PVOID(WINAPI * VA_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD, DWORD);
+typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
 
 //
-//	Inject a thread into the process which owns the specified window.
+//  Inject a thread into the process which owns the specified window.
 //
-//	lpCode     - address of function to inject. (See CreateRemoteThread)
+//  lpCode     - address of function to inject. (See CreateRemoteThread)
 //  cbCodeSize - size (in bytes) of the function
 //
-//	lpData     - address of a user-defined structure to be passed to the injected thread
+//  lpData     - address of a user-defined structure to be passed to the injected thread
 //  cbDataSize - size (in bytes) of the structure
 //
 //  The user-defined structure is also injected into the target process' address space.
 //  When the thread terminates, the structure is read back from the process.
 //
-DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD cbCodeSize, LPVOID lpData, DWORD cbDataSize)
+DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbCodeSize, LPVOID lpData, DWORD cbDataSize)
 {
-	DWORD  dwProcessId;			//id of remote process
-	DWORD  dwThreadId;			//id of the thread in remote process 
-	HANDLE hProcess;			//handle to the remote process
+	DWORD  dwProcessId;         //id of remote process
+	DWORD  dwThreadId;          //id of the thread in remote process
+	HANDLE hProcess;            //handle to the remote process
 
-	HANDLE hRemoteThread;	    //handle to the injected thread
+	HANDLE hRemoteThread;       //handle to the injected thread
 
-	SIZE_T dwWritten;			// Number of bytes written to the remote process
+	SIZE_T dwWritten;           // Number of bytes written to the remote process
 	SIZE_T dwRead;
 	DWORD  dwExitCode;
 
 	void *pRemoteCode;
 	void *pRemoteData;
 
-	const int cbCodeSizeAligned = (cbCodeSize + (sizeof(LONG_PTR)-1)) & ~ (sizeof(LONG_PTR)-1);
+	const DWORD_PTR cbCodeSizeAligned = (cbCodeSize + (sizeof(LONG_PTR) - 1)) & ~(sizeof(LONG_PTR) - 1);
 
 	// Return FALSE in case of failure
 	dwExitCode = FALSE;
@@ -60,13 +60,13 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD cbCodeS
 
 	// Open the remote process so we can allocate some memory in it
 	hProcess = OpenProcess(INJECT_PRIVELIDGE, FALSE, dwProcessId);
-	if(hProcess)
+	if (hProcess)
 	{
-		pRemoteCode = VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-		if(pRemoteCode)
+		pRemoteCode = VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+		if (pRemoteCode)
 		{
 			// Write a copy of our injection thread into the remote process
-			WriteProcessMemory(hProcess, pRemoteCode, lpCode, (SIZE_T)cbCodeSize, &dwWritten);
+			WriteProcessMemory(hProcess, pRemoteCode, lpCode, cbCodeSize, &dwWritten);
 
 			// Write a copy of the INJTHREAD to the remote process. This structure
 			// MUST start on a 32bit/64bit boundary
@@ -76,17 +76,13 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD cbCodeS
 			WriteProcessMemory(hProcess, pRemoteData, lpData, cbDataSize, &dwWritten);
 
 			// Create the remote thread!!!
-#ifndef _DEBUG
-			hRemoteThread = CreateRemoteThread(hProcess, NULL, 0, 
+			hRemoteThread = CreateRemoteThread(hProcess, NULL, 0,
 				(LPTHREAD_START_ROUTINE)pRemoteCode, pRemoteData, 0, NULL);
-#else
-			hRemoteThread = NULL;
-#endif
 
-			if(hRemoteThread)
+			if (hRemoteThread)
 			{
 				// Wait for the thread to terminate
-				if(WaitForSingleObject(hRemoteThread, 7000) != WAIT_OBJECT_0)
+				if (WaitForSingleObject(hRemoteThread, 7000) != WAIT_OBJECT_0)
 				{
 					// Timeout or failure
 					// Do not call VirtualFreeEx as the code may still run in the future

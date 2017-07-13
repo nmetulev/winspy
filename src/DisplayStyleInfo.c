@@ -1,36 +1,38 @@
 //
-//	DisplayStyleInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayStyleInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
 //  void SetStyleInfo(HWND hwnd)
 //
-//	 Fill the style-tab-pane with style info for the
+//   Fill the style-tab-pane with style info for the
 //   specified window
 //
-//  void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, 
-//					BOOL fAllStyles, DWORD dwStyle)
+//  void FillStyleLists(HWND hwndTarget, HWND hwndStyleList,
+//                  BOOL fAllStyles, DWORD dwStyles)
 //
-//  void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, 
-//					BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl)
+//  void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
+//                  BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl)
 //
-//	 Fill the list-box with the appropriate styles
-//   for the specified target window.
+//   Fill the listbox with the appropriate style strings
+//   based on dw[Ex]Styles for the specified target window.
 //
-//	 hwndTarget      - window to find styles for
-//	 hwndStyleList   - listbox to receive standard styles
+//   hwndTarget      - window to find styles for
+//   hwndStyleList   - listbox to receive standard styles
 //   hwndExStyleList - listbox to receive extended styles
-//  
-//   fAllStyles      - FALSE - just adds the styles that are set
+//
+//   fAllStyles      - FALSE - just adds the styles that are both applicable and present in dw[Ex]Styles
 //                     TRUE  - adds ALL possible styles, but
-//                             only selects those that are set
+//                             only selects those that are applicable and present
+//
+//   dw[Ex]Styles    - the styles value
 //
 //   fExtControl     - include control-specific extended styles
-//                     (i.e. LVS_EX_xxx styles, not present in
-//                     the extended window styles
+//                     (e.g. LVS_EX_xxx styles), not present in
+//                     dwStyleEx
 //
 //
-//	v1.6.1 - fixed small bug thanks to Holger Stenger
+//  v1.6.1 - fixed small bug thanks to Holger Stenger
 //
 
 #define STRICT
@@ -42,808 +44,763 @@
 #include "resource.h"
 #include "WinSpy.h"
 
-StyleLookupEx WindowStyles[] = 
+StyleLookupEx WindowStyles[] =
 {
-	STYLE_(WS_OVERLAPPEDWINDOW),	0, -1, (WS_POPUP|WS_CHILD),  
-	STYLE_(WS_POPUPWINDOW),			WS_POPUPWINDOW, -1, 0, 
+#define WS_OVERLAPPED_MASK WS_POPUP | WS_CHILD // 0xC0000000
+	STYLE_COMBINATION_MASK(WS_OVERLAPPEDWINDOW, WS_OVERLAPPED_MASK),    // WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+	STYLE_COMBINATION_MASK(WS_POPUPWINDOW, WS_OVERLAPPED_MASK),         // WS_POPUP | WS_BORDER | WS_SYSMENU
 
-	STYLE_(WS_OVERLAPPED),			0, -1, (WS_POPUP|WS_CHILD),	//0x00000000
-	STYLE_(WS_POPUP),				0, -1, 0,					//0x80000000
-	STYLE_(WS_CHILD),				0, -1, 0,					//0x40000000
-	STYLE_(WS_MINIMIZE),			0, -1, 0,					//0x20000000
-	STYLE_(WS_VISIBLE),				0, -1, 0,					//0x10000000
-	STYLE_(WS_DISABLED),			0, -1, 0,					//0x08000000
-	STYLE_(WS_CLIPSIBLINGS),		0, -1, 0,					//0x04000000
-	STYLE_(WS_CLIPCHILDREN),		0, -1, 0,					//0x02000000
-	STYLE_(WS_MAXIMIZE),			0, -1, 0,					//0x01000000
+	//{ WS_OVERLAPPED_MASK
+	STYLE_MASK(WS_OVERLAPPED, WS_OVERLAPPED_MASK),                      //0x00000000
+	STYLE_MASK(WS_POPUP, WS_OVERLAPPED_MASK),                           //0x80000000
+	STYLE_MASK(WS_CHILD, WS_OVERLAPPED_MASK),                           //0x40000000
+	//} WS_OVERLAPPED_MASK
+	STYLE_SIMPLE(WS_MINIMIZE),                                          //0x20000000
+	STYLE_SIMPLE(WS_VISIBLE),                                           //0x10000000
+	STYLE_SIMPLE(WS_DISABLED),                                          //0x08000000
+	STYLE_SIMPLE(WS_CLIPSIBLINGS),                                      //0x04000000
+	STYLE_SIMPLE(WS_CLIPCHILDREN),                                      //0x02000000
+	STYLE_SIMPLE(WS_MAXIMIZE),                                          //0x01000000
 
-	STYLE_(WS_CAPTION),				0, -1, 0,					//0x00C00000
+	STYLE_COMBINATION(WS_CAPTION),                                      //0x00C00000 /* WS_BORDER | WS_DLGFRAME  */
 
-	//(BORDER|CAPTION)
-	STYLE_(WS_DLGFRAME),			0, -1, 0,					//0x00400000
-	
-	STYLE_(WS_BORDER),				0, -1, 0,					//0x00800000
-	
-	STYLE_(WS_VSCROLL),				0, -1, 0,					//0x00200000
-	STYLE_(WS_HSCROLL),				0, -1, 0,					//0x00100000
-	STYLE_(WS_SYSMENU),				0, -1, 0,					//0x00080000
-	STYLE_(WS_THICKFRAME),			0, -1, 0,					//0x00040000
-	STYLE_(WS_GROUP),				0, -1, 0,					//0x00020000
-	STYLE_(WS_TABSTOP),				0, -1, 0,					//0x00010000
+	STYLE_SIMPLE(WS_BORDER),                                            //0x00800000
+	STYLE_SIMPLE(WS_DLGFRAME),                                          //0x00400000
 
-	STYLE_(WS_MINIMIZEBOX),			0, WS_POPUPWINDOW|WS_OVERLAPPEDWINDOW|WS_CAPTION, 0, //0x00020000
-	STYLE_(WS_MAXIMIZEBOX),			0, WS_POPUPWINDOW|WS_OVERLAPPEDWINDOW|WS_CAPTION, 0, //0x00010000
+	STYLE_SIMPLE(WS_VSCROLL),                                           //0x00200000
+	STYLE_SIMPLE(WS_HSCROLL),                                           //0x00100000
+	STYLE_SIMPLE(WS_SYSMENU),                                           //0x00080000
+	STYLE_SIMPLE(WS_THICKFRAME),                                        //0x00040000
+	STYLE_MASK_DEPENDS(WS_GROUP, 0, WS_CHILD, WS_OVERLAPPED_MASK),      //0x00020000
+	STYLE_MASK_DEPENDS(WS_TABSTOP, 0, WS_CHILD, WS_OVERLAPPED_MASK),    //0x00010000
 
-	-1, _T(""), -1, -1, -1
+	STYLE_SIMPLE_DEPENDS(WS_MINIMIZEBOX, WS_SYSMENU),                   //0x00020000
+	STYLE_SIMPLE_DEPENDS(WS_MAXIMIZEBOX, WS_SYSMENU),                   //0x00010000
+
+	NULL
 };
 
 // Dialog box styles (class = #32770)
-StyleLookupEx DialogStyles[] = 
+StyleLookupEx DialogStyles[] =
 {
-	STYLE_(DS_ABSALIGN),			0, -1, 0,			//0x00000001
-	STYLE_(DS_SYSMODAL),			0, -1, 0,			//0x00000002
-	STYLE_(DS_LOCALEDIT),			0, -1, 0,			//0x00000020
-	STYLE_(DS_SETFONT),				0, -1, 0,			//0x00000040
-	STYLE_(DS_MODALFRAME),			0, -1, 0,			//0x00000080
-	STYLE_(DS_NOIDLEMSG),			0, -1, 0,			//0x00000100
-	STYLE_(DS_SETFOREGROUND),		0, -1, 0,			//0x00000200
+	STYLE_COMBINATION(DS_SHELLFONT),    //(DS_SETFONT | DS_FIXEDSYS)
+	STYLE_SIMPLE(DS_ABSALIGN),          //0x00000001
+	STYLE_SIMPLE(DS_SYSMODAL),          //0x00000002
+	STYLE_SIMPLE(DS_3DLOOK),            //0x00000004
+	STYLE_SIMPLE(DS_FIXEDSYS),          //0x00000008
+	STYLE_SIMPLE(DS_NOFAILCREATE),      //0x00000010
+	STYLE_SIMPLE(DS_LOCALEDIT),         //0x00000020
+	STYLE_SIMPLE(DS_SETFONT),           //0x00000040
+	STYLE_SIMPLE(DS_MODALFRAME),        //0x00000080
+	STYLE_SIMPLE(DS_NOIDLEMSG),         //0x00000100
+	STYLE_SIMPLE(DS_SETFOREGROUND),     //0x00000200
+	STYLE_SIMPLE(DS_CONTROL),           //0x00000400
+	STYLE_SIMPLE(DS_CENTER),            //0x00000800
+	STYLE_SIMPLE(DS_CENTERMOUSE),       //0x00001000
+	STYLE_SIMPLE(DS_CONTEXTHELP),       //0x00002000
 
-#if(WINVER >= 0x0400)
-
-	STYLE_(DS_3DLOOK),				0, -1, 0,			//0x00000004
-	STYLE_(DS_FIXEDSYS),			0, -1, 0,			//0x00000008
-	STYLE_(DS_NOFAILCREATE),		0, -1, 0,			//0x00000010
-	STYLE_(DS_CONTROL),				0, -1, 0,			//0x00000400
-	STYLE_(DS_CENTER),				0, -1, 0,			//0x00000800
-	STYLE_(DS_CENTERMOUSE),			0, -1, 0,			//0x00001000
-	STYLE_(DS_CONTEXTHELP),			0, -1, 0,			//0x00002000
-
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Button styles (Button)
-StyleLookupEx ButtonStyles[] = 
+StyleLookupEx ButtonStyles[] =
 {
-	STYLE_(BS_PUSHBUTTON),			0,   -1, BS_DEFPUSHBUTTON|BS_CHECKBOX|BS_AUTOCHECKBOX|BS_RADIOBUTTON|BS_GROUPBOX|BS_AUTORADIOBUTTON, 
-	STYLE_(BS_DEFPUSHBUTTON),		0xf, -1, 0,			//0x0001
-	STYLE_(BS_CHECKBOX),			0xf, -1, 0,			//0x0002
-	STYLE_(BS_AUTOCHECKBOX),		0xf, -1, 0,			//0x0003
-	STYLE_(BS_RADIOBUTTON),			0xf, -1, 0,			//0x0004
-	STYLE_(BS_3STATE),				0xf, -1, 0,			//0x0005
-	STYLE_(BS_AUTO3STATE),			0xf, -1, 0,			//0x0006
-	STYLE_(BS_GROUPBOX),			0xf, -1, 0,			//0x0007
-	STYLE_(BS_USERBUTTON),			0xf, -1, 0,			//0x0008
-	STYLE_(BS_AUTORADIOBUTTON),		0xf, -1, 0,			//0x0009
-	STYLE_(BS_OWNERDRAW),			0xf, -1, 0,			//0x000B
-	STYLE_(BS_LEFTTEXT),			0,   -1, 0,			//0x0020
+	//{ BS_TYPEMASK
+	STYLE_MASK(BS_PUSHBUTTON, BS_TYPEMASK),                 //0x0000
+	STYLE_MASK(BS_DEFPUSHBUTTON, BS_TYPEMASK),              //0x0001
+	STYLE_MASK(BS_CHECKBOX, BS_TYPEMASK),                   //0x0002
+	STYLE_MASK(BS_AUTOCHECKBOX, BS_TYPEMASK),               //0x0003
+	STYLE_MASK(BS_RADIOBUTTON, BS_TYPEMASK),                //0x0004
+	STYLE_MASK(BS_3STATE, BS_TYPEMASK),                     //0x0005
+	STYLE_MASK(BS_AUTO3STATE, BS_TYPEMASK),                 //0x0006
+	STYLE_MASK(BS_GROUPBOX, BS_TYPEMASK),                   //0x0007
+	STYLE_MASK(BS_USERBUTTON, BS_TYPEMASK),                 //0x0008
+	STYLE_MASK(BS_AUTORADIOBUTTON, BS_TYPEMASK),            //0x0009
+	STYLE_MASK(BS_OWNERDRAW, BS_TYPEMASK),                  //0x000B
+	//} BS_TYPEMASK
 
-	//winver >= 4.0 (index 42)
-	STYLE_(BS_TEXT),				0, -1, (BS_ICON|BS_BITMAP|BS_AUTOCHECKBOX|BS_AUTORADIOBUTTON|BS_CHECKBOX|BS_RADIOBUTTON),//0x00000000
-	STYLE_(BS_ICON),				0, -1, 0,			//0x0040	
-	STYLE_(BS_BITMAP),				0, -1, 0,			//0x0080
-	STYLE_(BS_LEFT),				0, -1, 0,			//0x0100
-	STYLE_(BS_RIGHT),				0, -1, 0,			//0x0200
-	STYLE_(BS_CENTER),				0, -1, 0,			//0x0300
-	STYLE_(BS_TOP),					0, -1, 0,			//0x0400
-	STYLE_(BS_BOTTOM),				0, -1, 0,			//0x0800
-	STYLE_(BS_VCENTER),				0, -1, 0,			//0x0C00
-	STYLE_(BS_PUSHLIKE),			0, -1, 0,			//0x1000
-	STYLE_(BS_MULTILINE),			0, -1, 0,			//0x2000
-	STYLE_(BS_NOTIFY),				0, -1, 0,			//0x4000
-	STYLE_(BS_FLAT),				0, -1, 0,			//0x8000
-	STYLE_(BS_RIGHTBUTTON),			0, -1, 0,			//BS_LEFTTEXT
+	STYLE_SIMPLE(BS_LEFTTEXT),                              //0x0020
 
-	-1, _T(""), -1, -1, -1
+#define BS_TEXT_MASK BS_ICON | BS_BITMAP // 0x00C0
+	//{ BS_TEXT_MASK
+	STYLE_MASK(BS_TEXT, BS_TEXT_MASK),                      //0x0000
+	STYLE_MASK(BS_ICON, BS_TEXT_MASK),                      //0x0040
+	STYLE_MASK(BS_BITMAP, BS_TEXT_MASK),                    //0x0080
+	//} BS_TEXT_MASK
+	STYLE_COMBINATION(BS_CENTER),                           //0x0300
+	STYLE_SIMPLE(BS_LEFT),                                  //0x0100
+	STYLE_SIMPLE(BS_RIGHT),                                 //0x0200
+	STYLE_COMBINATION(BS_VCENTER),                          //0x0C00
+	STYLE_SIMPLE(BS_TOP),                                   //0x0400
+	STYLE_SIMPLE(BS_BOTTOM),                                //0x0800
+	STYLE_SIMPLE(BS_PUSHLIKE),                              //0x1000
+	STYLE_SIMPLE(BS_MULTILINE),                             //0x2000
+	STYLE_SIMPLE(BS_NOTIFY),                                //0x4000
+	STYLE_SIMPLE(BS_FLAT),                                  //0x8000
+	STYLE_SIMPLE(BS_RIGHTBUTTON),                           //BS_LEFTTEXT
+
+	NULL
 };
 
 // Edit styles (Edit)
-StyleLookupEx EditStyles[] = 
+StyleLookupEx EditStyles[] =
 {
-	STYLE_(ES_LEFT),				0, -1, (ES_CENTER|ES_RIGHT),	//0x0000
-	STYLE_(ES_CENTER),				0, -1, 0,						//0x0001
-	STYLE_(ES_RIGHT),				0, -1, 0,						//0x0002
-	STYLE_(ES_MULTILINE),			0, -1, 0,						//0x0004
-	STYLE_(ES_UPPERCASE),			0, -1, 0,						//0x0008
-	STYLE_(ES_LOWERCASE),			0, -1, 0,						//0x0010
-	STYLE_(ES_PASSWORD),			0, -1, 0,						//0x0020
-	STYLE_(ES_AUTOVSCROLL),			0, -1, 0,						//0x0040
-	STYLE_(ES_AUTOHSCROLL),			0, -1, 0,						//0x0080
-	STYLE_(ES_NOHIDESEL),			0, -1, 0,						//0x0100
-	STYLE_(ES_OEMCONVERT),			0, -1, 0,						//0x0400
-	STYLE_(ES_READONLY),			0, -1, 0,						//0x0800
-	STYLE_(ES_WANTRETURN),			0, -1, 0,						//0x1000
-	STYLE_(ES_NUMBER),				0, -1, 0,						//0x2000	
+	STYLE_MASK(ES_LEFT, ES_CENTER | ES_RIGHT),              //0x0000
+	STYLE_SIMPLE(ES_CENTER),                                //0x0001
+	STYLE_SIMPLE(ES_RIGHT),                                 //0x0002
+	STYLE_SIMPLE(ES_MULTILINE),                             //0x0004
+	STYLE_SIMPLE(ES_UPPERCASE),                             //0x0008
+	STYLE_SIMPLE(ES_LOWERCASE),                             //0x0010
+	STYLE_SIMPLE(ES_PASSWORD),                              //0x0020
+	STYLE_SIMPLE(ES_AUTOVSCROLL),                           //0x0040
+	STYLE_SIMPLE(ES_AUTOHSCROLL),                           //0x0080
+	STYLE_SIMPLE(ES_NOHIDESEL),                             //0x0100
+	STYLE_SIMPLE(ES_OEMCONVERT),                            //0x0400
+	STYLE_SIMPLE(ES_READONLY),                              //0x0800
+	STYLE_SIMPLE(ES_WANTRETURN),                            //0x1000
+	STYLE_SIMPLE(ES_NUMBER),                                //0x2000
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
-StyleLookupEx RichedStyles[] = 
+StyleLookupEx RichedStyles[] =
 {
 	// Standard edit control styles
-	STYLE_(ES_LEFT),				0, -1, (ES_CENTER|ES_RIGHT),	//0x0000
-	STYLE_(ES_CENTER),				0, -1, 0,						//0x0001
-	STYLE_(ES_RIGHT),				0, -1, 0,						//0x0002
-	STYLE_(ES_MULTILINE),			0, -1, 0,						//0x0004
-	//STYLE_(ES_UPPERCASE),			0, -1, 0,						//0x0008
-	//STYLE_(ES_LOWERCASE),			0, -1, 0,						//0x0010
-	STYLE_(ES_PASSWORD),			0, -1, 0,						//0x0020
-	STYLE_(ES_AUTOVSCROLL),			0, -1, 0,						//0x0040
-	STYLE_(ES_AUTOHSCROLL),			0, -1, 0,						//0x0080
-	STYLE_(ES_NOHIDESEL),			0, -1, 0,						//0x0100
-	//STYLE_(ES_OEMCONVERT),		0, -1, 0,						//0x0400
-	STYLE_(ES_READONLY),			0, -1, 0,						//0x0800
-	STYLE_(ES_WANTRETURN),			0, -1, 0,						//0x1000
-	STYLE_(ES_NUMBER),				0, -1, 0,						//0x2000	
+	STYLE_MASK(ES_LEFT, ES_CENTER | ES_RIGHT),              //0x0000
+	STYLE_SIMPLE(ES_CENTER),                                //0x0001
+	STYLE_SIMPLE(ES_RIGHT),                                 //0x0002
+	STYLE_SIMPLE(ES_MULTILINE),                             //0x0004
+	//STYLE_SIMPLE(ES_UPPERCASE),                           //0x0008
+	//STYLE_SIMPLE(ES_LOWERCASE),                           //0x0010
+	STYLE_SIMPLE(ES_PASSWORD),                              //0x0020
+	STYLE_SIMPLE(ES_AUTOVSCROLL),                           //0x0040
+	STYLE_SIMPLE(ES_AUTOHSCROLL),                           //0x0080
+	STYLE_SIMPLE(ES_NOHIDESEL),                             //0x0100
+	//STYLE_SIMPLE(ES_OEMCONVERT),                          //0x0400
+	STYLE_SIMPLE(ES_READONLY),                              //0x0800
+	STYLE_SIMPLE(ES_WANTRETURN),                            //0x1000
+	STYLE_SIMPLE(ES_NUMBER),                                //0x2000
 
-	// Addition Rich Edit control styles
+	// Additional Rich Edit control styles
 
-	STYLE_(ES_SAVESEL),				0, -1, 0,				//0x00008000
-	STYLE_(ES_SUNKEN),				0, -1, 0,				//0x00004000
-	STYLE_(ES_DISABLENOSCROLL),		0, -1, 0,				//0x00002000
-	STYLE_(ES_SELECTIONBAR),		0, -1, 0,				//0x01000000
-	STYLE_(ES_NOOLEDRAGDROP),		0, -1, 0,				//0x00000008
+	STYLE_SIMPLE(ES_SAVESEL),                               //0x00008000
+	STYLE_SIMPLE(ES_SUNKEN),                                //0x00004000
+	STYLE_SIMPLE(ES_DISABLENOSCROLL),                       //0x00002000
+	// Same as WS_MAXIMIZE, but that doesn't make sense so we re-use the value
+	STYLE_SIMPLE(ES_SELECTIONBAR),                          //0x01000000
+	// Same as ES_UPPERCASE, but re-used to completely disable OLE drag'n'drop
+	STYLE_SIMPLE(ES_NOOLEDRAGDROP),                         //0x00000008
 
-	-1, _T(""), -1, -1, -1
+	NULL
 
 };
 
 // Combo box styles (combobox)
-StyleLookupEx ComboStyles[] = 
+StyleLookupEx ComboStyles[] =
 {
-	STYLE_(CBS_SIMPLE),				0x3, -1, 0,		//0x0001
-	STYLE_(CBS_DROPDOWN),			0x3, -1, 0,		//0x0002
-	STYLE_(CBS_DROPDOWNLIST),		0x3, -1, 0,		//0x0003
-	STYLE_(CBS_OWNERDRAWFIXED),		0, -1, 0,		//0x0010
-	STYLE_(CBS_OWNERDRAWVARIABLE),	0, -1, 0,		//0x0020
-	STYLE_(CBS_AUTOHSCROLL),		0, -1, 0,		//0x0040
-	STYLE_(CBS_OEMCONVERT),			0, -1, 0,		//0x0080
-	STYLE_(CBS_SORT),				0, -1, 0,		//0x0100
-	STYLE_(CBS_HASSTRINGS),			0, -1, 0,		//0x0200
-	STYLE_(CBS_NOINTEGRALHEIGHT),	0, -1, 0,		//0x0400
-	STYLE_(CBS_DISABLENOSCROLL),	0, -1, 0,		//0x0800
-	
+#define CBS_TYPE_MASK CBS_DROPDOWNLIST //0x0003
+	//{ CBS_TYPE_MASK
+	STYLE_MASK(CBS_SIMPLE, CBS_TYPE_MASK),                  //0x0001
+	STYLE_MASK(CBS_DROPDOWN, CBS_TYPE_MASK),                //0x0002
+	STYLE_MASK(CBS_DROPDOWNLIST, CBS_TYPE_MASK),            //0x0003
+	//} CBS_TYPE_MASK
+	STYLE_SIMPLE(CBS_OWNERDRAWFIXED),                       //0x0010
+	STYLE_SIMPLE(CBS_OWNERDRAWVARIABLE),                    //0x0020
+	STYLE_SIMPLE(CBS_AUTOHSCROLL),                          //0x0040
+	STYLE_SIMPLE(CBS_OEMCONVERT),                           //0x0080
+	STYLE_SIMPLE(CBS_SORT),                                 //0x0100
+	STYLE_SIMPLE(CBS_HASSTRINGS),                           //0x0200
+	STYLE_SIMPLE(CBS_NOINTEGRALHEIGHT),                     //0x0400
+	STYLE_SIMPLE(CBS_DISABLENOSCROLL),                      //0x0800
+
 #if(WINVER >= 0x0400)
-	STYLE_(CBS_UPPERCASE),			0, -1, 0,		//0x1000
-	STYLE_(CBS_LOWERCASE),			0, -1, 0,		//0x2000
+	STYLE_SIMPLE(CBS_UPPERCASE),                            //0x1000
+	STYLE_SIMPLE(CBS_LOWERCASE),                            //0x2000
 #endif
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Listbox styles (Listbox)
-StyleLookupEx ListBoxStyles[] = 
+StyleLookupEx ListBoxStyles[] =
 {
-	STYLE_(LBS_NOTIFY),				0, -1, 0,		//0x0001
-	STYLE_(LBS_SORT),				0, -1, 0,		//0x0002
-	STYLE_(LBS_NOREDRAW),			0, -1, 0,		//0x0004
-	STYLE_(LBS_MULTIPLESEL),		0, -1, 0,		//0x0008
-	STYLE_(LBS_OWNERDRAWFIXED),		0, -1, 0,		//0x0010
-	STYLE_(LBS_OWNERDRAWVARIABLE),	0, -1, 0,		//0x0020
-	STYLE_(LBS_HASSTRINGS),			0, -1, 0,		//0x0040
-	STYLE_(LBS_USETABSTOPS),		0, -1, 0,		//0x0080
-	STYLE_(LBS_NOINTEGRALHEIGHT),	0, -1, 0,		//0x0100
-	STYLE_(LBS_MULTICOLUMN),		0, -1, 0,		//0x0200
-	STYLE_(LBS_WANTKEYBOARDINPUT),	0, -1, 0,		//0x0400
-	STYLE_(LBS_EXTENDEDSEL),		0, -1, 0,		//0x0800
-	STYLE_(LBS_DISABLENOSCROLL),	0, -1, 0,		//0x1000
-	STYLE_(LBS_NODATA),				0, -1, 0,		//0x2000
-	STYLE_(LBS_NOSEL),				0, -1, 0,		//0x4000
+	STYLE_SIMPLE(LBS_NOTIFY),                   //0x0001
+	STYLE_SIMPLE(LBS_SORT),                     //0x0002
+	STYLE_SIMPLE(LBS_NOREDRAW),                 //0x0004
+	STYLE_SIMPLE(LBS_MULTIPLESEL),              //0x0008
+	STYLE_SIMPLE(LBS_OWNERDRAWFIXED),           //0x0010
+	STYLE_SIMPLE(LBS_OWNERDRAWVARIABLE),        //0x0020
+	STYLE_SIMPLE(LBS_HASSTRINGS),               //0x0040
+	STYLE_SIMPLE(LBS_USETABSTOPS),              //0x0080
+	STYLE_SIMPLE(LBS_NOINTEGRALHEIGHT),         //0x0100
+	STYLE_SIMPLE(LBS_MULTICOLUMN),              //0x0200
+	STYLE_SIMPLE(LBS_WANTKEYBOARDINPUT),        //0x0400
+	STYLE_SIMPLE(LBS_EXTENDEDSEL),              //0x0800
+	STYLE_SIMPLE(LBS_DISABLENOSCROLL),          //0x1000
+	STYLE_SIMPLE(LBS_NODATA),                   //0x2000
+	STYLE_SIMPLE(LBS_NOSEL),                    //0x4000
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Scrollbar control styles (Scrollbar)
-StyleLookupEx ScrollbarStyles[] = 
+StyleLookupEx ScrollbarStyles[] =
 {
-	STYLE_(SBS_TOPALIGN),					0, SBS_HORZ, 0,								//0x0002
-	STYLE_(SBS_LEFTALIGN),					0, SBS_VERT, 0,								//0x0002
-	STYLE_(SBS_BOTTOMALIGN),				0, SBS_HORZ|SBS_SIZEBOX|SBS_SIZEGRIP, 0,	//0x0004
-	STYLE_(SBS_RIGHTALIGN),					0, SBS_VERT|SBS_SIZEBOX|SBS_SIZEGRIP, 0,	//0x0004
-	STYLE_(SBS_HORZ),						0, -1, SBS_VERT|SBS_SIZEBOX|SBS_SIZEGRIP,	//0x0000
-	STYLE_(SBS_VERT),						0, -1, SBS_SIZEBOX|SBS_SIZEGRIP,			//0x0001
-	STYLE_(SBS_SIZEBOXTOPLEFTALIGN),		0, SBS_SIZEBOX|SBS_SIZEGRIP, 0,				//0x0002
-	STYLE_(SBS_SIZEBOXBOTTOMRIGHTALIGN),	0, SBS_SIZEBOX|SBS_SIZEGRIP, 0,				//0x0004
-	STYLE_(SBS_SIZEBOX),					0, -1, 0,									//0x0008
-	STYLE_(SBS_SIZEGRIP),					0, -1, 0,									//0x0010
+#define SBS_HORZ_MASK SBS_VERT //0x0001
+	STYLE_MASK(SBS_HORZ, SBS_VERT),                             //0x0000
+	STYLE_SIMPLE(SBS_VERT),                                     //0x0001
+	STYLE_MASK_DEPENDS(SBS_TOPALIGN, 0, SBS_HORZ, SBS_VERT),    //0x0002
+	STYLE_SIMPLE_DEPENDS(SBS_LEFTALIGN, SBS_VERT),              //0x0002
+	STYLE_MASK_DEPENDS(SBS_BOTTOMALIGN, 0, SBS_HORZ, SBS_VERT), //0x0004
+	STYLE_SIMPLE_DEPENDS(SBS_RIGHTALIGN, SBS_VERT),             //0x0004
+	// SBS_SIZEBOXTOPLEFTALIGN and SBS_SIZEBOXBOTTOMRIGHTALIGN actually depend on
+	// the presence of "either SBS_SIZEBOX or SBS_SIZEGRIP",
+	// but our style definition format is not rich enough to express this.
+	// It would be unjustified to complicate it just for this one case; also,
+	// it would not allow for a meaningful "set style" definition for these styles anyway.
+	// Therefore, we are ignoring this dependency and
+	// defining these styles as ones without dependencies here.
+	STYLE_SIMPLE(SBS_SIZEBOXTOPLEFTALIGN),                      //0x0002
+	STYLE_SIMPLE(SBS_SIZEBOXBOTTOMRIGHTALIGN),                  //0x0004
+	STYLE_SIMPLE(SBS_SIZEBOX),                                  //0x0008
+	STYLE_SIMPLE(SBS_SIZEGRIP),                                 //0x0010
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Static control styles (Static)
-StyleLookupEx StaticStyles[] = 
+StyleLookupEx StaticStyles[] =
 {
-	STYLE_(SS_LEFT),				0x1f, -1,SS_CENTER|SS_RIGHT,//0x0000
-	STYLE_(SS_CENTER),				0x1f, -1, 0,				//0x0001
-	STYLE_(SS_RIGHT),				0x1f, -1, 0,				//0x0002
-	STYLE_(SS_ICON),				0x1f, -1, 0,				//0x0003
-	STYLE_(SS_BLACKRECT),			0x1f, -1, 0,				//0x0004
-	STYLE_(SS_GRAYRECT),			0x1f, -1, 0,				//0x0005
-	STYLE_(SS_WHITERECT),			0x1f, -1, 0,				//0x0006
-	STYLE_(SS_BLACKFRAME),			0x1f, -1, 0,				//0x0007
-	STYLE_(SS_GRAYFRAME),			0x1f, -1, 0,				//0x0008
-	STYLE_(SS_WHITEFRAME),			0x1f, -1, 0,				//0x0009
-	STYLE_(SS_USERITEM),			0x1f, -1, 0,				//0x000A
-	STYLE_(SS_SIMPLE),				0x1f, -1, 0,				//0x000B
-	STYLE_(SS_LEFTNOWORDWRAP),		0x1f, -1, 0,				//0x000C
+	//{ STYLE_MASK
+	STYLE_MASK(SS_LEFT, SS_TYPEMASK),                   //0x0000
+	STYLE_MASK(SS_CENTER, SS_TYPEMASK),                 //0x0001
+	STYLE_MASK(SS_RIGHT, SS_TYPEMASK),                  //0x0002
+	STYLE_MASK(SS_ICON, SS_TYPEMASK),                   //0x0003
+	STYLE_MASK(SS_BLACKRECT, SS_TYPEMASK),              //0x0004
+	STYLE_MASK(SS_GRAYRECT, SS_TYPEMASK),               //0x0005
+	STYLE_MASK(SS_WHITERECT, SS_TYPEMASK),              //0x0006
+	STYLE_MASK(SS_BLACKFRAME, SS_TYPEMASK),             //0x0007
+	STYLE_MASK(SS_GRAYFRAME, SS_TYPEMASK),              //0x0008
+	STYLE_MASK(SS_WHITEFRAME, SS_TYPEMASK),             //0x0009
+	STYLE_MASK(SS_USERITEM, SS_TYPEMASK),               //0x000A
+	STYLE_MASK(SS_SIMPLE, SS_TYPEMASK),                 //0x000B
+	STYLE_MASK(SS_LEFTNOWORDWRAP, SS_TYPEMASK),         //0x000C
+	STYLE_MASK(SS_OWNERDRAW, SS_TYPEMASK),              //0x000D
+	STYLE_MASK(SS_BITMAP, SS_TYPEMASK),                 //0x000E
+	STYLE_MASK(SS_ENHMETAFILE, SS_TYPEMASK),            //0x000F
+	STYLE_MASK(SS_ETCHEDHORZ, SS_TYPEMASK),             //0x0010
+	STYLE_MASK(SS_ETCHEDVERT, SS_TYPEMASK),             //0x0011
+	STYLE_MASK(SS_ETCHEDFRAME, SS_TYPEMASK),            //0x0012
+	//} STYLE_MASK
+	STYLE_SIMPLE(SS_REALSIZECONTROL),                   //0x0040
+	STYLE_SIMPLE(SS_NOPREFIX),                          //0x0080
 
-	STYLE_(SS_OWNERDRAW),			0x1f, -1, 0,				//0x000D
-	STYLE_(SS_BITMAP),				0x1f, -1, 0,				//0x000E
-	STYLE_(SS_ENHMETAFILE),			0x1f, -1, 0,				//0x000F
-	STYLE_(SS_ETCHEDHORZ),			0x1f, -1, 0,				//0x0010
-	STYLE_(SS_ETCHEDVERT),			0x1f, -1, 0,				//0x0011
-	STYLE_(SS_ETCHEDFRAME),			0x1f, -1, 0,				//0x0012
-	STYLE_(SS_TYPEMASK),			0x1f, -1, 0,				//0x001F
-	STYLE_(SS_NOPREFIX),			0,    -1, 0,				//0x0080
-	
-	STYLE_(SS_NOTIFY),				0,    -1, 0,				//0x0100
-	STYLE_(SS_CENTERIMAGE),			0,    -1, 0,				//0x0200
-	STYLE_(SS_RIGHTJUST),			0,    -1, 0,				//0x0400
-	STYLE_(SS_REALSIZEIMAGE),		0,    -1, 0,				//0x0800
-	STYLE_(SS_SUNKEN),				0,    -1, 0,				//0x1000
-	STYLE_(SS_ENDELLIPSIS),			0,    -1, 0,				//0x4000
-	STYLE_(SS_PATHELLIPSIS),		0,    -1, 0,				//0x8000
-	STYLE_(SS_WORDELLIPSIS),		0,    -1, 0,				//0xC000
-	STYLE_(SS_ELLIPSISMASK),		0,    -1, 0,				//0xC000
+	STYLE_SIMPLE(SS_NOTIFY),                            //0x0100
+	STYLE_SIMPLE(SS_CENTERIMAGE),                       //0x0200
+	STYLE_SIMPLE(SS_RIGHTJUST),                         //0x0400
+	STYLE_SIMPLE(SS_REALSIZEIMAGE),                     //0x0800
+	STYLE_SIMPLE(SS_SUNKEN),                            //0x1000
+	//{ SS_ELLIPSISMASK
+	STYLE_MASK(SS_ENDELLIPSIS, SS_ELLIPSISMASK),        //0x4000
+	STYLE_MASK(SS_PATHELLIPSIS, SS_ELLIPSISMASK),       //0x8000
+	STYLE_MASK(SS_WORDELLIPSIS, SS_ELLIPSISMASK),       //0xC000
+	//} SS_ELLIPSISMASK
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
-//	Standard Common controls styles	
-StyleLookupEx CommCtrlList[] = 
+//  Standard Common controls styles
+StyleLookupEx CommCtrlList[] =
 {
-	STYLE_(CCS_TOP),				0x3, -1, 0,			//0x0001
-	STYLE_(CCS_NOMOVEY),			0x3, -1, 0,			//0x0002
-	STYLE_(CCS_BOTTOM),				0x3, -1, 0,			//0x0003
-	STYLE_(CCS_NORESIZE),			0,	 -1, 0,			//0x0004
-	STYLE_(CCS_NOPARENTALIGN),		0,   -1, 0,			//0x0008
-	
-	STYLE_(CCS_ADJUSTABLE),			0,   -1, 0,			//0x0020
-	STYLE_(CCS_NODIVIDER),			0,   -1, 0,			//0x0040
+#define CCS_TOP_MASK 0x0003
+	//{ CCS_TOP_MASK
+	STYLE_MASK(CCS_TOP, CCS_TOP_MASK),              //0x0001
+	STYLE_MASK(CCS_NOMOVEY, CCS_TOP_MASK),          //0x0002
+	STYLE_MASK(CCS_BOTTOM, CCS_TOP_MASK),           //0x0003
+	//} CCS_TOP_MASK
+	STYLE_SIMPLE(CCS_NORESIZE),                     //0x0004
+	STYLE_SIMPLE(CCS_NOPARENTALIGN),                //0x0008
+	STYLE_SIMPLE(CCS_ADJUSTABLE),                   //0x0020
+	STYLE_SIMPLE(CCS_NODIVIDER),                    //0x0040
+	STYLE_SIMPLE(CCS_VERT),                         //0x0080
+	STYLE_SIMPLE_DEPENDS(CCS_LEFT, CCS_VERT),       //(CCS_VERT | CCS_TOP)
+	STYLE_SIMPLE_DEPENDS(CCS_RIGHT, CCS_VERT),      //(CCS_VERT | CCS_BOTTOM)
+	STYLE_SIMPLE_DEPENDS(CCS_NOMOVEX, CCS_VERT),    //(CCS_VERT | CCS_NOMOVEY)
 
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(CCS_VERT),				0,   -1, 0,			//0x0080
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 //  DragList - uses same styles as listview
 
 // Header control (SysHeader32)
-StyleLookupEx HeaderStyles[] = 
+StyleLookupEx HeaderStyles[] =
 {
-	STYLE_(HDS_HORZ),				0, -1, 16,			//0x0000
-	STYLE_(HDS_BUTTONS),			0, -1, 0,			//0x0002
+	// HDS_HORZ cannot be "not present", as there is no "alternative" defined
+	STYLE_SIMPLE(HDS_HORZ),                         //0x0000
+	STYLE_SIMPLE(HDS_BUTTONS),                      //0x0002
+	STYLE_SIMPLE(HDS_HOTTRACK),                     //0x0004
+	STYLE_SIMPLE(HDS_HIDDEN),                       //0x0008
+	STYLE_SIMPLE(HDS_DRAGDROP),                     //0x0040
+	STYLE_SIMPLE(HDS_FULLDRAG),                     //0x0080
+	STYLE_SIMPLE(HDS_FILTERBAR),                    //0x0100
+	STYLE_SIMPLE(HDS_FLAT),                         //0x0200
+	STYLE_SIMPLE(HDS_CHECKBOXES),                   //0x0400
+	STYLE_SIMPLE(HDS_NOSIZING),                     //0x0800
+	STYLE_SIMPLE(HDS_OVERFLOW),                     //0x1000
 
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(HDS_HOTTRACK),			0, -1, 0,			//0x0004
-	STYLE_(HDS_DRAGDROP),			0, -1, 0,			//0x0040
-	STYLE_(HDS_FULLDRAG),			0, -1, 0,			//0x0080
-#endif
-
-	STYLE_(HDS_HIDDEN),				0, -1, 0,			//0x0008
-
-#if (_WIN32_IE >= 0x0500)
-	STYLE_(HDS_FILTERBAR),			0, -1, 0,			//0x0100
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Listview (SysListView32)
-StyleLookupEx ListViewStyles[] = 
+StyleLookupEx ListViewStyles[] =
 {
-	STYLE_(LVS_ICON),		LVS_TYPEMASK, -1, LVS_REPORT|LVS_SMALLICON|LVS_LIST, //0x0000
-	STYLE_(LVS_REPORT),		LVS_TYPEMASK, -1, 0,		//0x0001
-	STYLE_(LVS_SMALLICON),	LVS_TYPEMASK, -1, 0,		//0x0002
-	STYLE_(LVS_LIST),		LVS_TYPEMASK, -1, 0,		//0x0003
+	//{ LVS_TYPEMASK
+	STYLE_MASK(LVS_ICON, LVS_TYPEMASK),             //0x0000
+	STYLE_MASK(LVS_REPORT, LVS_TYPEMASK),           //0x0001
+	STYLE_MASK(LVS_SMALLICON, LVS_TYPEMASK),        //0x0002
+	STYLE_MASK(LVS_LIST, LVS_TYPEMASK),             //0x0003
+	//} LVS_TYPEMASK
+	STYLE_SIMPLE(LVS_SINGLESEL),                    //0x0004
+	STYLE_SIMPLE(LVS_SHOWSELALWAYS),                //0x0008
+	STYLE_SIMPLE(LVS_SORTASCENDING),                //0x0010
+	STYLE_SIMPLE(LVS_SORTDESCENDING),               //0x0020
+	STYLE_SIMPLE(LVS_SHAREIMAGELISTS),              //0x0040
+	STYLE_SIMPLE(LVS_NOLABELWRAP),                  //0x0080
+	STYLE_SIMPLE(LVS_AUTOARRANGE),                  //0x0100
+	STYLE_SIMPLE(LVS_EDITLABELS),                   //0x0200
+	STYLE_SIMPLE(LVS_OWNERDATA),                    //0x1000
+	STYLE_SIMPLE(LVS_NOSCROLL),                     //0x2000
+	//{ LVS_ALIGNMASK
+	STYLE_MASK(LVS_ALIGNTOP, LVS_ALIGNMASK),        //0x0000
+	STYLE_MASK(LVS_ALIGNLEFT, LVS_ALIGNMASK),       //0x0800
+	//} LVS_ALIGNMASK
+	STYLE_SIMPLE(LVS_OWNERDRAWFIXED),               //0x0400
+	STYLE_SIMPLE(LVS_NOCOLUMNHEADER),               //0x4000
+	STYLE_SIMPLE(LVS_NOSORTHEADER),                 //0x8000
 
-	STYLE_(LVS_SINGLESEL),			0,   -1, 0,		//0x0004
-	STYLE_(LVS_SHOWSELALWAYS),		0,   -1, 0,		//0x0008
-	STYLE_(LVS_SORTASCENDING),		0,   -1, 0,		//0x0010
-	STYLE_(LVS_SORTDESCENDING),		0,   -1, 0,		//0x0020
-	STYLE_(LVS_SHAREIMAGELISTS),	0,   -1, 0,		//0x0040
-	STYLE_(LVS_NOLABELWRAP),		0,   -1, 0,		//0x0080
-	STYLE_(LVS_AUTOARRANGE),		0,   -1, 0,		//0x0100
-	STYLE_(LVS_EDITLABELS),			0,   -1, 0,		//0x0200
-
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(LVS_OWNERDATA),			0, -1, 0,		//0x1000
-#endif
-
-	STYLE_(LVS_NOSCROLL),			0, -1, 0,		//0x2000
-
-	STYLE_(LVS_ALIGNTOP),			0, -1, 0,		//0x0000
-	STYLE_(LVS_ALIGNLEFT),	LVS_ALIGNMASK, -1, 0,	//0x0800
-
-	//STYLE_(LVS_ALIGNMASK),			0, -1, 0,		//0x0c00
-	//STYLE_(LVS_TYPESTYLEMASK),		0, -1, 0,		//0xfc00
-
-	STYLE_(LVS_OWNERDRAWFIXED),		0, -1, 0,		//0x0400
-	STYLE_(LVS_NOCOLUMNHEADER),		0, -1, 0,		//0x4000
-	STYLE_(LVS_NOSORTHEADER),		0, -1, 0,		//0x8000
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Toolbar control (ToolbarWindow32)
-StyleLookupEx ToolbarStyles[] = 
+StyleLookupEx ToolbarStyles[] =
 {
-	STYLE_(TBSTYLE_TOOLTIPS),		0, -1, 0,		//0x0100
-	STYLE_(TBSTYLE_WRAPABLE),		0, -1, 0,		//0x0200
-	STYLE_(TBSTYLE_ALTDRAG),		0, -1, 0,		//0x0400
+	STYLE_SIMPLE(TBSTYLE_TOOLTIPS),         //0x0100
+	STYLE_SIMPLE(TBSTYLE_WRAPABLE),         //0x0200
+	STYLE_SIMPLE(TBSTYLE_ALTDRAG),          //0x0400
+	STYLE_SIMPLE(TBSTYLE_FLAT),             //0x0800
+	STYLE_SIMPLE(TBSTYLE_LIST),             //0x1000
+	STYLE_SIMPLE(TBSTYLE_CUSTOMERASE),      //0x2000
+	STYLE_SIMPLE(TBSTYLE_REGISTERDROP),     //0x4000
+	STYLE_SIMPLE(TBSTYLE_TRANSPARENT),      //0x8000
 
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(TBSTYLE_FLAT),			0, -1, 0,		//0x0800
-	STYLE_(TBSTYLE_LIST),			0, -1, 0,		//0x1000
-	STYLE_(TBSTYLE_CUSTOMERASE),	0, -1, 0,		//0x2000
-#endif
-
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(TBSTYLE_REGISTERDROP),	0, -1, 0,		//0x4000
-	STYLE_(TBSTYLE_TRANSPARENT),	0, -1, 0,		//0x8000
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Rebar control (RebarControl32)
-StyleLookupEx RebarStyles[] = 
+StyleLookupEx RebarStyles[] =
 {
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(RBS_TOOLTIPS),			0, -1, 0,		//0x0100
-	STYLE_(RBS_VARHEIGHT),			0, -1, 0,		//0x0200
-	STYLE_(RBS_BANDBORDERS),		0, -1, 0,		//0x0400
-	STYLE_(RBS_FIXEDORDER),			0, -1, 0,		//0x0800
-	STYLE_(RBS_REGISTERDROP),		0, -1, 0,		//0x1000
-	STYLE_(RBS_AUTOSIZE),			0, -1, 0,		//0x2000
-	STYLE_(RBS_VERTICALGRIPPER),	0, -1, 0,		//0x4000
-	STYLE_(RBS_DBLCLKTOGGLE),		0, -1, 0,		//0x8000
-#endif
+	STYLE_SIMPLE(RBS_TOOLTIPS),             //0x0100
+	STYLE_SIMPLE(RBS_VARHEIGHT),            //0x0200
+	STYLE_SIMPLE(RBS_BANDBORDERS),          //0x0400
+	STYLE_SIMPLE(RBS_FIXEDORDER),           //0x0800
+	STYLE_SIMPLE(RBS_REGISTERDROP),         //0x1000
+	STYLE_SIMPLE(RBS_AUTOSIZE),             //0x2000
+	STYLE_SIMPLE(RBS_VERTICALGRIPPER),      //0x4000
+	STYLE_SIMPLE(RBS_DBLCLKTOGGLE),         //0x8000
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Track Bar control (msctls_trackbar32)
-StyleLookupEx TrackbarStyles[] = 
+StyleLookupEx TrackbarStyles[] =
 {
-	STYLE_(TBS_AUTOTICKS),			0xf, -1, 0,				//0x0001
-	STYLE_(TBS_VERT),				0xf, -1, 0,				//0x0002
-	STYLE_(TBS_HORZ),				0xf, -1, TBS_VERT,		//0x0000
-	STYLE_(TBS_TOP),				0xf, -1, 0,				//0x0004
-	STYLE_(TBS_BOTTOM),				0xf, -1, TBS_TOP,		//0x0000
-	STYLE_(TBS_LEFT),				0xf, -1, 0,				//0x0004
-	STYLE_(TBS_RIGHT),				0xf, -1, TBS_LEFT,		//0x0000
-	STYLE_(TBS_BOTH),				0xf, -1, 0,				//0x0008
+	STYLE_SIMPLE(TBS_AUTOTICKS),                //0x0001
+	STYLE_SIMPLE(TBS_VERT),                     //0x0002
+	STYLE_MASK(TBS_HORZ, TBS_VERT),             //0x0000
+	STYLE_SIMPLE(TBS_TOP),                      //0x0004
+	STYLE_MASK(TBS_BOTTOM, TBS_TOP),            //0x0000
+	STYLE_SIMPLE(TBS_LEFT),                     //0x0004
+	STYLE_MASK(TBS_RIGHT, TBS_LEFT),            //0x0000
+	STYLE_SIMPLE(TBS_BOTH),                     //0x0008
+	STYLE_SIMPLE(TBS_NOTICKS),                  //0x0010
+	STYLE_SIMPLE(TBS_ENABLESELRANGE),           //0x0020
+	STYLE_SIMPLE(TBS_FIXEDLENGTH),              //0x0040
+	STYLE_SIMPLE(TBS_NOTHUMB),                  //0x0080
+	STYLE_SIMPLE(TBS_TOOLTIPS),                 //0x0100
+	STYLE_SIMPLE(TBS_REVERSED),                 //0x0200
+	STYLE_SIMPLE(TBS_DOWNISLEFT),               //0x0400
+	STYLE_SIMPLE(TBS_NOTIFYBEFOREMOVE),         //0x0800
+	STYLE_SIMPLE(TBS_TRANSPARENTBKGND),         //0x1000
 
-	STYLE_(TBS_NOTICKS),			0, -1, 0,				//0x0010
-	STYLE_(TBS_ENABLESELRANGE),		0, -1, 0,				//0x0020
-	STYLE_(TBS_FIXEDLENGTH),		0, -1, 0,				//0x0040
-	STYLE_(TBS_NOTHUMB),			0, -1, 0,				//0x0080
-
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(TBS_TOOLTIPS),			0, -1, 0,				//0x0100
-#endif
-
-#if (_WIN32_IE >= 0x0500)
-	STYLE_(TBS_REVERSED),			0, -1, 0,				//0x0200  
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Treeview (SysTreeView32)
-StyleLookupEx TreeViewStyles[] = 
+StyleLookupEx TreeViewStyles[] =
 {
-	STYLE_(TVS_HASBUTTONS),			0, -1, 0,			//0x0001
-	STYLE_(TVS_HASLINES),			0, -1, 0,			//0x0002
-	STYLE_(TVS_LINESATROOT),		0, -1, 0,			//0x0004
-	STYLE_(TVS_EDITLABELS),			0, -1, 0,			//0x0008
-	STYLE_(TVS_DISABLEDRAGDROP),	0, -1, 0,			//0x0010
-	STYLE_(TVS_SHOWSELALWAYS),		0, -1, 0,			//0x0020
+	STYLE_SIMPLE(TVS_HASBUTTONS),               //0x0001
+	STYLE_SIMPLE(TVS_HASLINES),                 //0x0002
+	STYLE_SIMPLE(TVS_LINESATROOT),              //0x0004
+	STYLE_SIMPLE(TVS_EDITLABELS),               //0x0008
+	STYLE_SIMPLE(TVS_DISABLEDRAGDROP),          //0x0010
+	STYLE_SIMPLE(TVS_SHOWSELALWAYS),            //0x0020
+	STYLE_SIMPLE(TVS_RTLREADING),               //0x0040
+	STYLE_SIMPLE(TVS_NOTOOLTIPS),               //0x0080
+	STYLE_SIMPLE(TVS_CHECKBOXES),               //0x0100
+	STYLE_SIMPLE(TVS_TRACKSELECT),              //0x0200
+	STYLE_SIMPLE(TVS_SINGLEEXPAND),             //0x0400
+	STYLE_SIMPLE(TVS_INFOTIP),                  //0x0800
+	STYLE_SIMPLE(TVS_FULLROWSELECT),            //0x1000
+	STYLE_SIMPLE(TVS_NOSCROLL),                 //0x2000
+	STYLE_SIMPLE(TVS_NONEVENHEIGHT),            //0x4000
+	STYLE_SIMPLE(TVS_NOHSCROLL),                //0x8000
 
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(TVS_RTLREADING),			0, -1, 0,			//0x0040
-	STYLE_(TVS_NOTOOLTIPS),			0, -1, 0,			//0x0080
-	STYLE_(TVS_CHECKBOXES),			0, -1, 0,			//0x0100
-	STYLE_(TVS_TRACKSELECT),		0, -1, 0,			//0x0200
-
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(TVS_SINGLEEXPAND),		0, -1, 0,			//0x0400
-	STYLE_(TVS_INFOTIP),			0, -1, 0,			//0x0800
-	STYLE_(TVS_FULLROWSELECT),		0, -1, 0,			//0x1000
-	STYLE_(TVS_NOSCROLL),			0, -1, 0,			//0x2000
-	STYLE_(TVS_NONEVENHEIGHT),		0, -1, 0,			//0x4000
-
-#if (_WIN32_IE >= 0x500)
-	STYLE_(TVS_NOHSCROLL),			0, -1, 0,			//0x8000
-
-#endif
-#endif
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Tooltips (tooltips_class32)
-StyleLookupEx ToolTipStyles[] = 
+StyleLookupEx ToolTipStyles[] =
 {
-	STYLE_(TTS_ALWAYSTIP),			0, -1, 0,			//0x01
-	STYLE_(TTS_NOPREFIX),			0, -1, 0,			//0x02
+	STYLE_SIMPLE(TTS_ALWAYSTIP),                //0x01
+	STYLE_SIMPLE(TTS_NOPREFIX),                 //0x02
+	STYLE_SIMPLE(TTS_NOANIMATE),                //0x10
+	STYLE_SIMPLE(TTS_NOFADE),                   //0x20
+	STYLE_SIMPLE(TTS_BALLOON),                  //0x40
+	STYLE_SIMPLE(TTS_CLOSE),                    //0x80
+	STYLE_SIMPLE(TTS_USEVISUALSTYLE),           //0x100
 
-#if (_WIN32_IE >= 0x0500)
-	STYLE_(TTS_NOANIMATE),			0, -1, 0,			//0x10
-	STYLE_(TTS_NOFADE),				0, -1, 0,			//0x20
-	STYLE_(TTS_BALLOON),			0, -1, 0,			//0x40
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Statusbar (msctls_statusbar32)
-StyleLookupEx StatusBarStyles[] = 
+StyleLookupEx StatusBarStyles[] =
 {
-	STYLE_(SBARS_SIZEGRIP),			0, -1, 0,			//0x0100
+	STYLE_SIMPLE(SBARS_SIZEGRIP),               //0x0100
+	STYLE_SIMPLE(SBARS_TOOLTIPS),               //0x0800
 
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(SBT_TOOLTIPS),			0, -1, 0,			//0x0800
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Updown control
-StyleLookupEx UpDownStyles[] = 
+StyleLookupEx UpDownStyles[] =
 {
-	STYLE_(UDS_WRAP),				0, -1, 0,			//0x0001
-	STYLE_(UDS_SETBUDDYINT),		0, -1, 0,			//0x0002
-	STYLE_(UDS_ALIGNRIGHT),			0, -1, 0,			//0x0004
-	STYLE_(UDS_ALIGNLEFT),			0, -1, 0,			//0x0008
-	STYLE_(UDS_AUTOBUDDY),			0, -1, 0,			//0x0010
-	STYLE_(UDS_ARROWKEYS),			0, -1, 0,			//0x0020
-	STYLE_(UDS_HORZ),				0, -1, 0,			//0x0040
-	STYLE_(UDS_NOTHOUSANDS),		0, -1, 0,			//0x0080
+	STYLE_SIMPLE(UDS_WRAP),                     //0x0001
+	STYLE_SIMPLE(UDS_SETBUDDYINT),              //0x0002
+	STYLE_SIMPLE(UDS_ALIGNRIGHT),               //0x0004
+	STYLE_SIMPLE(UDS_ALIGNLEFT),                //0x0008
+	STYLE_SIMPLE(UDS_AUTOBUDDY),                //0x0010
+	STYLE_SIMPLE(UDS_ARROWKEYS),                //0x0020
+	STYLE_SIMPLE(UDS_HORZ),                     //0x0040
+	STYLE_SIMPLE(UDS_NOTHOUSANDS),              //0x0080
+	STYLE_SIMPLE(UDS_HOTTRACK),                 //0x0100
 
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(UDS_HOTTRACK),			0, -1, 0,			//0x0100
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Progress control (msctls_progress32)
-StyleLookupEx ProgressStyles[] = 
+StyleLookupEx ProgressStyles[] =
 {
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(PBS_SMOOTH),				0, -1, 0,			//0x01
-	STYLE_(PBS_VERTICAL),			0, -1, 0,			//0x04
-#endif
+	STYLE_SIMPLE(PBS_SMOOTH),               //0x01
+	STYLE_SIMPLE(PBS_VERTICAL),             //0x04
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Tab control (SysTabControl32)
-StyleLookupEx TabStyles[] = 
+StyleLookupEx TabStyles[] =
 {
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(TCS_SCROLLOPPOSITE),		0, -1, 0,			//0x0001   // assumes multiline tab
-	STYLE_(TCS_BOTTOM),				0, TCS_VERTICAL, 0,	//0x0002
-	STYLE_(TCS_RIGHT),				0, -1, 0,			//0x0002
-	STYLE_(TCS_MULTISELECT),		0, -1, 0,			//0x0004  
-#endif
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(TCS_FLATBUTTONS),		0, -1, 0,			//0x0008
-#endif
-	STYLE_(TCS_FORCEICONLEFT),		0, -1, 0,			//0x0010
-	STYLE_(TCS_FORCELABELLEFT),		0, -1, 0,			//0x0020
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(TCS_HOTTRACK),			0, -1, 0,			//0x0040
-	STYLE_(TCS_VERTICAL),			0, -1, 0,			//0x0080
-#endif
-	STYLE_(TCS_TABS),				0, -1,TCS_BUTTONS,	//0x0000
-	STYLE_(TCS_BUTTONS),			0, -1, 0,			//0x0100
-	STYLE_(TCS_SINGLELINE),			0, -1,TCS_MULTILINE,//0x0000
-	STYLE_(TCS_MULTILINE),			0, -1, 0,			//0x0200
-	STYLE_(TCS_RIGHTJUSTIFY),		0, -1, -1,			//0x0000
-	STYLE_(TCS_FIXEDWIDTH),			0, -1, 0,			//0x0400
-	STYLE_(TCS_RAGGEDRIGHT),		0, -1, 0,			//0x0800
-	STYLE_(TCS_FOCUSONBUTTONDOWN),	0, -1, 0,			//0x1000
-	STYLE_(TCS_OWNERDRAWFIXED),		0, -1, 0,			//0x2000
-	STYLE_(TCS_TOOLTIPS),			0, -1, 0,			//0x4000
-	STYLE_(TCS_FOCUSNEVER),			0, -1, 0,			//0x8000
+	STYLE_SIMPLE(TCS_SCROLLOPPOSITE),                       //0x0001
+	STYLE_MASK_DEPENDS(TCS_BOTTOM, 0, 0, TCS_VERTICAL),     //0x0002
+	STYLE_SIMPLE_DEPENDS(TCS_RIGHT, TCS_VERTICAL),          //0x0002
+	STYLE_SIMPLE(TCS_MULTISELECT),                          //0x0004
+	STYLE_SIMPLE(TCS_FLATBUTTONS),                          //0x0008
+	STYLE_SIMPLE(TCS_FORCEICONLEFT),                        //0x0010
+	STYLE_SIMPLE(TCS_FORCELABELLEFT),                       //0x0020
+	STYLE_SIMPLE(TCS_HOTTRACK),                             //0x0040
+	STYLE_SIMPLE(TCS_VERTICAL),                             //0x0080
+	STYLE_MASK(TCS_TABS, TCS_BUTTONS),                      //0x0000
+	STYLE_SIMPLE(TCS_BUTTONS),                              //0x0100
+	STYLE_MASK(TCS_SINGLELINE, TCS_MULTILINE),              //0x0000
+	STYLE_SIMPLE(TCS_MULTILINE),                            //0x0200
+	STYLE_MASK(TCS_RIGHTJUSTIFY, TCS_FIXEDWIDTH),           //0x0000
+	STYLE_SIMPLE(TCS_FIXEDWIDTH),                           //0x0400
+	STYLE_SIMPLE(TCS_RAGGEDRIGHT),                          //0x0800
+	STYLE_SIMPLE(TCS_FOCUSONBUTTONDOWN),                    //0x1000
+	STYLE_SIMPLE(TCS_OWNERDRAWFIXED),                       //0x2000
+	STYLE_SIMPLE(TCS_TOOLTIPS),                             //0x4000
+	STYLE_SIMPLE(TCS_FOCUSNEVER),                           //0x8000
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Animation control (SysAnimate32)
-StyleLookupEx AnimateStyles[] = 
+StyleLookupEx AnimateStyles[] =
 {
-	STYLE_(ACS_CENTER),				0, -1, 0,			//0x0001
-	STYLE_(ACS_TRANSPARENT),		0, -1, 0,			//0x0002
-	STYLE_(ACS_AUTOPLAY),			0, -1, 0,			//0x0004
+	STYLE_SIMPLE(ACS_CENTER),                   //0x0001
+	STYLE_SIMPLE(ACS_TRANSPARENT),              //0x0002
+	STYLE_SIMPLE(ACS_AUTOPLAY),                 //0x0004
+	STYLE_SIMPLE(ACS_TIMER),                    //0x0008
 
-#if (_WIN32_IE >= 0x0300)
-	STYLE_(ACS_TIMER),				0, -1, 0,			//0x0008
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Month-calendar control (SysMonthCal32)
 StyleLookupEx MonthCalStyles[] =
 {
-	STYLE_(MCS_DAYSTATE),			0, -1, 0,			//0x0001
-	STYLE_(MCS_MULTISELECT),		0, -1, 0,			//0x0002
-	STYLE_(MCS_WEEKNUMBERS),		0, -1, 0,			//0x0004
+	STYLE_SIMPLE(MCS_DAYSTATE),                     //0x0001
+	STYLE_SIMPLE(MCS_MULTISELECT),                  //0x0002
+	STYLE_SIMPLE(MCS_WEEKNUMBERS),                  //0x0004
+	STYLE_SIMPLE(MCS_NOTODAYCIRCLE),                //0x0008
+	STYLE_SIMPLE(MCS_NOTODAY),                      //0x0010
+	STYLE_SIMPLE(MCS_NOTRAILINGDATES),              //0x0040
+	STYLE_SIMPLE(MCS_SHORTDAYSOFWEEK),              //0x0080
+	STYLE_SIMPLE(MCS_NOSELCHANGEONNAV),             //0x0100
 
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(MCS_NOTODAYCIRCLE),		0, -1, 0,			//0x0008
-	STYLE_(MCS_NOTODAY),			0, -1, 0,			//0x0010
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Date-Time picker (SysDateTimePick32)
-StyleLookupEx DateTimeStyles[] = 
+StyleLookupEx DateTimeStyles[] =
 {
-	STYLE_(DTS_UPDOWN),				0, -1, 0,			//0x0001
-	STYLE_(DTS_SHOWNONE),			0, -1, 0,			//0x0002
-	STYLE_(DTS_SHORTDATEFORMAT),	0, -1, DTS_LONGDATEFORMAT,//0x0000
-	STYLE_(DTS_LONGDATEFORMAT),		0, -1, 0,			//0x0004 
+	STYLE_SIMPLE(DTS_UPDOWN),                                   //0x0001
+	STYLE_SIMPLE(DTS_SHOWNONE),                                 //0x0002
+#define DTS_FORMAT_MASK 0x000C
+	//{ DTS_FORMAT_MASK
+	STYLE_MASK(DTS_SHORTDATEFORMAT, DTS_FORMAT_MASK),           //0x0000
+	STYLE_MASK(DTS_LONGDATEFORMAT, DTS_FORMAT_MASK),            //0x0004
+	STYLE_MASK(DTS_SHORTDATECENTURYFORMAT, DTS_FORMAT_MASK),    //0x000C
+	STYLE_MASK(DTS_TIMEFORMAT, DTS_FORMAT_MASK),                //0x0009
+	//} DTS_FORMAT_MASK
+	STYLE_SIMPLE(DTS_APPCANPARSE),                              //0x0010
+	STYLE_SIMPLE(DTS_RIGHTALIGN),                               //0x0020
 
-#if (_WIN32_IE >= 0x500)
-	STYLE_(DTS_SHORTDATECENTURYFORMAT),	0, -1, 0,		//0x000C
-#endif
-
-	STYLE_(DTS_TIMEFORMAT),			0, -1, 0,			//0x0009 
-	STYLE_(DTS_APPCANPARSE),		0, -1, 0,			//0x0010 
-	STYLE_(DTS_RIGHTALIGN),			0, -1, 0,			//0x0020 
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Pager control (SysPager)
-StyleLookupEx PagerStyles[] = 
+StyleLookupEx PagerStyles[] =
 {
 	//Pager control
-	STYLE_(PGS_VERT),				0, -1, PGS_HORZ,	//0x0000
-	STYLE_(PGS_HORZ),				0, -1, 0,			//0x0001
-	STYLE_(PGS_AUTOSCROLL),			0, -1, 0,			//0x0002
-	STYLE_(PGS_DRAGNDROP),			0, -1, 0,			//0x0004
+	STYLE_MASK(PGS_VERT, PGS_HORZ),             //0x0000
+	STYLE_SIMPLE(PGS_HORZ),                     //0x0001
+	STYLE_SIMPLE(PGS_AUTOSCROLL),               //0x0002
+	STYLE_SIMPLE(PGS_DRAGNDROP),                //0x0004
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Extended window styles (for all windows)
-StyleLookupEx StyleExList[] = 
+StyleLookupEx StyleExList[] =
 {
-	STYLE_(WS_EX_DLGMODALFRAME),	0, -1, 0,	//0x00000001L
-	STYLE_(WS_EX_NOPARENTNOTIFY),	0, -1, 0,	//0x00000004L
-	STYLE_(WS_EX_TOPMOST),			0, -1, 0,	//0x00000008L
-	STYLE_(WS_EX_ACCEPTFILES),		0, -1, 0,	//0x00000010L
-	STYLE_(WS_EX_TRANSPARENT),		0, -1, 0,	//0x00000020L
+	STYLE_SIMPLE(WS_EX_DLGMODALFRAME),                          //0x00000001L
+	STYLE_SIMPLE(WS_EX_NOPARENTNOTIFY),                         //0x00000004L
+	STYLE_SIMPLE(WS_EX_TOPMOST),                                //0x00000008L
+	STYLE_SIMPLE(WS_EX_ACCEPTFILES),                            //0x00000010L
+	STYLE_SIMPLE(WS_EX_TRANSPARENT),                            //0x00000020L
+	STYLE_SIMPLE(WS_EX_MDICHILD),                               //0x00000040L
+	STYLE_SIMPLE(WS_EX_TOOLWINDOW),                             //0x00000080L
+	STYLE_SIMPLE(WS_EX_WINDOWEDGE),                             //0x00000100L
+	STYLE_SIMPLE(WS_EX_CLIENTEDGE),                             //0x00000200L
+	STYLE_SIMPLE(WS_EX_CONTEXTHELP),                            //0x00000400L
+	STYLE_SIMPLE(WS_EX_RIGHT),                                  //0x00001000L
+	STYLE_MASK(WS_EX_LEFT, WS_EX_RIGHT),                        //0x00000000L
+	STYLE_SIMPLE(WS_EX_RTLREADING),                             //0x00002000L
+	STYLE_MASK(WS_EX_LTRREADING, WS_EX_RTLREADING),             //0x00000000L
+	STYLE_SIMPLE(WS_EX_LEFTSCROLLBAR),                          //0x00004000L
+	STYLE_MASK(WS_EX_RIGHTSCROLLBAR, WS_EX_LEFTSCROLLBAR),      //0x00000000L
+	STYLE_SIMPLE(WS_EX_CONTROLPARENT),                          //0x00010000L
+	STYLE_SIMPLE(WS_EX_STATICEDGE),                             //0x00020000L
+	STYLE_SIMPLE(WS_EX_APPWINDOW),                              //0x00040000L
+	STYLE_COMBINATION(WS_EX_OVERLAPPEDWINDOW),                  //(WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE)
+	STYLE_COMBINATION(WS_EX_PALETTEWINDOW),                     //(WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST)
+	STYLE_SIMPLE(WS_EX_LAYERED),                                //0x00080000
+	STYLE_SIMPLE(WS_EX_NOINHERITLAYOUT),                        //0x00100000
+	STYLE_SIMPLE(WS_EX_LAYOUTRTL),                              //0x00400000
+	STYLE_SIMPLE(WS_EX_COMPOSITED),                             //0x02000000
+	STYLE_SIMPLE(WS_EX_NOACTIVATE),                             //0x08000000
 
-#if(WINVER >= 0x0400)
-
-	STYLE_(WS_EX_MDICHILD),			0, -1, 0,	//0x00000040L
-	STYLE_(WS_EX_TOOLWINDOW),		0, -1, 0,	//0x00000080L
-	STYLE_(WS_EX_WINDOWEDGE),		0, -1, 0,	//0x00000100L
-	STYLE_(WS_EX_CLIENTEDGE),		0, -1, 0,	//0x00000200L
-	STYLE_(WS_EX_CONTEXTHELP),		0, -1, 0,	//0x00000400L
-
-	STYLE_(WS_EX_LEFT),				0, -1, (WS_EX_RIGHT),		//0x00000000L
-	STYLE_(WS_EX_RIGHT),			0, -1, 0,	//0x00001000L
-	STYLE_(WS_EX_LTRREADING),		0, -1, (WS_EX_RTLREADING),	//0x00000000L
-	STYLE_(WS_EX_RTLREADING),		0, -1, 0,	//0x00002000L
-	STYLE_(WS_EX_LEFTSCROLLBAR),	0, -1, 0,	//0x00004000L
-	STYLE_(WS_EX_RIGHTSCROLLBAR),	0, -1, (WS_EX_LEFTSCROLLBAR),//0x00000000L
-
-	STYLE_(WS_EX_CONTROLPARENT),	0, -1, 0,	//0x00010000L
-	STYLE_(WS_EX_STATICEDGE),		0, -1, 0,	//0x00020000L
-	STYLE_(WS_EX_APPWINDOW),		0, -1, 0,	//0x00040000L
-
-	STYLE_(WS_EX_OVERLAPPEDWINDOW),	0, -1, 0,	//(WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE)
-	//STYLE_(WS_EX_PALETTEWINDOW),	0, -1, 0,	//(WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST)
-
-#endif
-
-#if(_WIN32_WINNT >= 0x0500)
-STYLE_(WS_EX_LAYERED),              0, -1, 0,   //0x00080000
-
-#endif /* _WIN32_WINNT >= 0x0500 */
-
-
-#if(WINVER >= 0x0500)
-STYLE_(WS_EX_NOINHERITLAYOUT),      0, -1, 0,   //0x00100000L // Disable inheritence of mirroring by children
-STYLE_(WS_EX_LAYOUTRTL),            0, -1, 0,   //0x00400000L // Right to left mirroring
-#endif /* WINVER >= 0x0500 */
-
-#if(_WIN32_WINNT >= 0x0501)
-STYLE_(WS_EX_COMPOSITED),           0, -1, 0,   //0x02000000L
-#endif /* _WIN32_WINNT >= 0x0501 */
-#if(_WIN32_WINNT >= 0x0500)
-STYLE_(WS_EX_NOACTIVATE),           0, -1, 0,   //0x08000000L
-#endif /* _WIN32_WINNT >= 0x0500 */
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // ListView extended styles
-StyleLookupEx ListViewExStyles[] = 
+StyleLookupEx ListViewExStyles[] =
 {
 	//ListView control styles
-	STYLE_(LVS_EX_GRIDLINES),			0, -1, 0,		//0x00000001
-	STYLE_(LVS_EX_SUBITEMIMAGES),		0, -1, 0,		//0x00000002
-	STYLE_(LVS_EX_CHECKBOXES),			0, -1, 0,		//0x00000004
-	STYLE_(LVS_EX_TRACKSELECT),			0, -1, 0,		//0x00000008
-	STYLE_(LVS_EX_HEADERDRAGDROP),		0, -1, 0,		//0x00000010
-	STYLE_(LVS_EX_FULLROWSELECT),		0, -1, 0,		//0x00000020
-	STYLE_(LVS_EX_ONECLICKACTIVATE),	0, -1, 0,		//0x00000040
-	STYLE_(LVS_EX_TWOCLICKACTIVATE),	0, -1, 0,		//0x00000080
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(LVS_EX_FLATSB),				0, -1, 0,		//0x00000100
-	STYLE_(LVS_EX_REGIONAL),			0, -1, 0,		//0x00000200
-	STYLE_(LVS_EX_INFOTIP),				0, -1, 0,		//0x00000400
-	STYLE_(LVS_EX_UNDERLINEHOT),		0, -1, 0,		//0x00000800
-	STYLE_(LVS_EX_UNDERLINECOLD),		0, -1, 0,		//0x00001000
-	STYLE_(LVS_EX_MULTIWORKAREAS),		0, -1, 0,		//0x00002000
-#endif
-#if (_WIN32_IE >= 0x0500)
-	STYLE_(LVS_EX_LABELTIP),			0, -1, 0,		//0x00004000
-#endif
+	STYLE_SIMPLE(LVS_EX_GRIDLINES),             //0x00000001
+	STYLE_SIMPLE(LVS_EX_SUBITEMIMAGES),         //0x00000002
+	STYLE_SIMPLE(LVS_EX_CHECKBOXES),            //0x00000004
+	STYLE_SIMPLE(LVS_EX_TRACKSELECT),           //0x00000008
+	STYLE_SIMPLE(LVS_EX_HEADERDRAGDROP),        //0x00000010
+	STYLE_SIMPLE(LVS_EX_FULLROWSELECT),         //0x00000020
+	STYLE_SIMPLE(LVS_EX_ONECLICKACTIVATE),      //0x00000040
+	STYLE_SIMPLE(LVS_EX_TWOCLICKACTIVATE),      //0x00000080
+	STYLE_SIMPLE(LVS_EX_FLATSB),                //0x00000100
+	STYLE_SIMPLE(LVS_EX_REGIONAL),              //0x00000200
+	STYLE_SIMPLE(LVS_EX_INFOTIP),               //0x00000400
+	STYLE_SIMPLE(LVS_EX_UNDERLINEHOT),          //0x00000800
+	STYLE_SIMPLE(LVS_EX_UNDERLINECOLD),         //0x00001000
+	STYLE_SIMPLE(LVS_EX_MULTIWORKAREAS),        //0x00002000
+	STYLE_SIMPLE(LVS_EX_LABELTIP),              //0x00004000
+	STYLE_SIMPLE(LVS_EX_BORDERSELECT),          //0x00008000
+	STYLE_SIMPLE(LVS_EX_DOUBLEBUFFER),          //0x00010000
+	STYLE_SIMPLE(LVS_EX_HIDELABELS),            //0x00020000
+	STYLE_SIMPLE(LVS_EX_SINGLEROW),             //0x00040000
+	STYLE_SIMPLE(LVS_EX_SNAPTOGRID),            //0x00080000
+	STYLE_SIMPLE(LVS_EX_SIMPLESELECT),          //0x00100000
+	STYLE_SIMPLE(LVS_EX_JUSTIFYCOLUMNS),        //0x00200000
+	STYLE_SIMPLE(LVS_EX_TRANSPARENTBKGND),      //0x00400000
+	STYLE_SIMPLE(LVS_EX_TRANSPARENTSHADOWTEXT), //0x00800000
+	STYLE_SIMPLE(LVS_EX_AUTOAUTOARRANGE),       //0x01000000
+	STYLE_SIMPLE(LVS_EX_HEADERINALLVIEWS),      //0x02000000
+	STYLE_SIMPLE(LVS_EX_AUTOCHECKSELECT),       //0x08000000
+	STYLE_SIMPLE(LVS_EX_AUTOSIZECOLUMNS),       //0x10000000
+	STYLE_SIMPLE(LVS_EX_COLUMNSNAPPOINTS),      //0x40000000
+	STYLE_SIMPLE(LVS_EX_COLUMNOVERFLOW),        //0x80000000
 
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
-// ComboBoxEx extended styles	
-StyleLookupEx ComboBoxExStyles[] = 
+// ComboBoxEx extended styles
+StyleLookupEx ComboBoxExStyles[] =
 {
-	STYLE_(CBES_EX_NOEDITIMAGE),		0, -1, 0,	//0x00000001
-	STYLE_(CBES_EX_NOEDITIMAGEINDENT),	0, -1, 0,	//0x00000002
-	STYLE_(CBES_EX_PATHWORDBREAKPROC),	0, -1, 0,	//0x00000004
+	STYLE_SIMPLE(CBES_EX_NOEDITIMAGE),              //0x00000001
+	STYLE_SIMPLE(CBES_EX_NOEDITIMAGEINDENT),        //0x00000002
+	STYLE_SIMPLE(CBES_EX_PATHWORDBREAKPROC),        //0x00000004
+	STYLE_SIMPLE(CBES_EX_NOSIZELIMIT),              //0x00000008
+	STYLE_SIMPLE(CBES_EX_CASESENSITIVE),            //0x00000010
+	STYLE_SIMPLE(CBES_EX_TEXTENDELLIPSIS),          //0x00000020
 
-#if(_WIN32_IE >= 0x0400)
-	STYLE_(CBES_EX_NOSIZELIMIT),		0, -1, 0,	//0x00000008
-	STYLE_(CBES_EX_CASESENSITIVE),		0, -1, 0,	//0x00000010
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Tab control extended styles
-StyleLookupEx TabCtrlExStyles[] = 
+StyleLookupEx TabCtrlExStyles[] =
 {
-	STYLE_(TCS_EX_FLATSEPARATORS),			0, -1, 0,	//0x00000001
-	STYLE_(TCS_EX_REGISTERDROP),			0, -1, 0,	//0x00000002
-	-1, _T(""), -1, -1, -1
+	STYLE_SIMPLE(TCS_EX_FLATSEPARATORS),            //0x00000001
+	STYLE_SIMPLE(TCS_EX_REGISTERDROP),              //0x00000002
+
+	NULL
 };
 
 // Toolbar extended styles
 StyleLookupEx ToolBarExStyles[] =
 {
-#if (_WIN32_IE >= 0x0400)
-	STYLE_(TBSTYLE_EX_DRAWDDARROWS),		0, -1, 0,	//0x0001
+	STYLE_SIMPLE(TBSTYLE_EX_DRAWDDARROWS),              //0x0001
+	STYLE_SIMPLE(TBSTYLE_EX_MIXEDBUTTONS),              //0x0008
+	STYLE_SIMPLE(TBSTYLE_EX_HIDECLIPPEDBUTTONS),        //0x0010
+	STYLE_SIMPLE(TBSTYLE_EX_DOUBLEBUFFER),              //0x0080
 
-#if (_WIN32_IE >= 0x0501)
-	STYLE_(TBSTYLE_EX_MIXEDBUTTONS),		0, -1, 0,	//0x0008
-	STYLE_(TBSTYLE_EX_HIDECLIPPEDBUTTONS),	0, -1, 0,	//0x0010
-
-#endif
-#endif
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 // Support RichEdit Event masks!!!
 StyleLookupEx RichedEventMask[] =
 {
-	STYLE_(ENM_NONE),				0, -1,-1,	//0x00000000
-	STYLE_(ENM_CHANGE),				0, -1, 0,	//0x00000001
-	STYLE_(ENM_UPDATE),				0, -1, 0,	//0x00000002
-	STYLE_(ENM_SCROLL),				0, -1, 0,	//0x00000004
-	STYLE_(ENM_KEYEVENTS),			0, -1, 0,	//0x00010000
-	STYLE_(ENM_MOUSEEVENTS),		0, -1, 0,	//0x00020000
-	STYLE_(ENM_REQUESTRESIZE),		0, -1, 0,	//0x00040000
-	STYLE_(ENM_SELCHANGE),			0, -1, 0,	//0x00080000
-	STYLE_(ENM_DROPFILES),			0, -1, 0,	//0x00100000
-	STYLE_(ENM_PROTECTED),			0, -1, 0,	//0x00200000
-	STYLE_(ENM_CORRECTTEXT),		0, -1, 0,	//0x00400000		// PenWin specific
-	STYLE_(ENM_SCROLLEVENTS),		0, -1, 0,	//0x00000008
-	STYLE_(ENM_DRAGDROPDONE),		0, -1, 0,	//0x00000010
+	STYLE_SIMPLE(ENM_NONE),                 //0x00000000
+	STYLE_SIMPLE(ENM_CHANGE),               //0x00000001
+	STYLE_SIMPLE(ENM_UPDATE),               //0x00000002
+	STYLE_SIMPLE(ENM_SCROLL),               //0x00000004
+	STYLE_SIMPLE(ENM_SCROLLEVENTS),         //0x00000008
+	STYLE_SIMPLE(ENM_DRAGDROPDONE),         //0x00000010
+	STYLE_SIMPLE(ENM_PARAGRAPHEXPANDED),    //0x00000020
+	STYLE_SIMPLE(ENM_PAGECHANGE),           //0x00000040
+	STYLE_SIMPLE(ENM_KEYEVENTS),            //0x00010000
+	STYLE_SIMPLE(ENM_MOUSEEVENTS),          //0x00020000
+	STYLE_SIMPLE(ENM_REQUESTRESIZE),        //0x00040000
+	STYLE_SIMPLE(ENM_SELCHANGE),            //0x00080000
+	STYLE_SIMPLE(ENM_DROPFILES),            //0x00100000
+	STYLE_SIMPLE(ENM_PROTECTED),            //0x00200000
+	STYLE_SIMPLE(ENM_CORRECTTEXT),          //0x00400000
+	STYLE_SIMPLE(ENM_IMECHANGE),            //0x00800000
+	STYLE_SIMPLE(ENM_LANGCHANGE),           //0x01000000
+	STYLE_SIMPLE(ENM_OBJECTPOSITIONS),      //0x02000000
+	STYLE_SIMPLE(ENM_LINK),                 //0x04000000
+	STYLE_SIMPLE(ENM_LOWFIRTF),             //0x08000000
 
-	// Far East specific notification mask
-	STYLE_(ENM_IMECHANGE),			0, -1, 0,	//0x00800000		// unused by RE2.0
-	STYLE_(ENM_LANGCHANGE),			0, -1, 0,	//0x01000000
-	STYLE_(ENM_OBJECTPOSITIONS),	0, -1, 0,	//0x02000000
-	STYLE_(ENM_LINK),				0, -1, 0,	//0x04000000
-
-	-1, _T(""), -1, -1, -1
+	NULL
 };
 
 //
-//	Lookup table which matches window classnames to style-lists
+//  Lookup table which matches window classnames to style-lists
 //
-ClassStyleLookup StandardControls[] = 
+ClassStyleLookup StandardControls[] =
 {
-	_T("#32770"), 				DialogStyles,		0,
-	_T("Button"),				ButtonStyles,		0,
-	_T("ComboBox"),				ComboStyles,		0,
-	_T("Edit"),					EditStyles,			0,
-	_T("ListBox"),				ListBoxStyles,		0,
+	_T("#32770"),               DialogStyles,       0,
+	_T("Button"),               ButtonStyles,       0,
+	_T("ComboBox"),             ComboStyles,        0,
+	_T("Edit"),                 EditStyles,         0,
+	_T("ListBox"),              ListBoxStyles,      0,
 
-	_T("RICHEDIT"),				RichedStyles,		0,
-	_T("RichEdit20A"),			RichedStyles,		0,
-	_T("RichEdit20W"),			RichedStyles,		0,
-	
-	_T("Scrollbar"),			ScrollbarStyles,	0,
-	_T("Static"),				StaticStyles,		0,
+	_T("RICHEDIT"),             RichedStyles,       0,
+	_T("RichEdit20A"),          RichedStyles,       0,
+	_T("RichEdit20W"),          RichedStyles,       0,
 
-	_T("SysAnimate32"),			AnimateStyles,		0,
-	_T("ComboBoxEx"),			ComboStyles,		0,	//(Just a normal combobox)
-	_T("SysDateTimePick32"),	DateTimeStyles,		0,
-	_T("DragList"),				ListBoxStyles,		0,	//(Just a normal list)
-	_T("SysHeader32"),			HeaderStyles,		0,
-	//"SysIPAddress32",			IPAddressStyles,	0,	(NO STYLES)
-	_T("SysListView32"),		ListViewStyles,		0,
-	_T("SysMonthCal32"),		MonthCalStyles,		0,
-	_T("SysPager"),				PagerStyles,		0,
-	_T("msctls_progress32"),	ProgressStyles,		0,
-	_T("RebarWindow32"),		RebarStyles,		0,
-	_T("msctls_statusbar32"),	StatusBarStyles,	0,
-	//"SysLink",				SysLinkStyles,		0,  (DO IT!)
-	_T("SysTabControl32"),		TabStyles,			0,
-	_T("ToolbarWindow32"),		ToolbarStyles,		0,
-	_T("tooltips_class32"),		ToolTipStyles,		0,
-	_T("msctls_trackbar32"),	TrackbarStyles,		0,
-	_T("SysTreeView32"),		TreeViewStyles,		0,
-	_T("msctls_updown32"),		UpDownStyles,		0,
+	_T("Scrollbar"),            ScrollbarStyles,    0,
+	_T("Static"),               StaticStyles,       0,
 
-	_T(""),						0,					0,
+	_T("SysAnimate32"),         AnimateStyles,      0,
+	_T("ComboBoxEx"),           ComboStyles,        0,  //(Just a normal combobox)
+	_T("SysDateTimePick32"),    DateTimeStyles,     0,
+	_T("DragList"),             ListBoxStyles,      0,  //(Just a normal list)
+	_T("SysHeader32"),          HeaderStyles,       0,
+	//"SysIPAddress32",         IPAddressStyles,    0,  (NO STYLES)
+	_T("SysListView32"),        ListViewStyles,     0,
+	_T("SysMonthCal32"),        MonthCalStyles,     0,
+	_T("SysPager"),             PagerStyles,        0,
+	_T("msctls_progress32"),    ProgressStyles,     0,
+	_T("RebarWindow32"),        RebarStyles,        0,
+	_T("msctls_statusbar32"),   StatusBarStyles,    0,
+	//"SysLink",                SysLinkStyles,      0,  (DO IT!)
+	_T("SysTabControl32"),      TabStyles,          0,
+	_T("ToolbarWindow32"),      ToolbarStyles,      0,
+	_T("tooltips_class32"),     ToolTipStyles,      0,
+	_T("msctls_trackbar32"),    TrackbarStyles,     0,
+	_T("SysTreeView32"),        TreeViewStyles,     0,
+	_T("msctls_updown32"),      UpDownStyles,       0,
+
+	NULL
 };
 
 // Classes which use the CCS_xxx styles
 ClassStyleLookup CustomControls[] =
-{	
-	_T("msctls_statusbar32"),	CommCtrlList,		0,
-	_T("RebarWindow32"),		CommCtrlList,		0,
-	_T("ToolbarWindow32"),		CommCtrlList,		0,
-	_T("SysHeader32"),			CommCtrlList,		0,
+{
+	_T("msctls_statusbar32"),   CommCtrlList,       0,
+	_T("RebarWindow32"),        CommCtrlList,       0,
+	_T("ToolbarWindow32"),      CommCtrlList,       0,
+	_T("SysHeader32"),          CommCtrlList,       0,
 
-	_T(""),						0,					0,
+	NULL
 };
 
 // Classes which have extended window styles
 ClassStyleLookup ExtendedControls[] =
 {
-	_T("SysTabControl32"),		TabCtrlExStyles,	TCM_GETEXTENDEDSTYLE,
-	_T("ToolbarWindow32"),		ToolBarExStyles,	TB_GETEXTENDEDSTYLE,
-	_T("ComboBox"),				ComboBoxExStyles,	CBEM_GETEXTENDEDSTYLE,
-	_T("SysListView32"),		ListViewExStyles,	LVM_GETEXTENDEDLISTVIEWSTYLE,
-	_T("RICHEDIT"),				RichedEventMask,    EM_GETEVENTMASK,
-	_T("RichEdit20A"),			RichedEventMask,    EM_GETEVENTMASK,
-	_T("RichEdit20W"),			RichedEventMask,    EM_GETEVENTMASK,
+	_T("SysTabControl32"),      TabCtrlExStyles,    TCM_GETEXTENDEDSTYLE,
+	_T("ToolbarWindow32"),      ToolBarExStyles,    TB_GETEXTENDEDSTYLE,
+	_T("ComboBox"),             ComboBoxExStyles,   CBEM_GETEXTENDEDSTYLE,
+	_T("SysListView32"),        ListViewExStyles,   LVM_GETEXTENDEDLISTVIEWSTYLE,
+	_T("RICHEDIT"),             RichedEventMask,    EM_GETEVENTMASK,
+	_T("RichEdit20A"),          RichedEventMask,    EM_GETEVENTMASK,
+	_T("RichEdit20W"),          RichedEventMask,    EM_GETEVENTMASK,
 
-	_T(""),						0,					0,
+	NULL
 };
 
 //
-// Match the window classname to a
+// Match the window classname to a StyleLookupEx instance in a ClassStyleLookup table
 //
 // pClassList - a lookup table of classname / matching stylelist
-// 
 //
-StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, DWORD *pdwData)
+//
+StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, DWORD *pdwMessage)
 {
 	int i;
 
-	for(i = 0; pClassList[i].stylelist != 0; i++)
+	for (i = 0; pClassList[i].stylelist; i++)
 	{
-		if(lstrcmpi(szClassName, pClassList[i].szClassName) == 0)
+		if (lstrcmpi(szClassName, pClassList[i].szClassName) == 0)
 		{
-			if(pdwData) *pdwData = pClassList[i].dwData;
+			if (pdwMessage) *pdwMessage = pClassList[i].dwMessage;
 			return pClassList[i].stylelist;
 		}
 	}
@@ -851,138 +808,110 @@ StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, D
 	return 0;
 }
 
-#define NUM_CLASS_STYLELISTS	(sizeof(ClassStyleList) / sizeof(ClassStyleList[0]))
+#define NUM_CLASS_STYLELISTS ARRAYSIZE(ClassStyleList)
 
 //
-//	Find all the styles that match from the specified list
+//  Find all the styles that match from the specified list
 //
-//	StyleList  - list of styles
+//  StyleList  - list of styles
 //  hwndList   - listbox to add styles to
-//  dwStyle    - style for the target window
-//  fAllStyles - 
+//  dwStyles   - styles for the target window
+//  fAllStyles - when true, add all known styles and select those present in the dwStyles value;
+//               otherwise, only add the ones that are both applicable and present
 //
-DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyle, BOOL fAllStyles)
+DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyles, BOOL fAllStyles)
 {
-	// Remember what the style is before we start modifying it
-	DWORD dwOrig = dwStyle;
-	
+	// Remember what the dwStyles was before we start modifying it
+	DWORD dwOrig = dwStyles;
+
 	int            i, idx;
-	BOOL           fAddIt;
+	BOOL           fPresent;
 	StyleLookupEx *pStyle;
 
 	//
-	//	Loop through all of the styles that we know about
-	//	Check each style against our window's one, to see
+	//  Loop through all of the styles that we know about
+	//  Check each style against our window's one, to see
 	//  if it is set or not
 	//
-	for(i = 0; StyleList[i].style != -1; i++)
+	for (i = 0; StyleList[i].name; i++)
 	{
-		fAddIt = FALSE;
-
 		pStyle = &StyleList[i];
 
-		// This style needs a mask to detect if it is set - 
-		// i.e. the style doesn't just use one bit to decide if it is on/off.
-		if(pStyle->cmp_mask != 0)
-		{
-			//if((StyleList[i].depends & dwStyle) != dwStyle)
-			//	continue;
+		fPresent = StyleApplicableAndPresent(dwOrig, pStyle);
 
-			// Style is valid if the excludes styles are not set
-			if(pStyle->excludes != 0 && (pStyle->excludes & (dwOrig & pStyle->cmp_mask)) == 0)
-				fAddIt = TRUE;
-
-			// If the style matches exactly (when masked)
-			if(pStyle->style != 0 && (pStyle->cmp_mask & dwStyle) == pStyle->style)
-				fAddIt = TRUE;
-		}
-		else
-		{
-			// Style is valid when 
-			if(pStyle->excludes != 0 && (pStyle->excludes & dwOrig) == 0)
-				fAddIt = TRUE;
-
-			// If style matches exactly (all bits are set
-			if(pStyle->style != 0 && (pStyle->style & dwStyle) == pStyle->style)
-				fAddIt = TRUE;
-				
-			// If no bits are set, then we have to skip it
-			else if(pStyle->style != 0 && (pStyle->style & dwStyle) == 0)
-				fAddIt = FALSE;
-			
-			// If this style depends on others being set..
-			if(dwStyle &&  (pStyle->depends & dwStyle) == 0)
-				fAddIt = FALSE;
-		}
-
-		// Now add the style..
-		if(fAddIt == TRUE || fAllStyles)
+		// Now add the style.
+		if (fPresent || fAllStyles)
 		{
 			// We've added this style, so remove it to stop it appearing again
-			if(fAddIt)
-				dwStyle &= ~ (pStyle->style);
-			
-			// Add to list, and set the list's extra item data to the style's value
-			idx = (int)SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)pStyle->name);
-			SendMessage(hwndList, LB_SETITEMDATA, idx, pStyle->style);
+			if (fPresent)
+				dwStyles &= ~(pStyle->value);
 
-			if(fAllStyles)
-				SendMessage(hwndList, LB_SETSEL, fAddIt, idx);
+			// Add to list, and set the list's extra item data to the style's data
+			idx = (int)SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)pStyle->name);
+			SendMessage(hwndList, LB_SETITEMDATA, idx, (LPARAM)pStyle);
+
+			if (fAllStyles)
+				SendMessage(hwndList, LB_SETSEL, fPresent, idx);
 		}
 	}
 
-	// return the style. This will be zero if we decoded all the bits
+	// return the styles. This will be zero if we decoded all the bits
 	// that were set, or non-zero if there are still bits left
-	return dwStyle;
+	return dwStyles;
 }
 
 //
-//	This function takes HWNDs of a ListBox, which we will fill
-//  with the style strings that are set for the specified window
+//  This function takes HWND of a ListBox, which we will fill
+//  with the style strings based on dwStyles
 //
-void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyle)
+void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyles)
 {
 	TCHAR szClassName[256];
 
 	StyleLookupEx *StyleList;
 
 	//window class
-	GetClassName(hwndTarget, szClassName, sizeof(szClassName) / sizeof(TCHAR));
+	GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
 
 	SendMessage(hwndStyleList, WM_SETREDRAW, FALSE, 0);
 
 	// Empty the list
 	SendMessage(hwndStyleList, LB_RESETCONTENT, 0, 0);
 
-	// enumerate the standard window styles, for any window no 
+	// enumerate the standard window styles, for any window no
 	// matter what class it might be
-	dwStyle = EnumStyles(WindowStyles, hwndStyleList, dwStyle, fAllStyles);
+	DWORD remainingStyles = EnumStyles(WindowStyles, hwndStyleList, dwStyles, fAllStyles);
 
 	// if the window class is one we know about, then see if we
 	// can decode any more style bits
 	// enumerate the custom control styles
 	StyleList = FindStyleList(StandardControls, szClassName, 0);
-	if(StyleList != 0)
-		dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
+	if (StyleList != 0)
+		// There are cases where specific control styles override the standard window styles (e.g., ES_SELECTIONBAR),
+		// so pass the original styles value in
+		remainingStyles &= EnumStyles(StyleList, hwndStyleList, dwStyles, fAllStyles);
 
-	// does the window support the CCS_xxx styles (custom control styles)
+	// does the window support the CCS_xxx styles (custom control styles)?
 	StyleList = FindStyleList(CustomControls, szClassName, 0);
-	if(StyleList != 0)
-		dwStyle = EnumStyles(StyleList, hwndStyleList, dwStyle, fAllStyles);
+	if (StyleList != 0)
+		remainingStyles = EnumStyles(StyleList, hwndStyleList, remainingStyles, fAllStyles);
 
 	// if there are still style bits set in the window style,
 	// then there is something that we can't decode. Just display
 	// a single HEX entry at the end of the list.
-	if(dwStyle != 0)
+	if (remainingStyles != 0)
 	{
 		int idx;
 		TCHAR ach[10];
 
-		wsprintf(ach, szHexFmt, dwStyle);
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, remainingStyles);
+		static_assert(ARRAYSIZE(ach) < MAX_STYLE_NAME_CCH, "Style name exceeds the expected limit");
 		idx = (int)SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
-		SendMessage(hwndStyleList, LB_SETITEMDATA, idx, dwStyle);
+		// For the "unrecognized bits" item, we don't store any StyleLookupEx item,
+		// but its text coincides with the numeric value, so it will be used instead
+		SendMessage(hwndStyleList, LB_SETITEMDATA, idx, 0);
 
-		if(fAllStyles)
+		if (fAllStyles)
 			SendMessage(hwndStyleList, LB_SETSEL, TRUE, idx);
 	}
 
@@ -990,10 +919,10 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
 }
 
 //
-//	This function takes HWNDs of a ListBox, which we will fill
-//  with the extended style strings that are set for the specified window
+//  This function takes HWND of a ListBox, which we will fill
+//  with the extended style strings based on dwExStyles
 //
-void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DWORD dwStyleEx, BOOL fExtControl)
+void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl)
 {
 	TCHAR szClassName[256];
 	DWORD dwMessage;
@@ -1001,27 +930,27 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 	StyleLookupEx *StyleList;
 
 	//window class
-	GetClassName(hwndTarget, szClassName, sizeof(szClassName) / sizeof(TCHAR));
+	GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
 
 	SendMessage(hwndExStyleList, WM_SETREDRAW, FALSE, 0);
 
 	// Empty the list
 	SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
 
-	EnumStyles(StyleExList, hwndExStyleList, dwStyleEx, fAllStyles);
-		
+	EnumStyles(StyleExList, hwndExStyleList, dwExStyles, fAllStyles);
+
 	// Does this window use any custom control extended styles???
 	// If it does, then dwMessage will contain the message identifier to send
 	// to the window to retrieve them
-	if(fExtControl)
+	if (fExtControl)
 	{
 		StyleList = FindStyleList(ExtendedControls, szClassName, &dwMessage);
 
 		// Add them if required
-		if(StyleList != 0)
+		if (StyleList != 0)
 		{
-			dwStyleEx = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
-			EnumStyles(StyleList, hwndExStyleList, dwStyleEx, fAllStyles);
+			dwExStyles = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
+			EnumStyles(StyleList, hwndExStyleList, dwExStyles, fAllStyles);
 		}
 	}
 
@@ -1029,34 +958,34 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 }
 
 //
-//	Update the Style tab with styles for specified window
+//  Update the Style tab with styles for specified window
 //
 void SetStyleInfo(HWND hwnd)
 {
 	TCHAR ach[12];
-	DWORD dwStyle;
-	DWORD dwExStyle;
+	DWORD dwStyles;
+	DWORD dwExStyles;
 
 	HWND hwndDlg = WinSpyTab[STYLE_TAB].hwnd;
 	HWND hwndStyle, hwndStyleEx;
 
-	if(hwnd == 0) return;
+	if (hwnd == 0) return;
 
 	// Display the window style in static label
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-	wsprintf(ach, szHexFmt, dwStyle);
+	dwStyles = GetWindowLong(hwnd, GWL_STYLE);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyles);
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	// Display the extended window style in static label
-	dwExStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-	wsprintf(ach, szHexFmt, dwExStyle);
+	dwExStyles = GetWindowLong(hwnd, GWL_EXSTYLE);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwExStyles);
 	SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
-	
+
 	// Find handles to standard and extended style lists
-	hwndStyle   = GetDlgItem(hwndDlg, IDC_LIST1);
+	hwndStyle = GetDlgItem(hwndDlg, IDC_LIST1);
 	hwndStyleEx = GetDlgItem(hwndDlg, IDC_LIST2);
 
 	// Fill both lists with their styles!
-	FillStyleLists(hwnd, hwndStyle, FALSE, dwStyle);
-	FillExStyleLists(hwnd, hwndStyleEx, FALSE, dwExStyle, TRUE);
+	FillStyleLists(hwnd, hwndStyle, FALSE, dwStyles);
+	FillExStyleLists(hwnd, hwndStyleEx, FALSE, dwExStyles, TRUE);
 }

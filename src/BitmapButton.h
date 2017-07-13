@@ -5,10 +5,10 @@
 extern "C" {
 #endif
 
-BOOL  DrawBitmapButton      (DRAWITEMSTRUCT *dis);
+BOOL  DrawBitmapButton(DRAWITEMSTRUCT *dis);
 
-void  MakeBitmapButton		(HWND hwnd,                  UINT uIconId);
-void  MakeDlgBitmapButton	(HWND hwndDlg, UINT uCtrlId, UINT uIconId);
+void  MakeBitmapButton(HWND hwnd, UINT uIconId);
+void  MakeDlgBitmapButton(HWND hwndDlg, UINT uCtrlId, UINT uIconId);
 
 #ifdef __cplusplus
 }

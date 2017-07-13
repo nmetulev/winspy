@@ -1,20 +1,19 @@
 //
-//	WinSpy Finder Tool.
+//  WinSpy Finder Tool.
 //
-//  Copyright (c) 2002 by J Brown 
+//  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//	Nice-looking owner-drawn list (used for style-lists).
+//  Nice-looking owner-drawn list (used for style-lists).
 //
 
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
 
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 //
-//	Called from WM_MEASUREITEM
+//  Called from WM_MEASUREITEM
 //
 BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis)
 {
@@ -23,28 +22,27 @@ BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis)
 }
 
 //
-//	Super owner-drawn list!
+//  Super owner-drawn list!
 //
-//	All we do is draw the list normally, but with a couple of minor changes:
+//  All we do is draw the list normally, but with a couple of minor changes:
 //
-//	Each list item will have it's user-defined dataitem set to the value
-//  of each style.
+//  Each list item will have its user-defined dataitem set to the definition
+//  of the style it represents.
 //
-//  If this style is zero, this means that it is an implicit style, so
+//  If this style's value is zero, this means that it is an implicit style, so
 //  draw the whole line gray.
 //
-//  Also, at the end of every line, right-align the hex-values of each style  
+//  Also, at the end of every line, right-align the hex-values of each style
 //
 BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 {
 	HWND  hwndList = GetDlgItem(hwnd, uCtrlId);
-	TCHAR szText[60];
-	DWORD dwStyle;
+	TCHAR szText[MAX_STYLE_NAME_CCH];
 
 	COLORREF crFG = GetTextColor(dis->hDC);
 	COLORREF crBG = GetBkColor(dis->hDC);
 
-	switch(dis->itemAction)
+	switch (dis->itemAction)
 	{
 	case ODA_FOCUS:
 		DrawFocusRect(dis->hDC, &dis->rcItem);
@@ -54,51 +52,55 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 	case ODA_DRAWENTIRE:
 
 		// get the text string to display, and the item state.
+		// In general, calling LB_GETTEXT is not safe unless we are sure the text length does not exceed our buffer.
+		// Therefore, we use a loose equivalent of a static_assert in the definition of the NAMEANDVALUE_ macro to make sure that our style name lengths never exceed MAX_STYLE_NAME_CCH
+		static_assert(ARRAYSIZE(szText) >= MAX_STYLE_NAME_CCH, "Buffer length is smaller than the maximum possible item text length");
 		SendMessage(hwndList, LB_GETTEXT, dis->itemID, (LONG_PTR)szText);
-		dwStyle = (DWORD)dis->itemData;
-	
-		if((dis->itemState & ODS_SELECTED))
+		StyleLookupEx *pStyle = (StyleLookupEx *)dis->itemData;
+
+		if ((dis->itemState & ODS_SELECTED))
 		{
 			SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
-			SetBkColor(dis->hDC,   GetSysColor(COLOR_HIGHLIGHT));
+			SetBkColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHT));
 		}
 		else
 		{
 			// Make the item greyed-out if the style is zero
-			if(dwStyle == 0)
+			if (pStyle && pStyle->value == 0)
 				SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 			else
 				SetTextColor(dis->hDC, GetSysColor(COLOR_WINDOWTEXT));
-			
+
 			SetBkColor(dis->hDC, GetSysColor(COLOR_WINDOW));
 		}
 
 		//draw the item text first of all. The ExtTextOut function also
 		//lets us draw a rectangle under the text, so we use this facility
 		//to draw the whole line at once.
-		ExtTextOut(dis->hDC, 
-			dis->rcItem.left + 2, 
-			dis->rcItem.top + 0, 
-			ETO_OPAQUE, &dis->rcItem, szText, lstrlen(szText), 0);
+		ExtTextOut(dis->hDC,
+			dis->rcItem.left + 2,
+			dis->rcItem.top + 0,
+			ETO_OPAQUE, &dis->rcItem, szText, (UINT)_tcslen(szText), 0);
 
 		//Draw the style bytes
-		if((dis->itemState & ODS_SELECTED))
+		if ((dis->itemState & ODS_SELECTED))
 			SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
 		else
 			SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 
-		wsprintf(szText, _T("%08X"), dwStyle);
+		if (pStyle)
+			_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, pStyle->value); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
 
 		dis->rcItem.right -= 4;
 
-		DrawText(dis->hDC, szText, -1, &dis->rcItem, DT_RIGHT|DT_SINGLELINE|DT_VCENTER);
+		DrawText(dis->hDC, szText, -1, &dis->rcItem, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
 
 		dis->rcItem.right += 4;
 
 		SetTextColor(dis->hDC, crFG);
 		SetBkColor(dis->hDC, crBG);
 
-		if(dis->itemState & ODS_FOCUS)
+		if (dis->itemState & ODS_FOCUS)
 			DrawFocusRect(dis->hDC, &dis->rcItem);
 
 		break;

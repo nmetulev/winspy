@@ -1,11 +1,11 @@
 //
-//	DisplayWindowInfo.c
-//  Copyright (c) 2002 by J Brown 
-//	Freeware
+//  DisplayWindowInfo.c
+//  Copyright (c) 2002 by J Brown
+//  Freeware
 //
 //  void SetWindowInfo(HWND hwnd)
 //
-//	Fill the window-tab-pane with list of child+siblings
+//  Fill the window-tab-pane with list of child+siblings
 //
 
 #define STRICT
@@ -24,14 +24,14 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 	TCHAR  cname[256];
 	TCHAR  wname[256];
 	LVITEM lvitem;
-	
-	//only display 1st generation (1-deep) children - 
+
+	//only display 1st generation (1-deep) children -
 	//(don't display child windows of child windows)
-	if(GetRealParent(hwnd) == spy_hCurWnd)
+	if (GetRealParent(hwnd) == spy_hCurWnd)
 	{
-		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
-		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
-		wsprintf(ach, szHexFmt, hwnd);
+		GetClassName(hwnd, cname, ARRAYSIZE(cname));
+		GetWindowText(hwnd, wname, ARRAYSIZE(wname));
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
 
 		lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
 		lvitem.iSubItem = 0;
@@ -44,7 +44,7 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 		ListView_InsertItem((HWND)lParam, &lvitem);
 		ListView_SetItemText((HWND)lParam, 0, 1, cname);
 		ListView_SetItemText((HWND)lParam, 0, 2, wname);
-	}	
+	}
 	return TRUE;
 }
 
@@ -54,13 +54,13 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 	TCHAR  cname[256];
 	TCHAR  wname[256];
 	LVITEM lvitem;
-		
+
 	//sibling windows must share the same parent
-	if(spy_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(spy_hCurWnd))
+	if (spy_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(spy_hCurWnd))
 	{
-		GetClassName(hwnd, cname, sizeof(cname) / sizeof(TCHAR));
-		GetWindowText(hwnd, wname, sizeof(wname) / sizeof(TCHAR));
-		wsprintf(ach, szHexFmt, hwnd);
+		GetClassName(hwnd, cname, ARRAYSIZE(cname));
+		GetWindowText(hwnd, wname, ARRAYSIZE(wname));
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
 
 		lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
 		lvitem.iSubItem = 0;
@@ -73,13 +73,13 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 		ListView_InsertItem((HWND)lParam, &lvitem);
 		ListView_SetItemText((HWND)lParam, 0, 1, cname);
 		ListView_SetItemText((HWND)lParam, 0, 2, wname);
-	}	
+	}
 
 	return TRUE;
 }
 
 //
-//	Get a list of all Child + Siblings for the specified window - 
+//  Get a list of all Child + Siblings for the specified window -
 //  Update the Windows tab accordingly
 //
 void SetWindowInfo(HWND hwnd)
@@ -90,24 +90,24 @@ void SetWindowInfo(HWND hwnd)
 	HWND hwndList1 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST1);
 	HWND hwndList2 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST2);
 
-	if(hwnd == 0) return;
+	if (hwnd == 0) return;
 
 	ListView_DeleteAllItems(hwndList1);
 	ListView_DeleteAllItems(hwndList2);
 
 	// Get all children of the window
-	EnumChildWindows(hwnd, ChildWindowProc, (LONG)hwndList1);
+	EnumChildWindows(hwnd, ChildWindowProc, (LPARAM)hwndList1);
 
-	// Get children of it's PARENT (i.e, it's siblings!)
+	// Get children of its PARENT (i.e, its siblings!)
 	hParentWnd = GetRealParent(hwnd);
-	if(hParentWnd)
-		EnumChildWindows(hParentWnd, SiblingWindowProc, (LONG)hwndList2);
+	if (hParentWnd)
+		EnumChildWindows(hParentWnd, SiblingWindowProc, (LPARAM)hwndList2);
 
 	// Set the Parent hyperlink
-	wsprintf(ach, szHexFmt, hParentWnd);
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hParentWnd);
 	SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_PARENT, ach);
 
 	// Set the Owner hyperlink
-	wsprintf(ach, szHexFmt, GetWindow(hwnd, GW_OWNER));
+	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)GetWindow(hwnd, GW_OWNER));
 	SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_OWNER, ach);
 }
