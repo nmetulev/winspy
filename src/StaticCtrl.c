@@ -13,11 +13,7 @@
 //  detect mouse clicks.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 // Keep track of how many URL controls we have.
 static LONG    lRefCount = 0;

@@ -7,9 +7,6 @@
 //  Nice-looking owner-drawn list (used for style-lists).
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
 #include "WinSpy.h"
 
 //

@@ -9,15 +9,9 @@
 //  v 1.7.1 - moved system-menu items to appear before the Close item
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-#include <commctrl.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "FindTool.h"
 #include "CaptureWindow.h"
 #include "BitmapButton.h"
@@ -87,7 +81,7 @@ void GetRemoteInfo(HWND hwnd)
 		}
 		else
 		{
-			SendMessage(hwnd, WM_GETTEXT, 200, (LPARAM)spy_szPassword);
+			SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(spy_szPassword), (LPARAM)spy_szPassword);
 		}
 	}
 }

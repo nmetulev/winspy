@@ -7,11 +7,8 @@
 //  Please refer to the file LICENCE.TXT for copying permission
 //
 
-#include <windows.h>
+#include "WinSpy.h"
 #include <wincodec.h>
-#include <tchar.h>
-
-#pragma comment(lib, "windowscodecs")
 
 //#import "wincodec.idl" no_namespace
 

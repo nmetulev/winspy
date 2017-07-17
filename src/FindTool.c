@@ -44,13 +44,10 @@
 //             return 0 (zero) for all other messages
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
+#include "WinSpy.h"
 
-#include <windows.h>
 #include "FindTool.h"
 #include "resource.h"
-#include "WinSpy.h"
 
 #define INVERT_BORDER 3
 

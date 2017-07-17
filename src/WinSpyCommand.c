@@ -7,14 +7,9 @@
 //  Menu / Control Command handler
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "Utils.h"
 #include "FindTool.h"
 #include "CaptureWindow.h"
@@ -308,7 +303,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	{
 	case SC_RESTORE:
 
-		if (IsMinimized(hwnd))
+		if (IsWindowMinimized(hwnd))
 		{
 			break;
 		}

@@ -13,10 +13,7 @@
 //  (1x DIB and 1x DDB)
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
+#include "WinSpy.h"
 
 //
 //  Define this to include DIB support. (Adds to code size)

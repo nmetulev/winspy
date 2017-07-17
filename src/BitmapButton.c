@@ -18,19 +18,11 @@
 //  WM_DRAWITEM for the button.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-#define _WIN32_WINNT 0x0501
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
 #include <uxtheme.h>
 #include <vssym32.h> //<tmschema.h>
 #include "BitmapButton.h"
-
-#pragma comment(lib,    "Uxtheme.lib")
-#pragma comment(lib,    "Delayimp.lib")
-//#pragma comment(linker, "/delayload:Uxtheme.dll")
 
 BOOL    g_fThemeApiAvailable = FALSE;
 

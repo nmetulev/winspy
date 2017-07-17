@@ -8,20 +8,13 @@
 //  window with the system window hierarchy.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
-#include <commctrl.h>
 #include <shellapi.h>
 #include <malloc.h>
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "Utils.h"
-
-#pragma comment(lib, "comctl32.lib")
 
 static HIMAGELIST hImgList = 0;
 
@@ -38,7 +31,7 @@ static HIMAGELIST hImgList = 0;
 #define NUM_CLASS_BITMAPS 35        // (35 for visible, another 35 for invisible windows)
 
 //
-//  Use this structure+variables to help us popuplate the treeview
+//  Use this structure+variables to help us populate the treeview
 //
 #define MAX_WINDOW_DEPTH 500
 

@@ -7,7 +7,8 @@
 //  Please refer to the file LICENCE.TXT for copying permission
 //
 
-#include <windows.h>
+#include "WinSpy.h"
+
 #include "resource.h"
 
 int WINAPI GetRectWidth(RECT *);

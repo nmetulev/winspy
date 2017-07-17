@@ -93,9 +93,6 @@
     <ClCompile Include="WinSpyWindow.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LoadPNG.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PropertyEdit.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -103,6 +100,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CaptureWindow.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LoadPNG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

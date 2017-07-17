@@ -7,11 +7,7 @@
 //  Lots of utility and general helper functions.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 #include <malloc.h>
 #include "Utils.h"
 
@@ -213,8 +209,6 @@ BOOL EnableDialogTheme(HWND hwnd)
 	}
 }
 
-#pragma comment(lib, "version.lib")
-
 //
 //  Get the specified file-version information string from a file
 //
@@ -242,7 +236,7 @@ TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULON
 	{
 		if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), &codepage, &len))
 		{
-			wsprintf(fmt, TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
+			_stprintf_s(fmt, ARRAYSIZE(fmt), TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
 				(*codepage) >> 16, szValue);
 
 			if (VerQueryValue(ver, fmt, &ptr, &len))
@@ -384,18 +378,20 @@ BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
 		return FALSE;
 
 	pszText = (TCHAR *)GlobalLock(hText);
-	lstrcpy(pszText, psz);
+	StringCchCopy(pszText, nTextSize + 1, psz);
 	GlobalUnlock(hText);
 
 	if (OpenClipboard(hWnd))
 	{
 		if (EmptyClipboard())
 		{
+			if (SetClipboardData(
 #ifdef UNICODE
-			if (SetClipboardData(CF_UNICODETEXT, hText))
+				CF_UNICODETEXT,
 #else
-			if (SetClipboardData(CF_TEXT, hText))
+				CF_TEXT,
 #endif
+				hText))
 			{
 				CloseClipboard();
 				return TRUE;

@@ -35,14 +35,10 @@
 //  v1.6.1 - fixed small bug thanks to Holger Stenger
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
 #include <richedit.h>
 #include "resource.h"
-#include "WinSpy.h"
 
 StyleLookupEx WindowStyles[] =
 {

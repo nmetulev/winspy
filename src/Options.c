@@ -7,12 +7,6 @@
 //  Implements the Options dialog for WinSpy
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-
 #include "WinSpy.h"
 #include "RegHelper.h"
 #include "resource.h"

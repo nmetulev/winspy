@@ -5,20 +5,14 @@
 //
 //  void SetProcesInfo(HWND hwnd)
 //
-//  Fill the process-tab-pane with proces info for the
+//  Fill the process-tab-pane with process info for the
 //  specified window.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-#include <psapi.h>
-
 #include "WinSpy.h"
-#include "resource.h"
 
+#include <psapi.h>
+#include "resource.h"
 #include <tlhelp32.h>
 
 

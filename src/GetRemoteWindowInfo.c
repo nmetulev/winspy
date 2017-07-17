@@ -15,13 +15,9 @@
 //  in InjectThread.c
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
 #include <psapi.h>
-
 #include "InjectThread.h"
 
 typedef BOOL(WINAPI *PROCGETCLASSINFOEX)(HINSTANCE, LPCTSTR, WNDCLASSEX*);
@@ -170,7 +166,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 		pClass->lpszClassName = pClass->lpszMenuName = NULL;
 		*pProc = InjData.wndproc;
 
-		lstrcpyn(pszText, InjData.szText, 200);
+		StringCchCopy(pszText, nTextLen, InjData.szText);
 		return TRUE;
 	}
 }

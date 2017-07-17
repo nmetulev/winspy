@@ -8,13 +8,8 @@
 //  main window (i.e. sizing, window layout etc)
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <tchar.h>
-
-#include "resource.h"
 #include "WinSpy.h"
+#include "resource.h"
 #include "Utils.h"
 
 HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem);
@@ -196,7 +191,7 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 //
 //  Return TRUE if the specified window is minimized to the taskbar.
 //
-BOOL IsMinimized(HWND hwnd)
+BOOL IsWindowMinimized(HWND hwnd)
 {
 	WINDOWPLACEMENT wp;
 

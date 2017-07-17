@@ -8,17 +8,10 @@
 //  each tab-pane dialog control.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-#define _WIN32_WINDOWS 0x400
-#define _WIN32_WINNT 0x400
-
-#include <windows.h>
-#include <shellapi.h>
-#include <tchar.h>
-#include <commctrl.h>
-#include "resource.h"
 #include "WinSpy.h"
+
+#include <shellapi.h>
+#include "resource.h"
 #include "BitmapButton.h"
 #include "CaptureWindow.h"
 #include "Utils.h"

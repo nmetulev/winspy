@@ -13,13 +13,8 @@
 //  1.7.1 - fixed bug where 'resolve' window-proc wasn't getting updated
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-
 #include "WinSpy.h"
+
 #include "resource.h"
 #include "Utils.h"
 

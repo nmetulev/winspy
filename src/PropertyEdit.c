@@ -12,12 +12,6 @@
 //  hwndTarget - target window
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-
 #include "WinSpy.h"
 #include "resource.h"
 #include "Utils.h"

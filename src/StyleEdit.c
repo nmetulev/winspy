@@ -13,14 +13,8 @@
 //  fExtended  - display standard (FALSE) or extended (TRUE) window styles
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-
-#include "FindTool.h"
 #include "WinSpy.h"
+#include "FindTool.h"
 #include "resource.h"
 #include "Utils.h"
 

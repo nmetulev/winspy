@@ -8,15 +8,9 @@
 //  send / post messages to a window
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-#include <commctrl.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "Utils.h"
 
 typedef struct {

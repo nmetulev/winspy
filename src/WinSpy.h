@@ -5,9 +5,11 @@
 extern "C" {
 #endif
 
+#define STRICT
+#define WIN32_LEAN_AND_MEAN
+
 #include <windows.h>
 #include <WindowsX.h>
-#undef IsMinimized
 #include <commctrl.h>
 #include <tchar.h>
 #include <Strsafe.h>
@@ -191,7 +193,7 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget);
 int WINAPI GetRectWidth(RECT *rect);
 int WINAPI GetRectHeight(RECT *rect);
 
-BOOL IsMinimized(HWND hwnd);
+BOOL IsWindowMinimized(HWND hwnd);
 
 //
 //  Dialog box procedures for each dialog tab.
