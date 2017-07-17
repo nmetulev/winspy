@@ -18,7 +18,7 @@
 
 #include "InjectThread.h"
 
-#define INJECT_PRIVELIDGE (PROCESS_CREATE_THREAD|PROCESS_QUERY_INFORMATION|PROCESS_VM_OPERATION|PROCESS_VM_READ|PROCESS_VM_WRITE)
+#define INJECT_ACCESS (PROCESS_CREATE_THREAD|PROCESS_QUERY_INFORMATION|PROCESS_VM_OPERATION|PROCESS_VM_READ|PROCESS_VM_WRITE)
 
 typedef PVOID(WINAPI * VA_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD, DWORD);
 typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
@@ -59,7 +59,7 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbC
 	dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
 
 	// Open the remote process so we can allocate some memory in it
-	hProcess = OpenProcess(INJECT_PRIVELIDGE, FALSE, dwProcessId);
+	hProcess = OpenProcess(INJECT_ACCESS, FALSE, dwProcessId);
 	if (hProcess)
 	{
 		pRemoteCode = VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);

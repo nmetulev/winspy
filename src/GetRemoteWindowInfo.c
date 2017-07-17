@@ -20,6 +20,7 @@
 
 #include <windows.h>
 #include <tchar.h>
+#include <psapi.h>
 
 #include "InjectThread.h"
 
@@ -101,6 +102,29 @@ static void AfterThreadProc(void) { }
 #pragma check_stack
 #pragma runtime_checks("", restore)
 
+BOOL IsInsideModule(MODULEINFO *pModuleInfo, LPVOID fn)
+{
+	return pModuleInfo->lpBaseOfDll <= fn && (LPVOID)((BYTE*)pModuleInfo->lpBaseOfDll + pModuleInfo->SizeOfImage) > fn;
+}
+
+BOOL IsInjectionDataValid(INJDATA *pInjData)
+{
+	// It is only safe to inject this code if we are passing the addresses of functions in user32.dll (which is shared across all processes).
+	// If an appcompat shim is applied to our process that replaces any of these functions' pointers with ones outside of user32.dll,
+	// we cannot really do anything about this (as it will also override the GetProcAddress behavior), so the best we can do is fail gracefully
+	HMODULE hModUser32 = GetModuleHandle(_T("user32.dll"));
+	if (!hModUser32)
+		return FALSE;
+
+	MODULEINFO moduleInfo;
+	if (!GetModuleInformation(GetCurrentProcess(), hModUser32, &moduleInfo, sizeof(moduleInfo)))
+		return FALSE;
+
+	return (IsInsideModule(&moduleInfo, pInjData->fnSendMessageTimeout) &&
+		IsInsideModule(&moduleInfo, pInjData->fnGetWindowLongPtr) &&
+		IsInsideModule(&moduleInfo, pInjData->fnGetClassInfoEx));
+}
+
 BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *pszText, int nTextLen)
 {
 	INJDATA InjData;
@@ -116,7 +140,6 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 
 	// Get pointers to the API calls we will be using in the remote thread
 	InjData.fnSendMessageTimeout = SendMessageTimeout;
-
 	InjData.fnGetWindowLongPtr = IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA;
 	InjData.fnGetClassInfoEx = IsWindowUnicode(hwnd) ? GetClassInfoExW : (PROCGETCLASSINFOEX)GetClassInfoExA;
 
@@ -130,7 +153,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	//
 	// Inject the GetClassInfoExProc function, and our InjData structure!
 	//
-	fReturn = InjectRemoteThread(hwnd, GetClassInfoExProc, cbCodeSize, &InjData, sizeof(InjData));
+	fReturn = IsInjectionDataValid(&InjData) && InjectRemoteThread(hwnd, GetClassInfoExProc, cbCodeSize, &InjData, sizeof(InjData));
 
 	if (fReturn == FALSE)
 	{
