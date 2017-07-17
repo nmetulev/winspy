@@ -29,17 +29,21 @@
 #define IS_WIN30_DIB(lpbi)  ((*(LPDWORD)(lpbi)) == sizeof(BITMAPINFOHEADER))
 #define WIDTHBYTES(bits)    (((bits) + 31) / 32 * 4)
 
-static int PalEntriesOnDevice(HDC hdc)
+static WORD PalEntriesOnDevice(HDC hdc)
 {
 	int nColors;
 
 	// Find number of palette entries on this device
 	nColors = GetDeviceCaps(hdc, SIZEPALETTE);
 
-	if (nColors == 0)
+	if (nColors <= 0 || nColors > MAXWORD)
 		nColors = GetDeviceCaps(hdc, NUMCOLORS);
 
-	return nColors;
+	// if nColors is still invalid, force a benign value of 1
+	if (nColors <= 0 || nColors > MAXWORD)
+		nColors = 1;
+
+	return (WORD)nColors;
 }
 
 static HPALETTE GetSystemPalette(HDC hdc)
@@ -47,7 +51,7 @@ static HPALETTE GetSystemPalette(HDC hdc)
 	static HPALETTE hPal = 0;    // handle to a palette
 	HANDLE hLogPal;              // handle to a logical palette
 	LOGPALETTE *pLogPal;         // pointer to a logical palette
-	int nColors;                 // number of colors
+	WORD nColors;                 // number of colors
 
 	// Find out how many palette entries we want.
 	nColors = PalEntriesOnDevice(hdc);
@@ -212,7 +216,8 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
 
 	/* realloc the buffer big enough to hold all the bits */
 	dwLen = bi.biSize + PaletteSize((LPSTR)&bi) + bi.biSizeImage;
-	if (h = GlobalReAlloc(hDIB, dwLen, 0))
+	h = GlobalReAlloc(hDIB, dwLen, 0);
+	if (h)
 		hDIB = h;
 	else
 	{
@@ -272,8 +277,8 @@ BOOL CaptureWindow(HWND hwndOwner, HWND hwnd)
 	int PaletteSizeScrn;
 
 	GetWindowRect(hwnd, &rect);
-	width = rect.right - rect.left;
-	height = rect.bottom - rect.top;
+	width = GetRectWidth(&rect);
+	height = GetRectHeight(&rect);
 
 	hdc = GetDC(0);
 

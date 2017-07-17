@@ -56,7 +56,7 @@ void SetGeneralInfo(HWND hwnd)
 
 	// SendMessage is better than GetWindowText,
 	// because it gets text of children in other processes
-	if (spy_fPassword == FALSE)
+	if (!spy_fPassword)
 	{
 		ach[0] = 0;
 
@@ -99,7 +99,7 @@ void SetGeneralInfo(HWND hwnd)
 
 	_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
 		rect.left, rect.top, rect.right, rect.bottom,
-		(rect.right - rect.left), (rect.bottom - rect.top));
+		GetRectWidth(&rect), GetRectHeight(&rect));
 
 	SetDlgItemText(hwndDlg, IDC_RECTANGLE, ach);
 
@@ -114,7 +114,7 @@ void SetGeneralInfo(HWND hwnd)
 
 	_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
 		rect.left, rect.top, rect.right, rect.bottom,
-		(rect.right - rect.left), (rect.bottom - rect.top));
+		GetRectWidth(&rect), GetRectHeight(&rect));
 
 	SetDlgItemText(hwndDlg, IDC_CLIENTRECT, ach);
 

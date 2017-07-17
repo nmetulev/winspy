@@ -27,8 +27,6 @@ _T("process will not be given the chance to save its state or\r\n")\
 _T("data before it is terminated. Are you sure you want to\r\n")\
 _T("terminate the process?");
 
-extern TCHAR szPath[];
-
 //
 // save the tree-structure to clipboard?
 //
@@ -200,7 +198,7 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 //
 //  General tab
 //
-LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HWND     hCtrl;
 	TCHAR    ach[256];
@@ -263,6 +261,7 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			}
 
 			DestroyMenu(hMenu);
+			return TRUE;
 		}
 		break;
 
@@ -345,7 +344,10 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 	case WM_DRAWITEM:
 
 		if (wParam == IDC_EDITSIZE || wParam == IDC_HANDLE_MENU || wParam == IDC_SETCAPTION)
-			return DrawBitmapButton((DRAWITEMSTRUCT *)lParam);
+		{
+			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
+			return TRUE;
+		}
 		else
 			break;
 
@@ -357,7 +359,7 @@ LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 //
 //  Style tab
 //
-LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (iMsg)
 	{
@@ -369,17 +371,20 @@ LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 		return TRUE;
 
 	case WM_MEASUREITEM:
-		return FunkyList_MeasureItem(hwnd, (UINT)wParam, (MEASUREITEMSTRUCT *)lParam);
+		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem((MEASUREITEMSTRUCT *)lParam));
+		return TRUE;
 
 	case WM_DRAWITEM:
 
 		if (wParam == IDC_LIST1 || wParam == IDC_LIST2)
 		{
-			return FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam);
+			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam));
+			return TRUE;
 		}
 		else if (wParam == IDC_EDITSTYLE || wParam == IDC_EDITSTYLEEX)
 		{
-			return DrawBitmapButton((DRAWITEMSTRUCT *)lParam);
+			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
+			return TRUE;
 		}
 		else
 		{
@@ -410,7 +415,7 @@ LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 //
 //  Window tab
 //
-LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HWND      hwndList1, hwndList2;
 	LVCOLUMN  lvcol;
@@ -476,7 +481,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 	case WM_SYSCOLORCHANGE:
 		ListView_SetBkColor(GetDlgItem(hwnd, IDC_LIST1), GetSysColor(COLOR_WINDOW));
 		ListView_SetBkColor(GetDlgItem(hwnd, IDC_LIST2), GetSysColor(COLOR_WINDOW));
-		return 0;
+		return FALSE;
 
 		// if clicked on one of the underlined static controls, then
 		// display window info.
@@ -499,7 +504,7 @@ LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 //
 //  Properties tab
 //
-LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HWND      hwndList1;
 	LVCOLUMN  lvcol;
@@ -610,9 +615,10 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 			}
 
 			DestroyMenu(hMenu);
+			return TRUE;
 		}
 
-		return TRUE;
+		break;
 
 	case WM_NOTIFY:
 		if (((NMHDR *)lParam)->idFrom == IDC_LIST1)
@@ -629,9 +635,9 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 
 	case WM_SYSCOLORCHANGE:
 
-		// Need to react to system colour changes
+		// Need to react to system color changes
 		ListView_SetBkColor(GetDlgItem(hwnd, IDC_LIST1), GetSysColor(COLOR_WINDOW));
-		return 0;
+		return FALSE;
 	}
 
 	return FALSE;
@@ -640,7 +646,7 @@ LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 //
 // Class tab.
 //
-LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	TCHAR    ach[256];
 	int      index;
@@ -660,10 +666,10 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 		{
 			SetTextColor((HDC)wParam, GetSysColor(COLOR_WINDOWTEXT));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-			return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		}
 		else
-			return FALSE;
+			return 0;
 
 	case WM_CONTEXTMENU:
 		if ((HWND)wParam == GetDlgItem(hwnd, IDC_BYTESLIST))
@@ -702,6 +708,7 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 			}
 
 			DestroyMenu(hMenu);
+			return TRUE;
 		}
 		break;
 	}
@@ -712,7 +719,7 @@ LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 //
 //  Process Tab
 //
-LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
 	HMENU  hMenu, hPopup;
 	RECT   rect;
@@ -772,7 +779,7 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 					if (hProcess != 0)
 					{
-						TerminateProcess(hProcess, -1);
+						TerminateProcess(hProcess, (UINT)-1);
 						CloseHandle(hProcess);
 					}
 					else
@@ -807,14 +814,14 @@ LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		{
 			SetTextColor((HDC)wParam, GetSysColor(COLOR_WINDOWTEXT));
 			SetBkColor((HDC)wParam, GetSysColor(COLOR_WINDOW));
-			return (LRESULT)GetSysColorBrush(COLOR_WINDOW);
+			return (INT_PTR)GetSysColorBrush(COLOR_WINDOW);
 		}
 
-
-		return FALSE;
+		return 0;
 
 	case WM_DRAWITEM:
-		return DrawBitmapButton((DRAWITEMSTRUCT *)lParam);
+		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
+		return TRUE;
 	}
 
 	return FALSE;

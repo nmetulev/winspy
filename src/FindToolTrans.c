@@ -74,9 +74,6 @@ HBITMAP MakeDockPanelBitmap(RECT *rect)
 	HDC     hdcBox, hdcDIB, hdcSrc;
 	HANDLE  hOldBox, hOldDIB;
 
-	RECT *sprite = 0;
-	POINT pos = { 0 };
-
 	// 32bpp bitmap
 	BITMAPINFOHEADER bih = { sizeof(bih) };
 
@@ -142,14 +139,19 @@ void UpdatePanelTrans(HWND hwndPanel, RECT *rect)
 	POINT ptZero = { 0, 0 };
 	COLORREF crKey = RGB(0, 0, 0);
 
-	BYTE SourceConstantAlpha = 220;//255;
-	BLENDFUNCTION blendPixelFunction = { AC_SRC_OVER, 0, SourceConstantAlpha, AC_SRC_ALPHA };
+	const BYTE SourceConstantAlpha = 220;//255;
+	BLENDFUNCTION blendPixelFunction = { AC_SRC_OVER, 0, 0, AC_SRC_ALPHA };
+	blendPixelFunction.SourceConstantAlpha = SourceConstantAlpha;
 	RECT rect2;
 	//rect->right = rect->left + 316;
 	//rect->bottom = rect->top + 382;
 
-	POINT pt = { rect->left, rect->top };
-	SIZE sz = { rect->right - rect->left, rect->bottom - rect->top };
+	POINT pt;
+	pt.x = rect->left;
+	pt.y = rect->top;
+	SIZE sz;
+	sz.cx = GetRectWidth(rect);
+	sz.cy = GetRectHeight(rect);
 
 	HDC hdcSrc = GetDC(0);
 	HDC hdcMem = CreateCompatibleDC(hdcSrc);

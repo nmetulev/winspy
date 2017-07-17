@@ -54,7 +54,7 @@ HRESULT _CloseThemeData(HTHEME hTheme)
 
 //
 //  Subclass procedure for an owner-drawn button.
-//  All this does is to re-enable double-click behaviour for
+//  All this does is to re-enable double-click behavior for
 //  an owner-drawn button.
 //
 static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -165,7 +165,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	// XP/Vista theme support
 	DWORD dwThemeFlags;
 	HTHEME hTheme;
-	BOOL   fDrawThemed = g_fThemeApiAvailable;
+	//BOOL   fDrawThemed = g_fThemeApiAvailable;
 
 	if (dis->itemState & ODS_NOFOCUSRECT)
 		dwDTflags |= DT_HIDEPREFIX;
@@ -210,7 +210,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		if (nTextLen == 0)
 		{
 			// center the image if no text
-			ix = (rect.right - rect.left - sxIcon) / 2;
+			ix = (GetRectWidth(&rect) - sxIcon) / 2;
 		}
 		else
 		{
@@ -221,7 +221,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		}
 
 		// center image vertically
-		iy = (rect.bottom - rect.top - syIcon) / 2;
+		iy = (GetRectHeight(&rect) - syIcon) / 2;
 
 		InflateRect(&rect, -5, -5);
 

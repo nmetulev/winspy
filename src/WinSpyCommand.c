@@ -179,7 +179,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 		TreeView_GetItem(hwndTree, &item);
 
-		FlashWindowBorder((HWND)item.lParam, TRUE);
+		FlashWindowBorder((HWND)item.lParam);
 
 		return TRUE;
 
@@ -358,7 +358,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 }
 
-UINT WinSpyDlg_TimerHandler(HWND hwnd, UINT_PTR uTimerId)
+UINT WinSpyDlg_TimerHandler(UINT_PTR uTimerId)
 {
 	if (uTimerId == 0)
 	{

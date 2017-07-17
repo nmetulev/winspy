@@ -133,7 +133,6 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 	WNDPROC oldproc = url->oldproc;
 
 	RECT    rect;
-	UINT    dtstyle = 0;
 	SIZE    sz;
 	int     nTextLen;
 	HANDLE  hOld;
@@ -152,7 +151,7 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 
 		hdc = BeginPaint(hwnd, &ps);
 
-		// Set the font colours
+		// Set the font colors
 		SetTextColor(hdc, url->crLink);
 		SetBkMode(hdc, TRANSPARENT);
 
@@ -219,7 +218,7 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 	SetWindowLong(hwndCtrl, GWL_EXSTYLE, GetWindowLong(hwndCtrl, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
 
 
-	// setup colours
+	// setup colors
 	if (crLink != -1) url->crLink = crLink;
 	else url->crLink = RGB(0, 0, 255);
 	url->crVisited = RGB(128, 0, 128);

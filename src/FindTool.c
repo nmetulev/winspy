@@ -47,11 +47,11 @@
 #include "WinSpy.h"
 
 #include "FindTool.h"
+#include "WindowFromPointEx.h"
 #include "resource.h"
 
 #define INVERT_BORDER 3
 
-HWND WindowFromPointEx(POINT pt, BOOL fShowHidden);
 void CaptureWindow(HWND hwndParent, HWND hwnd);
 
 HWND ShowTransWindow(HWND);
@@ -85,11 +85,11 @@ static HWND hwndCurrent;
 //
 //  Invert the specified window's border
 //
-void InvertWindow(HWND hwnd, BOOL fShowHidden)
+void InvertWindow(HWND hwnd, BOOL fUseScreenDC)
 {
 	RECT rect;
 	RECT rect2;
-	RECT rectc;
+	//RECT rectc;
 	HDC hdc;
 	int x1, y1;
 
@@ -101,16 +101,16 @@ void InvertWindow(HWND hwnd, BOOL fShowHidden)
 	//window rectangle (screen coords)
 	GetWindowRect(hwnd, &rect);
 
-	//client rectangle (screen coords)
-	GetClientRect(hwnd, &rectc);
-	ClientToScreen(hwnd, (POINT *)&rectc.left);
-	ClientToScreen(hwnd, (POINT *)&rectc.right);
-	//MapWindowPoints(hwnd, 0, (POINT *)&rectc, 2);
+	////client rectangle (screen coords)
+	//GetClientRect(hwnd, &rectc);
+	//ClientToScreen(hwnd, (POINT *)&rectc.left);
+	//ClientToScreen(hwnd, (POINT *)&rectc.right);
+	////MapWindowPoints(hwnd, 0, (POINT *)&rectc, 2);
 
 	x1 = rect.left;
 	y1 = rect.top;
 	OffsetRect(&rect, -x1, -y1);
-	OffsetRect(&rectc, -x1, -y1);
+	//OffsetRect(&rectc, -x1, -y1);
 
 	if (rect.bottom - border * 2 < 0)
 		border = 1;
@@ -118,7 +118,7 @@ void InvertWindow(HWND hwnd, BOOL fShowHidden)
 	if (rect.right - border * 2 < 0)
 		border = 1;
 
-	if (fShowHidden == TRUE)
+	if (fUseScreenDC)
 		hwnd = 0;
 
 	hdc = GetWindowDC(hwnd);
@@ -129,38 +129,37 @@ void InvertWindow(HWND hwnd, BOOL fShowHidden)
 	//top edge
 	//border = rectc.top-rect.top;
 	SetRect(&rect2, 0, 0, rect.right, border);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
 
 	//left edge
 	//border = rectc.left-rect.left;
 	SetRect(&rect2, 0, border, border, rect.bottom);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
 
 	//right edge
 	//border = rect.right-rectc.right;
 	SetRect(&rect2, border, rect.bottom - border, rect.right, rect.bottom);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
 
 	//bottom edge
 	//border = rect.bottom-rectc.bottom;
 	SetRect(&rect2, rect.right - border, border, rect.right, rect.bottom - border);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
-
 
 	ReleaseDC(hwnd, hdc);
 }
 
-void FlashWindowBorder(HWND hwnd, BOOL fShowHidden)
+void FlashWindowBorder(HWND hwnd)
 {
 	int i;
 
 	for (i = 0; i < 3 * 2; i++)
 	{
-		InvertWindow(hwnd, fShowHidden);
+		InvertWindow(hwnd, TRUE);
 		Sleep(100);
 	}
 }
@@ -196,7 +195,7 @@ UINT FireWndFindNotify(HWND hwndTool, UINT uCode, HWND hwnd)
 		return 0;
 }
 
-LRESULT EndFindToolDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
+LRESULT EndFindToolDrag(HWND hwnd)
 {
 	//InvertWindow(hwndCurrent, fShowHidden);
 	HideSel(hwndCurrent);
@@ -422,7 +421,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			fDragging = FALSE;
 
-			EndFindToolDrag(hwnd, wParam, lParam);
+			EndFindToolDrag(hwnd);
 			FireWndFindNotify(hwnd, WFN_END, hwndCurrent);
 		}
 
@@ -436,7 +435,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			fDragging = FALSE;
 
-			EndFindToolDrag(hwnd, wParam, lParam);
+			EndFindToolDrag(hwnd);
 			FireWndFindNotify(hwnd, WFN_CANCELLED, 0);
 		}
 

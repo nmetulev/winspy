@@ -43,7 +43,7 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbC
 	SIZE_T dwRead;
 	DWORD  dwExitCode;
 
-	void *pRemoteCode;
+	LPTHREAD_START_ROUTINE pRemoteCode;
 	void *pRemoteData;
 
 	const DWORD_PTR cbCodeSizeAligned = (cbCodeSize + (sizeof(LONG_PTR) - 1)) & ~(sizeof(LONG_PTR) - 1);
@@ -58,22 +58,22 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbC
 	hProcess = OpenProcess(INJECT_ACCESS, FALSE, dwProcessId);
 	if (hProcess)
 	{
-		pRemoteCode = VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+		pRemoteCode = (LPTHREAD_START_ROUTINE)(intptr_t)VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 		if (pRemoteCode)
 		{
 			// Write a copy of our injection thread into the remote process
-			WriteProcessMemory(hProcess, pRemoteCode, lpCode, cbCodeSize, &dwWritten);
+			WriteProcessMemory(hProcess, (void *)(intptr_t)pRemoteCode, (void *)(intptr_t)lpCode, cbCodeSize, &dwWritten);
 
-			// Write a copy of the INJTHREAD to the remote process. This structure
+			// Write a copy of the data to the remote process. This structure
 			// MUST start on a 32bit/64bit boundary
-			pRemoteData = (void *)((BYTE *)pRemoteCode + cbCodeSizeAligned);
+			pRemoteData = (void *)((BYTE *)(intptr_t)pRemoteCode + cbCodeSizeAligned);
 
-			// Put DATA in the remote thread's memory block
+			// Put data in the remote thread's memory block
 			WriteProcessMemory(hProcess, pRemoteData, lpData, cbDataSize, &dwWritten);
 
 			// Create the remote thread!!!
 			hRemoteThread = CreateRemoteThread(hProcess, NULL, 0,
-				(LPTHREAD_START_ROUTINE)pRemoteCode, pRemoteData, 0, NULL);
+				pRemoteCode, pRemoteData, 0, NULL);
 
 			if (hRemoteThread)
 			{
@@ -97,7 +97,7 @@ DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbC
 			}
 
 			// Free the memory in the remote process
-			VirtualFreeEx(hProcess, pRemoteCode, 0, MEM_RELEASE);
+			VirtualFreeEx(hProcess, (void *)(intptr_t)pRemoteCode, 0, MEM_RELEASE);
 		}
 
 		CloseHandle(hProcess);

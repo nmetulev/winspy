@@ -66,7 +66,7 @@ typedef struct
 //  make ANY calls to code in THIS process.
 //
 __declspec(code_seg(".inject$a"))
-static DWORD WINAPI GetClassInfoExProc(LPVOID *pParam)
+static DWORD WINAPI GetDataProc(LPVOID *pParam)
 {
 	INJDATA *pInjData = (INJDATA *)pParam;
 	BOOL    fRet = 0;
@@ -76,7 +76,7 @@ static DWORD WINAPI GetClassInfoExProc(LPVOID *pParam)
 		pInjData->wndproc = (WNDPROC)pInjData->fnGetWindowLongPtr(pInjData->hwnd, GWLP_WNDPROC);
 
 	if (pInjData->fnGetClassInfoEx)
-		fRet = pInjData->fnGetClassInfoEx(pInjData->hInst, (LPCTSTR)pInjData->atom, &pInjData->wcOutput);
+		fRet = pInjData->fnGetClassInfoEx(pInjData->hInst, (LPCTSTR)(intptr_t)pInjData->atom, &pInjData->wcOutput);
 
 	if (pInjData->fnSendMessageTimeout)
 	{
@@ -93,7 +93,7 @@ static DWORD WINAPI GetClassInfoExProc(LPVOID *pParam)
 }
 
 __declspec(code_seg(".inject$z"))
-static void AfterThreadProc(void) { }
+static void AfterGetDataProc(void) { }
 
 #pragma check_stack
 #pragma runtime_checks("", restore)
@@ -116,9 +116,9 @@ BOOL IsInjectionDataValid(INJDATA *pInjData)
 	if (!GetModuleInformation(GetCurrentProcess(), hModUser32, &moduleInfo, sizeof(moduleInfo)))
 		return FALSE;
 
-	return (IsInsideModule(&moduleInfo, pInjData->fnSendMessageTimeout) &&
-		IsInsideModule(&moduleInfo, pInjData->fnGetWindowLongPtr) &&
-		IsInsideModule(&moduleInfo, pInjData->fnGetClassInfoEx));
+	return (IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnSendMessageTimeout) &&
+		IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnGetWindowLongPtr) &&
+		IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnGetClassInfoEx));
 }
 
 BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *pszText, int nTextLen)
@@ -127,7 +127,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	BOOL    fReturn;
 
 	// Calculate how many bytes the injected code takes
-	DWORD_PTR cbCodeSize = ((BYTE *)AfterThreadProc - (BYTE *)GetClassInfoExProc);
+	DWORD_PTR cbCodeSize = ((BYTE *)(intptr_t)AfterGetDataProc - (BYTE *)(intptr_t)GetDataProc);
 
 	//
 	// Setup the injection structure:
@@ -149,7 +149,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	//
 	// Inject the GetClassInfoExProc function, and our InjData structure!
 	//
-	fReturn = IsInjectionDataValid(&InjData) && InjectRemoteThread(hwnd, GetClassInfoExProc, cbCodeSize, &InjData, sizeof(InjData));
+	fReturn = IsInjectionDataValid(&InjData) && InjectRemoteThread(hwnd, GetDataProc, cbCodeSize, &InjData, sizeof(InjData));
 
 	if (fReturn == FALSE)
 	{

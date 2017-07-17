@@ -218,7 +218,7 @@ BOOL EnableDialogTheme(HWND hwnd)
 //
 TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULONG nLength)
 {
-	DWORD  len;
+	UINT  len;
 	PVOID  ver;
 	DWORD  *codepage;
 	TCHAR  fmt[0x40];

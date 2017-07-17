@@ -12,7 +12,7 @@
 //
 //  Called from WM_MEASUREITEM
 //
-BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis)
+BOOL FunkyList_MeasureItem(MEASUREITEMSTRUCT *mis)
 {
 	mis->itemHeight -= 2;
 	return TRUE;

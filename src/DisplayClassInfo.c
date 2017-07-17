@@ -160,10 +160,10 @@ void InitStockStyleLists()
 {
 	int i;
 	for (i = 0; i < NUM_ICON_LOOKUP; i++)
-		IconLookup[i].handle = LoadIcon(NULL, MAKEINTRESOURCE(IconLookup[i].handle));
+		IconLookup[i].handle = LoadIcon(NULL, MAKEINTRESOURCE((intptr_t)IconLookup[i].handle));
 
 	for (i = 0; i < NUM_CURSOR_LOOKUP; i++)
-		CursorLookup[i].handle = LoadCursor(NULL, MAKEINTRESOURCE(CursorLookup[i].handle));
+		CursorLookup[i].handle = LoadCursor(NULL, MAKEINTRESOURCE((intptr_t)CursorLookup[i].handle));
 
 	for (i = 0; i < NUM_BRUSH_STYLES; i++)
 	{
@@ -232,8 +232,8 @@ void FillBytesList(
 	HWND hwnd,
 	int numBytes,
 	WORD WINAPI pGetWord(HWND, int),
-	LONG WINAPI pGetLong(HWND, int),
-	LONG_PTR WINAPI pGetLongPtr(HWND, int)
+	DWORD WINAPI pGetLong(HWND, int),
+	ULONG_PTR WINAPI pGetLongPtr(HWND, int)
 )
 {
 	TCHAR ach[256];
@@ -376,7 +376,7 @@ void SetClassInfo(HWND hwnd)
 		i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
 		if (i != -1)
 		{
-			auto len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
+			int len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
 			_stprintf_s(ach + len, ARRAYSIZE(ach) - len, _T("  (%s)"), BrushLookup2[i].szName);
 		}
 	}

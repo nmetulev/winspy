@@ -108,11 +108,15 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 
 	case WM_MEASUREITEM:
-		return FunkyList_MeasureItem(hwnd, (UINT)wParam, (MEASUREITEMSTRUCT *)lParam);
+		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem((MEASUREITEMSTRUCT *)lParam));
+		return TRUE;
 
 	case WM_DRAWITEM:
 		if (wParam == IDC_LIST1)
-			return FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam);
+		{
+			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam));
+			return TRUE;
+		}
 		else
 			return FALSE;
 

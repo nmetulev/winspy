@@ -14,6 +14,7 @@ extern "C" {
 #include <tchar.h>
 #include <Strsafe.h>
 
+#define UNREFERENCED_PARAMETER(P)          (P)
 #define IDM_WINSPY_ABOUT    100
 
 //
@@ -25,7 +26,7 @@ typedef struct
 	HWND    hwnd;
 	LPCTSTR szText;
 	UINT    id;
-	WNDPROC dlgproc;
+	DLGPROC dlgproc;
 } DialogTab;
 
 extern DialogTab WinSpyTab[];
@@ -152,7 +153,7 @@ typedef struct
 //
 //  Useful functions!
 //
-BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis);
+BOOL FunkyList_MeasureItem(MEASUREITEMSTRUCT *mis);
 BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis);
 
 //
@@ -163,6 +164,7 @@ void SetWindowLayout(HWND hwnd, UINT uLayout);
 UINT GetWindowLayout(HWND hwnd);
 void ForceVisibleDisplay(HWND hwnd);
 
+#define WINSPY_LAYOUT_NO 0
 #define WINSPY_MINIMIZED 1
 #define WINSPY_NORMAL    2
 #define WINSPY_EXPANDED  3
@@ -174,7 +176,7 @@ void ForceVisibleDisplay(HWND hwnd);
 //
 
 UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam);
-UINT WinSpyDlg_Sizing(HWND hwnd, UINT nSide, RECT *prc);
+UINT WinSpyDlg_Sizing(UINT nSide, RECT *prc);
 UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp);
 UINT WinSpyDlg_EnterSizeMove(HWND hwnd);
 UINT WinSpyDlg_ExitSizeMove(HWND hwnd);
@@ -182,7 +184,7 @@ UINT_PTR WinSpyDlg_NCHitTest(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
 UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
-UINT WinSpyDlg_TimerHandler(HWND hwnd, UINT_PTR uTimerId);
+UINT WinSpyDlg_TimerHandler(UINT_PTR uTimerId);
 
 void WinSpyDlg_SizeContents(HWND hwnd);
 
@@ -198,12 +200,12 @@ BOOL IsWindowMinimized(HWND hwnd);
 //
 //  Dialog box procedures for each dialog tab.
 //
-LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 // Top-level
 void DisplayWindowInfo(HWND hwnd);
@@ -269,7 +271,7 @@ void SetPinState(BOOL fPinned);
 #define PINNED_BOTTOM       2
 
 //
-//  Global variables!! These just control WinSpy behaviour
+//  Global variables!! These just control WinSpy behavior
 //
 extern BOOL fAlwaysOnTop;
 extern BOOL fClassThenText;

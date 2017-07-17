@@ -85,6 +85,7 @@ void SaveSettings(void)
 
 INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(lParam);
 	static HWND hwndTarget;
 
 	switch (iMsg)

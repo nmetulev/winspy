@@ -281,7 +281,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	TCHAR           name[100] = _T("");
 	TCHAR           path[MAX_PATH] = _T("");
 	SHFILEINFO      shfi = { 0 };
-	HIMAGELIST      hImgList;
 	HTREEITEM       hRoot;
 
 	GetWindowThreadProcessId(hwnd, &pid);
@@ -295,7 +294,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 			return &WinStackList[i];
 	}
 
-
 	//
 	// couldn't find one - build a new one instead
 	//
@@ -303,8 +301,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	_stprintf_s(ach, ARRAYSIZE(ach), _T("%s  (%u)"), name, pid);
 
 	SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON);
-	hImgList = TreeView_GetImageList(hwndTree, TVSIL_NORMAL);
-
 
 	// Add the root item
 	tv.hParent = TVI_ROOT;

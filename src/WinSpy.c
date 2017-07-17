@@ -32,7 +32,6 @@ BOOL       spy_fPassword = FALSE;   // is it a password (edit) control?
 TCHAR      spy_szPassword[200];
 TCHAR      spy_szClassName[70];
 
-
 static TBBUTTON tbbPin[] =
 {
 	{   0,  IDM_WINSPY_PIN,     TBSTATE_ENABLED, TBSTYLE_CHECK,  0, 0   },
@@ -61,21 +60,18 @@ static int nCurrentTab = 0;
 //
 void GetRemoteInfo(HWND hwnd)
 {
-	BOOL b;
-
 	ZeroMemory(&spy_WndClassEx, sizeof(WNDCLASSEX));
 	spy_WndClassEx.cbSize = sizeof(WNDCLASSEX);
 
-	b = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
+	BOOL success = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
 
 	//try to use the standard methods to get the window procedure
 	//and class information. If that fails, then we have to inject
 	//a remote thread into the window's process and call the functions
 	//from there.
-	if (spy_WndProc == 0 || b == FALSE || spy_fPassword)
+	if (spy_WndProc == 0 || !success || spy_fPassword)
 	{
-		//Remote Threads only available under Windows NT
-		if (GetVersion() < 0x80000000 && ProcessArchMatches(hwnd))
+		if (ProcessArchMatches(hwnd))
 		{
 			GetRemoteWindowInfo(hwnd, &spy_WndClassEx, &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
 		}
@@ -323,7 +319,7 @@ HWND CreateTooltip(HWND hwndDlg)
 
 	struct CtrlTipsTag
 	{
-		UINT  uDlgId;   // -1 for main window, 0-n for tab dialogs
+		int  uDlgId;   // -1 for main window, 0 through n for tab dialogs
 		UINT  uCtrlId;
 		TCHAR szText[50];
 
@@ -421,8 +417,8 @@ HWND CreatePinToolbar(HWND hwndDlg)
 	SendMessage(hwndTB, TB_GETITEMRECT, 0, (LPARAM)&rect);
 
 	SetWindowPos(hwndTB, HWND_TOP, 0, 0,
-		rect.right - rect.left,
-		rect.bottom - rect.top, SWP_NOMOVE);
+		GetRectWidth(&rect),
+		GetRectHeight(&rect), SWP_NOMOVE);
 
 	// Setup the bitmap image
 	SendMessage(hwndTB, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
@@ -523,11 +519,11 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT, _T("&About"));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_HELP, _T("&Help\tF1"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, -1, _T(""));
+	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING |
 		(fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
 		_T("Always On &Top\tShift+Y"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, -1, _T(""));
+	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 
 	/*  AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
 		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT,   _T("&About"));
@@ -567,7 +563,7 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 //
 //  WM_NOTIFY handler
 //
-UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
+UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 {
 	NMTREEVIEW   *nmtv = (NMTREEVIEW *)hdr;
 	TVHITTESTINFO hti;
@@ -637,7 +633,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
 			}
 			/*else if(!(hti.flags & TVHT_ONITEMICON))
 			{
-				FlashWindowBorder((HWND)tvi.lParam, TRUE);
+				FlashWindowBorder((HWND)tvi.lParam);
 
 				// Return non-zero to prevent item from expanding when double-clicked
 				SetWindowLong(hwnd, DWL_MSGRESULT, TRUE);
@@ -682,10 +678,10 @@ BOOL WinSpyDlg_SysColorChange(HWND hwnd)
 	for (i = 0; i < NUMTABCONTROLITEMS; i++)
 		PostMessage(WinSpyTab[i].hwnd, WM_SYSCOLORCHANGE, 0, 0);
 
-	// Set the treeview colours
+	// Set the treeview colors
 	TreeView_SetBkColor(GetDlgItem(hwnd, IDC_TREE1), GetSysColor(COLOR_WINDOW));
 
-	// Recreate toolbar, so it uses new colour scheme
+	// Recreate toolbar, so it uses new color scheme
 	DestroyWindow(hwndPin);
 
 	hwndPin = CreatePinToolbar(hwnd);
@@ -741,13 +737,13 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return WinSpyDlg_CommandHandler(hwnd, wParam, lParam);
 
 	case WM_TIMER:
-		return WinSpyDlg_TimerHandler(hwnd, wParam);
+		return WinSpyDlg_TimerHandler(wParam);
 
 	case WM_SIZE:
 		return WinSpyDlg_Size(hwnd, wParam, lParam);
 
 	case WM_SIZING:
-		return WinSpyDlg_Sizing(hwnd, (UINT)wParam, (RECT *)lParam);
+		return WinSpyDlg_Sizing((UINT)wParam, (RECT *)lParam);
 
 	case WM_NCHITTEST:
 		return WinSpyDlg_NCHitTest(hwnd, wParam, lParam);
@@ -762,10 +758,11 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return WinSpyDlg_WindowPosChanged(hwnd, (WINDOWPOS *)lParam);
 
 	case WM_NOTIFY:
-		return WinSpyDlg_NotifyHandler(hwnd, wParam, (NMHDR *)lParam);
+		return WinSpyDlg_NotifyHandler(hwnd, (NMHDR *)lParam);
 
 	case WM_DRAWITEM:
-		return DrawBitmapButton((DRAWITEMSTRUCT *)lParam);
+		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
+		return TRUE;
 
 		// Update our layout based on new settings
 	case WM_SETTINGCHANGE:
@@ -812,6 +809,9 @@ void RegisterDialogClass(TCHAR szNewName[])
 //
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(nShowCmd);
 	HWND    hwndMain;
 	HACCEL  hAccelTable;
 	MSG     msg;
