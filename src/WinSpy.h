@@ -252,7 +252,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass,
 
 BOOL RemoveTabCtrlFlicker(HWND hwndTab);
 
-void VerboseClassName(TCHAR ach[], size_t cch);
+void VerboseClassName(TCHAR ach[], size_t cch, WORD atom);
 
 void RefreshTreeView(HWND hwndTree);
 void InitGlobalWindowTree(HWND hwnd);

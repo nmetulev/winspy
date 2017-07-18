@@ -227,7 +227,7 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 
 	if (uTreeInclude & WINLIST_INCLUDE_CLASS)
 	{
-		VerboseClassName(szClass, ARRAYSIZE(szClass));
+		VerboseClassName(szClass, ARRAYSIZE(szClass), (WORD)GetClassLong(hwnd, GCW_ATOM));
 
 		if (fClassThenText)
 		{

@@ -76,7 +76,7 @@ void GetRemoteInfo(HWND hwnd)
 	{
 		if (ProcessArchMatches(hwnd))
 		{
-			GetRemoteWindowInfo(hwnd, &spy_WndClassEx, &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
+			GetRemoteWindowInfo(hwnd, success ? NULL : &spy_WndClassEx, spy_WndProc ? NULL : &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
 		}
 		else
 		{
@@ -808,7 +808,7 @@ void RegisterDialogClass(TCHAR szNewName[])
 
 	// Get the class structure for the system dialog class
 	wc.cbSize = sizeof(wc);
-	GetClassInfoEx(0, _T("#32770"), &wc);
+	GetClassInfoEx(0, WC_DIALOG, &wc);
 
 	// Make sure our new class does not conflict
 	wc.style &= ~CS_GLOBALCLASS;

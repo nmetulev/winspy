@@ -18,13 +18,14 @@
 #include "resource.h"
 #include "Utils.h"
 
-void VerboseClassName(TCHAR ach[], size_t cch)
+void VerboseClassName(TCHAR ach[], size_t cch, WORD atom)
 {
-	if (lstrcmpi(ach, _T("#32770")) == 0) _tcscat_s(ach, cch, _T(" (Dialog)"));
-	else if (lstrcmpi(ach, _T("#32768")) == 0) _tcscat_s(ach, cch, _T(" (Menu)"));
-	else if (lstrcmpi(ach, _T("#32769")) == 0) _tcscat_s(ach, cch, _T(" (Desktop window)"));
-	else if (lstrcmpi(ach, _T("#32771")) == 0) _tcscat_s(ach, cch, _T(" (Task-switch window)"));
-	else if (lstrcmpi(ach, _T("#32772")) == 0) _tcscat_s(ach, cch, _T(" (Icon title)"));
+	// See https://msdn.microsoft.com/en-us/library/windows/desktop/ms633574(v=vs.85).aspx
+	if (atom == (intptr_t)WC_DIALOG) _tcscat_s(ach, cch, _T(" (Dialog)"));
+	else if (atom == 32768) _tcscat_s(ach, cch, _T(" (Menu)"));
+	else if (atom == 32769) _tcscat_s(ach, cch, _T(" (Desktop window)"));
+	else if (atom == 32771) _tcscat_s(ach, cch, _T(" (Task-switch window)"));
+	else if (atom == 32772) _tcscat_s(ach, cch, _T(" (Icon title)"));
 }
 
 //
@@ -333,7 +334,7 @@ void SetClassInfo(HWND hwnd)
 
 		// be nice and give the proper name for the following class names
 		//
-		VerboseClassName(ach, ARRAYSIZE(ach));
+		VerboseClassName(ach, ARRAYSIZE(ach), (WORD)GetClassLong(hwnd, GCW_ATOM));
 	}
 
 	SetDlgItemText(hwndDlg, IDC_CLASSNAME, ach);
