@@ -141,7 +141,7 @@ void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget)
 	if (IsWindow(spy_hCurWnd))
 	{
 		DialogBoxParam(
-			GetModuleHandle(0),
+			hInst,
 			MAKEINTRESOURCE(IDD_ADJUSTWINPOS),
 			hwndParent,
 			EditSizeDlgProc,

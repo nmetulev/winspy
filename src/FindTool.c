@@ -166,10 +166,10 @@ void FlashWindowBorder(HWND hwnd)
 
 void LoadFinderResources()
 {
-	hBitmapDrag1 = LoadBitmap(GetModuleHandle(0), MAKEINTRESOURCE(IDB_DRAGTOOL1));
-	hBitmapDrag2 = LoadBitmap(GetModuleHandle(0), MAKEINTRESOURCE(IDB_DRAGTOOL2));
+	hBitmapDrag1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL1));
+	hBitmapDrag2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL2));
 
-	hCursor = LoadCursor(GetModuleHandle(0), MAKEINTRESOURCE(IDC_CURSOR1));
+	hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 }
 
 void FreeFinderResources()
@@ -369,12 +369,12 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		hOldCursor = SetCursor(hCursor);
 
 		// Install keyboard hook to trap ESCAPE key
-		// We could just set the focus to this window to receive
-		// normal keyboard messages - however, we don't want to
-		// steal focus from current window when we use the drag tool,
-		// so a hook is a stealthier way to monitor key presses
+		// I don't see how our window can get the mouse capture
+		// without also getting the keyboard focus,
+		// but attempting to install a desktop-wide hook will definitely fail,
+		// so let's install our keyboard hook for this thread only - at least that works
 		draghookhwnd = hwnd;
-		draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, GetModuleHandle(0), 0);
+		draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
 
 		// Current window has changed
 		FireWndFindNotify(hwnd, WFN_SELCHANGED, hwndCurrent);
@@ -386,7 +386,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		pt.x = (short)LOWORD(lParam);
 		pt.y = (short)HIWORD(lParam);
 
-		if (fDragging == TRUE && ptLast.x != pt.x && ptLast.y != pt.y)
+		if (fDragging && !(ptLast.x == pt.x && ptLast.y == pt.y))
 		{
 			//MoveFindTool(hwnd, wParam, lParam);
 
@@ -416,8 +416,8 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_LBUTTONUP:
 
-		// Mouse has been release, so end the find-tool
-		if (fDragging == TRUE)
+		// Mouse has been released, so end the find-tool
+		if (fDragging)
 		{
 			fDragging = FALSE;
 
@@ -431,7 +431,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CANCELMODE:
 
 		// User has pressed ESCAPE, so cancel the find-tool
-		if (fDragging == TRUE)
+		if (fDragging)
 		{
 			fDragging = FALSE;
 

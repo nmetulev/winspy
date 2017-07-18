@@ -559,7 +559,7 @@ void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
 	if (IsWindow(spy_hCurWnd))
 	{
 		DialogBoxParam(
-			GetModuleHandle(0),
+			hInst,
 			MAKEINTRESOURCE(IDD_POSTER),
 			hwndParent,
 			PosterDlgProc,

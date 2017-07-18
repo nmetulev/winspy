@@ -237,7 +237,7 @@ void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 	state.dwStyles = 0;
 	state.fExtended = fExtended;
 
-	DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
+	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
 
 	// Update the main display
 	SetGeneralInfo(hwndTarget);

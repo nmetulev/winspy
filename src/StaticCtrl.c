@@ -210,7 +210,7 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 		lf.lfUnderline = TRUE;
 		hfUnderlined = CreateFontIndirect(&lf);
 
-		hCursor = CreateCursor(GetModuleHandle(0), 5, 2, 32, 32, XORMask, ANDMask);
+		hCursor = CreateCursor(hInst, 5, 2, 32, 32, XORMask, ANDMask);
 	}
 
 	//turn on notify style

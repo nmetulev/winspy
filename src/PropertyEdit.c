@@ -156,7 +156,7 @@ void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew)
 		state.aAtom = (ATOM)lvitem.lParam;
 	}
 
-	DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_PROPERTY_EDIT), hwndParent, PropertyEditProc, (LPARAM)&state);
+	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_PROPERTY_EDIT), hwndParent, PropertyEditProc, (LPARAM)&state);
 
 	// Update the main display
 	SetPropertyInfo(hwndTarget);

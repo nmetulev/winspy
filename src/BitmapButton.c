@@ -333,7 +333,7 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 	WNDPROC oldproc;
 	DWORD   dwStyle;
 
-	HICON hIcon = (HICON)LoadImage(GetModuleHandle(0),
+	HICON hIcon = (HICON)LoadImage(hInst,
 		MAKEINTRESOURCE(uIconId), IMAGE_ICON, 16, 16, 0);
 
 	// Add on BS_ICON and BS_OWNERDRAW styles

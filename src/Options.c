@@ -147,7 +147,7 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 void ShowOptionsDlg(HWND hwndParent)
 {
-	DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
+	DialogBox(hInst, MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
 
 	if (!fShowInCaption)
 	{
