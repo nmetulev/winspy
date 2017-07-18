@@ -56,12 +56,12 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_P
 void EnumWindowProps(HWND hwnd, HWND hwndList)
 {
 	ListView_DeleteAllItems(hwndList);
+	if (hwnd == 0) return;
 	EnumPropsEx(hwnd, PropEnumProcEx, (ULONG_PTR)hwndList);
 }
 
 void SetPropertyInfo(HWND hwnd)
 {
-	if (hwnd == 0) return;
 	EnumWindowProps(hwnd, GetDlgItem(WinSpyTab[PROPERTY_TAB].hwnd, IDC_LIST1));
 }
 

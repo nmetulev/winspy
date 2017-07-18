@@ -135,6 +135,16 @@ inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
 #define STYLE_COMBINATION_MASK(style, extraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, 0, 0
 
 //
+// Define some masks that are not defined in the Windows headers
+//
+#define WS_OVERLAPPED_MASK WS_OVERLAPPED | WS_POPUP | WS_CHILD // 0xC0000000
+#define BS_TEXT_MASK BS_TEXT | BS_ICON | BS_BITMAP // 0x00C0
+#define CBS_TYPE_MASK CBS_SIMPLE | CBS_DROPDOWN | CBS_DROPDOWNLIST //0x0003
+#define SBS_DIR_MASK SBS_HORZ | SBS_VERT //0x0001
+#define CCS_TOP_MASK 0x0003
+#define DTS_FORMAT_MASK 0x000C
+
+//
 //  Use this structure to list each window class with its
 //  associated style table and, optionally, a message to send to the window
 //  to retrieve this set of control-specific extended styles
@@ -163,6 +173,7 @@ void ToggleWindowLayout(HWND hwnd);
 void SetWindowLayout(HWND hwnd, UINT uLayout);
 UINT GetWindowLayout(HWND hwnd);
 void ForceVisibleDisplay(HWND hwnd);
+void UpdateMainWindowText(HWND hwnd, HWND hwndTarget);
 
 #define WINSPY_LAYOUT_NO 0
 #define WINSPY_MINIMIZED 1
@@ -297,6 +308,8 @@ extern HINSTANCE hInst;
 #define szHexFmt _T("%08X")
 #define szPtrFmt _T("%p")
 #define szAppName _T("WinSpy++")
+
+#define szInvalidWindow _T("(invalid window)")
 
 extern HWND  hwndPin;       // Toolbar with pin bitmap
 extern HWND  hwndSizer;     // Sizing grip for bottom-right corner

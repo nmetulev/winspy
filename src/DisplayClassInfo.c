@@ -314,7 +314,8 @@ void FillBytesList(
 }
 
 //
-//  Set the class information on the Class Tab, for the specified window
+//  Set the class information on the Class Tab, for the specified window.
+//  This function assumes that spy_WndClassEx is completely populated.
 //
 void SetClassInfo(HWND hwnd)
 {
@@ -324,60 +325,86 @@ void SetClassInfo(HWND hwnd)
 	HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
 	UINT_PTR handle;
 
-	if (hwnd == 0) return;
+	*ach = 0;
 
+	if (hwnd)
+	{
+		GetClassName(hwnd, ach, ARRAYSIZE(ach));
 
-	GetClassName(hwnd, ach, ARRAYSIZE(ach));
-
-	// be nice and give the proper name for the following class names
-	//
-	VerboseClassName(ach, ARRAYSIZE(ach));
+		// be nice and give the proper name for the following class names
+		//
+		VerboseClassName(ach, ARRAYSIZE(ach));
+	}
 
 	SetDlgItemText(hwndDlg, IDC_CLASSNAME, ach);
 
 	//class style
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, spy_WndClassEx.style);
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, spy_WndClassEx.style);
+	}
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	//atom
-	_stprintf_s(ach, ARRAYSIZE(ach), _T("%04X"), GetClassLong(hwnd, GCW_ATOM));
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%04X"), GetClassLong(hwnd, GCW_ATOM));
+	}
 	SetDlgItemText(hwndDlg, IDC_ATOM, ach);
 
 	//extra class bytes
-	_stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbClsExtra);
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbClsExtra);
+	}
 	SetDlgItemText(hwndDlg, IDC_CLASSBYTES, ach);
 
 	//extra window bytes
-	_stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbWndExtra);
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbWndExtra);
+	}
 	SetDlgItemText(hwndDlg, IDC_WINDOWBYTES, ach);
 
 	//menu (not implemented)
-	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
+	}
 	SetDlgItemText(hwndDlg, IDC_MENUHANDLE, _T("(None)"));
 
 	//cursor handle
-	handle = GetClassLongPtr(hwnd, GCLP_HCURSOR);
-	FormatHandle(ach, ARRAYSIZE(ach), CursorLookup, NUM_CURSOR_LOOKUP, handle);
+	if (hwnd)
+	{
+		handle = GetClassLongPtr(hwnd, GCLP_HCURSOR);
+		FormatHandle(ach, ARRAYSIZE(ach), CursorLookup, NUM_CURSOR_LOOKUP, handle);
+	}
 	SetDlgItemText(hwndDlg, IDC_CURSORHANDLE, ach);
 
 	//icon handle
-	handle = GetClassLongPtr(hwnd, GCLP_HICON);
-	FormatHandle(ach, ARRAYSIZE(ach), IconLookup, NUM_ICON_LOOKUP, handle);
+	if (hwnd)
+	{
+		handle = GetClassLongPtr(hwnd, GCLP_HICON);
+		FormatHandle(ach, ARRAYSIZE(ach), IconLookup, NUM_ICON_LOOKUP, handle);
+	}
 	SetDlgItemText(hwndDlg, IDC_ICONHANDLE, ach);
 
 	//background brush handle
-	handle = GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
-
-	//see hbrBackground description at https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
-	//first of all, search by COLOR_xxx value
-	if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatConst(ach, ARRAYSIZE(ach), BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
+	if (hwnd)
 	{
-		//now search by handle value
-		i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
-		if (i != -1)
+		handle = GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
+
+		//see hbrBackground description at https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
+		//first of all, search by COLOR_xxx value
+		if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatConst(ach, ARRAYSIZE(ach), BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
 		{
-			int len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
-			_stprintf_s(ach + len, ARRAYSIZE(ach) - len, _T("  (%s)"), BrushLookup2[i].szName);
+			//now search by handle value
+			i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
+			if (i != -1)
+			{
+				int len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
+				_stprintf_s(ach + len, ARRAYSIZE(ach) - len, _T("  (%s)"), BrushLookup2[i].szName);
+			}
 		}
 	}
 
@@ -385,15 +412,18 @@ void SetClassInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_BKGNDBRUSH, ach);
 
 	//window procedure
-	if (spy_WndProc == 0)
+	if (hwnd)
 	{
-		_tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
-	}
-	else
-	{
-		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
-		if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
-			_tcscat_s(ach, ARRAYSIZE(ach), _T(" (Subclassed)"));
+		if (spy_WndProc == 0)
+		{
+			_tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
+		}
+		else
+		{
+			_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
+			if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
+				_tcscat_s(ach, ARRAYSIZE(ach), _T(" (Subclassed)"));
+		}
 	}
 
 	SetDlgItemText(hwndDlg, IDC_WNDPROC, ach);
@@ -401,17 +431,22 @@ void SetClassInfo(HWND hwnd)
 	SetDlgItemText(WinSpyTab[GENERAL_TAB].hwnd, IDC_WINDOWPROC2, ach);
 
 	//class window procedure
-	if (spy_WndClassEx.lpfnWndProc == 0)
-		_tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
-	else
-		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndClassEx.lpfnWndProc);
+	if (hwnd)
+	{
+		if (spy_WndClassEx.lpfnWndProc == 0)
+			_tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
+		else
+			_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndClassEx.lpfnWndProc);
+	}
 
 	SetDlgItemText(hwndDlg, IDC_CLASSPROC, ach);
 
 
-
 	//instance handle
-	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndClassEx.hInstance);
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndClassEx.hInstance);
+	}
 	SetDlgItemText(hwndDlg, IDC_INSTANCEHANDLE, ach);
 
 	//
@@ -419,14 +454,17 @@ void SetClassInfo(HWND hwnd)
 	//
 	numstyles = 0;
 	SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_RESETCONTENT, 0, 0);
-	for (i = 0; i < NUM_CLASS_STYLES; i++)
+	if (hwnd)
 	{
-		if (spy_WndClassEx.style & ClassLookup[i].value)
+		for (i = 0; i < NUM_CLASS_STYLES; i++)
 		{
-			SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
-				(LPARAM)ClassLookup[i].szName);
+			if (spy_WndClassEx.style & ClassLookup[i].value)
+			{
+				SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
+					(LPARAM)ClassLookup[i].szName);
 
-			numstyles++;
+				numstyles++;
+			}
 		}
 	}
 

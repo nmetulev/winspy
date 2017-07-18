@@ -13,102 +13,75 @@
 
 #include "resource.h"
 
-void SetScrollbarInfo(HWND hwnd)
+void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, LPCTSTR ach, DWORD dwStyle)
 {
 	SCROLLINFO si;
-	DWORD  dwStyle;
-	int    bartype;
+	DWORD bartype = fVert ? SB_VERT : SB_HORZ;
+	int idc_state = fVert ? IDC_VSTATE : IDC_HSTATE;
+
+	if (fValid)
+	{
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_ALL;
+
+		if (lstrcmpi(ach, _T("ScrollBar")) == 0)
+		{
+			static_assert(SBS_HORZ == SB_HORZ && SBS_VERT == SB_VERT, "");
+			if ((dwStyle & SBS_DIR_MASK) == bartype)
+				bartype = SB_CTL;
+
+			SetDlgItemText(hwndDlg, idc_state, _T("Visible"));
+		}
+		else
+		{
+			SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? _T("Visible") : _T("Disabled"));
+		}
+	}
+
+	if (fValid && GetScrollInfo(hwnd, bartype, &si))
+	{
+		SetDlgItemInt(hwndDlg, fVert ? IDC_VMIN : IDC_HMIN, si.nMin, TRUE);
+		SetDlgItemInt(hwndDlg, fVert ? IDC_VMAX : IDC_HMAX, si.nMax, TRUE);
+		SetDlgItemInt(hwndDlg, fVert ? IDC_VPOS : IDC_HPOS, si.nPos, TRUE);
+		SetDlgItemInt(hwndDlg, fVert ? IDC_VPAGE : IDC_HPAGE, si.nPage, TRUE);
+
+		if (bartype != SB_CTL)
+		{
+			SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? _T("Visible") : _T("Hidden"));
+		}
+	}
+	else
+	{
+		SetDlgItemText(hwndDlg, fVert ? IDC_VMIN : IDC_HMIN, fValid ? _T("") : ach);
+		SetDlgItemText(hwndDlg, fVert ? IDC_VMAX : IDC_HMAX, fValid ? _T("") : ach);
+		SetDlgItemText(hwndDlg, fVert ? IDC_VPOS : IDC_HPOS, fValid ? _T("") : ach);
+		SetDlgItemText(hwndDlg, fVert ? IDC_VPAGE : IDC_HPAGE, fValid ? _T("") : ach);
+		SetDlgItemText(hwndDlg, idc_state, fValid ? _T("Disabled") : ach);
+	}
+}
+
+void SetScrollbarInfo(HWND hwnd)
+{
+	DWORD dwStyle;
 	TCHAR  ach[256];
 	HWND   hwndDlg = WinSpyTab[PROPERTY_TAB].hwnd;
 
-	if (hwnd == 0) return;
+	*ach = 0;
 
-	si.cbSize = sizeof(SCROLLINFO);
-	si.fMask = SIF_ALL;
-
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-
-	bartype = SB_HORZ;
-
-	GetClassName(hwnd, ach, ARRAYSIZE(ach));
-
-	if (lstrcmpi(ach, _T("ScrollBar")) == 0)
+	BOOL fValid = hwnd != NULL;
+	if (hwnd && !IsWindow(hwnd))
 	{
-		if ((dwStyle & SBS_VERT) == 0)
-			bartype = SB_CTL;
-
-		SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Visible"));
-	}
-	else
-	{
-		if (dwStyle & WS_HSCROLL)
-			SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Visible"));
-		else
-			SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Disabled"));
+		fValid = FALSE;
+		_tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
 	}
 
-	if (GetScrollInfo(hwnd, bartype, &si))
+	if (fValid)
 	{
-		SetDlgItemInt(hwndDlg, IDC_HMIN, si.nMin, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_HMAX, si.nMax, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_HPOS, si.nPos, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_HPAGE, si.nPage, TRUE);
+		GetClassName(hwnd, ach, ARRAYSIZE(ach));
 
-		if (bartype == SB_HORZ)
-		{
-			if (dwStyle & WS_HSCROLL)
-				SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Visible"));
-			else
-				SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Hidden"));
-		}
-	}
-	else
-	{
-		SetDlgItemText(hwndDlg, IDC_HMIN, _T(""));
-		SetDlgItemText(hwndDlg, IDC_HMAX, _T(""));
-		SetDlgItemText(hwndDlg, IDC_HPOS, _T(""));
-		SetDlgItemText(hwndDlg, IDC_HPAGE, _T(""));
-		SetDlgItemText(hwndDlg, IDC_HSTATE, _T("Disabled"));
+		dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 	}
 
-	bartype = SB_VERT;
-
-	if (lstrcmpi(ach, _T("ScrollBar")) == 0)
-	{
-		if ((dwStyle & SBS_VERT) == SB_VERT)
-			bartype = SB_CTL;
-
-		SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Visible"));
-	}
-	else
-	{
-		if (dwStyle & WS_VSCROLL)
-			SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Visible"));
-		else
-			SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Disabled"));
-	}
-
-	if (GetScrollInfo(hwnd, bartype, &si))
-	{
-		SetDlgItemInt(hwndDlg, IDC_VMIN, si.nMin, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_VMAX, si.nMax, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_VPOS, si.nPos, TRUE);
-		SetDlgItemInt(hwndDlg, IDC_VPAGE, si.nPage, TRUE);
-
-		if (bartype == SB_VERT)
-		{
-			if (dwStyle & WS_VSCROLL)
-				SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Visible"));
-			else
-				SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Hidden"));
-		}
-	}
-	else
-	{
-		SetDlgItemText(hwndDlg, IDC_VMIN, _T(""));
-		SetDlgItemText(hwndDlg, IDC_VMAX, _T(""));
-		SetDlgItemText(hwndDlg, IDC_VPOS, _T(""));
-		SetDlgItemText(hwndDlg, IDC_VPAGE, _T(""));
-		SetDlgItemText(hwndDlg, IDC_VSTATE, _T("Disabled"));
-	}
+	SetInfo(hwndDlg, hwnd, fValid, FALSE, ach, dwStyle);
+	SetInfo(hwndDlg, hwnd, fValid, TRUE, ach, dwStyle);
 }

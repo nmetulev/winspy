@@ -63,6 +63,9 @@ void GetRemoteInfo(HWND hwnd)
 	ZeroMemory(&spy_WndClassEx, sizeof(WNDCLASSEX));
 	spy_WndClassEx.cbSize = sizeof(WNDCLASSEX);
 
+	if (!hwnd)
+		return;
+
 	BOOL success = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
 
 	//try to use the standard methods to get the window procedure
@@ -85,31 +88,40 @@ void GetRemoteInfo(HWND hwnd)
 //
 //  Top-level function for retrieving+displaying a window's
 //  information (styles/class/properties etc)
+//  It updates all the tabs except the Class tab that should be updated explicitly when activated
 //
 void DisplayWindowInfo(HWND hwnd)
 {
-	if (hwnd == 0) return;
 	spy_hCurWnd = hwnd;
 
-	GetClassName(hwnd, spy_szClassName, 70);
-
-	spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
-
-	// If a password-edit control, then we can
-	// inject our thread to get the password text!
-	if (lstrcmpi(spy_szClassName, _T("Edit")) == 0)
+	if (!hwnd)
 	{
-		// If a password control
-		DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+		*spy_szClassName = 0;
+		spy_WndProc = 0;
+		spy_fPassword = FALSE;
+	}
+	else
+	{
+		if (!GetClassName(hwnd, spy_szClassName, 70))
+			*spy_szClassName = 0;
 
-		if (dwStyle & ES_PASSWORD)
-			spy_fPassword = TRUE;
+		spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
+
+		// If a password-edit control, then we can
+		// inject our thread to get the password text!
+		if (lstrcmpi(spy_szClassName, _T("Edit")) == 0)
+		{
+			// If a password control
+			DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+
+			if (dwStyle & ES_PASSWORD)
+				spy_fPassword = TRUE;
+			else
+				spy_fPassword = FALSE;
+		}
 		else
 			spy_fPassword = FALSE;
 	}
-	else
-		spy_fPassword = FALSE;
-
 
 	// do classinfo first, so we can get the window procedure
 	if (spy_fPassword || nCurrentTab == CLASS_TAB)
@@ -126,6 +138,21 @@ void DisplayWindowInfo(HWND hwnd)
 	SetProcessInfo(hwnd);
 }
 
+void UpdateMainWindowText(HWND hwnd, HWND hwndTarget)
+{
+	if (hwndTarget && fShowInCaption)
+	{
+		TCHAR szClass[70] = { 0 };
+		TCHAR ach[90] = { 0 };
+
+		GetClassName(hwndTarget, szClass, ARRAYSIZE(szClass));
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)hwndTarget, szClass);
+		SetWindowText(hwnd, ach);
+	}
+	else
+		SetWindowText(hwnd, szAppName);
+}
+
 //
 //  User-defined callback function for the Find Tool
 //
@@ -133,12 +160,12 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 {
 	HWND hwndMain = GetParent(hwndTool);
 
-	TCHAR ach[90] = { 0 };
-	TCHAR szClass[70] = { 0 };
-
 	static BOOL fFirstDrag = TRUE;
 	static HWND hwndLastTarget;
 	static BOOL fOldShowHidden;
+	static BOOL fWasMinimized;
+	static UINT uLastLayout;
+	BOOL fCanceled = FALSE;
 
 	switch (uCode)
 	{
@@ -147,14 +174,9 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 		spy_hCurWnd = hwnd;
 		spy_WndProc = 0;
 
-		if (fShowInCaption)
-		{
-			GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
-			_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)hwnd, szClass);
-			SetWindowText(hwndMain, ach);
-		}
+		UpdateMainWindowText(hwndMain, hwnd);
 
-		SetGeneralInfo(hwnd);
+		DisplayWindowInfo(hwnd);
 		return 0;
 
 	case WFN_BEGIN:
@@ -163,8 +185,10 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		spy_hCurWnd = hwnd;
 
-		if (fMinimizeWinSpy)
+		fWasMinimized = fMinimizeWinSpy;
+		if (fWasMinimized)
 		{
+			uLastLayout = GetWindowLayout(hwndMain);
 			SetWindowLayout(hwndMain, WINSPY_MINIMIZED);
 			InvalidateRect(hwndMain, 0, 0);
 			UpdateWindow(hwndMain);
@@ -175,34 +199,24 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 	case WFN_CANCELLED:
 
+		fCanceled = TRUE;
 		// Restore the current window + Fall through!
-		spy_hCurWnd = hwndLastTarget;
-
-		if (fShowInCaption)
-		{
-			GetClassName(spy_hCurWnd, szClass, ARRAYSIZE(szClass));
-
-			_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)spy_hCurWnd, szClass);
-			SetWindowText(hwndMain, ach);
-		}
+		UpdateMainWindowText(hwndMain, spy_hCurWnd = hwndLastTarget);
 
 	case WFN_END:
 
 		ShowWindow(hwndMain, SW_SHOW);
 
-		if (fMinimizeWinSpy || fFirstDrag)
+		if (fWasMinimized)
+			SetWindowLayout(hwndMain, uLastLayout);
+		
+		if (!fCanceled && fFirstDrag)
 		{
 			fFirstDrag = FALSE;
 			SetWindowLayout(hwndMain, WINSPY_LASTMAX);
 		}
 
 		DisplayWindowInfo(spy_hCurWnd);
-
-		if (fMinimizeWinSpy)
-		{
-			InvalidateRect(hwndMain, 0, TRUE);
-			InvalidateRect(WinSpyTab[nCurrentTab].hwnd, 0, TRUE);
-		}
 
 		fShowHidden = fOldShowHidden;
 		break;

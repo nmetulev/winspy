@@ -149,10 +149,7 @@ void ShowOptionsDlg(HWND hwndParent)
 {
 	DialogBox(hInst, MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
 
-	if (!fShowInCaption)
-	{
-		SetWindowText(hwndParent, szAppName);
-	}
+	UpdateMainWindowText(hwndParent, spy_hCurWnd);
 
 	SendMessage(hwndToolTip, TTM_ACTIVATE, fEnableToolTips, 0);
 }
