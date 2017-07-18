@@ -216,17 +216,21 @@ LRESULT EndFindToolDrag(HWND hwnd)
 // This hook just monitors the ESCAPE key
 static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 {
-	ULONG state = (ULONG)lParam;
+	BOOL newStateReleased = (ULONG)lParam & (1 << 31);
+	BOOL previousStateDown = (ULONG)lParam & (1 << 30);
 	static int count;
 
 	if (code < 0)
+		return CallNextHookEx(draghook, code, wParam, lParam);
+
+	if (code != HC_ACTION)
 		return CallNextHookEx(draghook, code, wParam, lParam);
 
 	switch (wParam)
 	{
 	case VK_ESCAPE:
 
-		if (!(state & 0x80000000))
+		if (!newStateReleased)
 		{
 			//don't let the current window procedure process a VK_ESCAPE,
 			//because we want it to cancel the mouse capture
@@ -238,7 +242,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 
 	case VK_SHIFT:
 
-		if (state & 0x80000000)
+		if (newStateReleased)
 		{
 			//InvertWindow(hwndCurrent, fShowHidden);
 			HideSel(hwndCurrent);
@@ -248,7 +252,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			if (!(state & 0x40000000))
+			if (!previousStateDown)
 			{
 				//InvertWindow(hwndCurrent, fShowHidden);
 				HideSel(hwndCurrent);
@@ -262,7 +266,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 
 	case VK_CONTROL:
 
-		if (state & 0x80000000)
+		if (newStateReleased)
 		{
 			//InvertWindow(hwndCurrent, fShowHidden);
 			HideSel(hwndCurrent);
@@ -272,7 +276,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			if (!(state & 0x40000000))
+			if (!previousStateDown)
 			{
 				//InvertWindow(hwndCurrent, fShowHidden);
 				HideSel(hwndCurrent);
@@ -286,7 +290,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 	}
 
 	// Test to see if a key is pressed for first time
-	if (!(state & 0xC0000000))
+	if (!(newStateReleased || previousStateDown))
 	{
 		// Find ASCII character
 		UINT ch = MapVirtualKey((UINT)wParam, 2);
