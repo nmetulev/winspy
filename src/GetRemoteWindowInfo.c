@@ -15,15 +15,12 @@
 //  in InjectThread.c
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
-
+#include <psapi.h>
 #include "InjectThread.h"
 
-typedef BOOL(WINAPI *PROCGETCLASSINFOEX)(HINSTANCE, LPCTSTR, WNDCLASSEX*);
+typedef BOOL(WINAPI *PROCGETCLASSINFOEXW)(HINSTANCE, LPCWSTR, WNDCLASSEXW*);
 typedef LONG_PTR(WINAPI *PROCGETWINDOWLONGPTR)(HWND, int);
 typedef LRESULT(WINAPI *PROCSENDMESSAGETO)(HWND, UINT, WPARAM, LPARAM, UINT, UINT, PDWORD_PTR);
 
@@ -32,21 +29,21 @@ typedef LRESULT(WINAPI *PROCSENDMESSAGETO)(HWND, UINT, WPARAM, LPARAM, UINT, UIN
 //
 typedef struct
 {
-	PROCGETCLASSINFOEX    fnGetClassInfoEx;
+	// Input starts
+	PROCGETCLASSINFOEXW   fnGetClassInfoEx;
 	PROCGETWINDOWLONGPTR  fnGetWindowLongPtr;
 	PROCSENDMESSAGETO     fnSendMessageTimeout;
 
 	HWND        hwnd; //window we want to get class info for
 	ATOM        atom; //class atom of window
 	HINSTANCE   hInst;
-
-	WNDCLASSEX  wcOutput;
-	WNDPROC     wndproc;
-
-	// Window text to retrieve
-	TCHAR       szText[200]; // text (out)
 	int         nTextSize;
 
+	// Output starts
+	WNDCLASSEXW wcOutput;
+	WNDPROC     wndproc;
+
+	TCHAR       szText[200]; // Window text to retrieve
 } INJDATA;
 
 #pragma runtime_checks("", off)
@@ -69,17 +66,25 @@ typedef struct
 //  make ANY calls to code in THIS process.
 //
 __declspec(code_seg(".inject$a"))
-static DWORD WINAPI GetClassInfoExProc(LPVOID *pParam)
+// GetDataProc will selectively collect 3 pieces of information about the target window:
+// - window procedure
+// - window class
+// - text
+static DWORD WINAPI GetDataProc(LPVOID *pParam)
 {
 	INJDATA *pInjData = (INJDATA *)pParam;
-	BOOL    fRet = 0;
+	BOOL    fRet = TRUE;
 	DWORD_PTR dwpResult;
 
 	if (pInjData->fnGetWindowLongPtr)
 		pInjData->wndproc = (WNDPROC)pInjData->fnGetWindowLongPtr(pInjData->hwnd, GWLP_WNDPROC);
 
 	if (pInjData->fnGetClassInfoEx)
-		fRet = pInjData->fnGetClassInfoEx(pInjData->hInst, (LPCTSTR)pInjData->atom, &pInjData->wcOutput);
+	{
+		static_assert(sizeof(pInjData->wcOutput) == sizeof(WNDCLASSEXA), "Unicode and ANSI structures expected to be the same size");
+		pInjData->wcOutput.cbSize = sizeof(pInjData->wcOutput);
+		fRet = fRet && pInjData->fnGetClassInfoEx(pInjData->hInst, (LPCTSTR)(intptr_t)pInjData->atom, &pInjData->wcOutput);
+	}
 
 	if (pInjData->fnSendMessageTimeout)
 	{
@@ -96,10 +101,33 @@ static DWORD WINAPI GetClassInfoExProc(LPVOID *pParam)
 }
 
 __declspec(code_seg(".inject$z"))
-static void AfterThreadProc(void) { }
+static void AfterGetDataProc(void) { }
 
 #pragma check_stack
 #pragma runtime_checks("", restore)
+
+BOOL IsInsideModule(MODULEINFO *pModuleInfo, LPVOID fn)
+{
+	return !fn || (pModuleInfo->lpBaseOfDll <= fn && (LPVOID)((BYTE*)pModuleInfo->lpBaseOfDll + pModuleInfo->SizeOfImage) > fn);
+}
+
+BOOL IsInjectionDataValid(INJDATA *pInjData)
+{
+	// It is only safe to inject this code if we are passing the addresses of functions in user32.dll (which is shared across all processes).
+	// If an appcompat shim is applied to our process that replaces any of these functions' pointers with ones outside of user32.dll,
+	// we cannot really do anything about this (as it will also override the GetProcAddress behavior), so the best we can do is fail gracefully
+	HMODULE hModUser32 = GetModuleHandle(_T("user32.dll"));
+	if (!hModUser32)
+		return FALSE;
+
+	MODULEINFO moduleInfo;
+	if (!GetModuleInformation(GetCurrentProcess(), hModUser32, &moduleInfo, sizeof(moduleInfo)))
+		return FALSE;
+
+	return (IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnSendMessageTimeout) &&
+		IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnGetWindowLongPtr) &&
+		IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnGetClassInfoEx));
+}
 
 BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *pszText, int nTextLen)
 {
@@ -107,7 +135,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	BOOL    fReturn;
 
 	// Calculate how many bytes the injected code takes
-	DWORD_PTR cbCodeSize = ((BYTE *)AfterThreadProc - (BYTE *)GetClassInfoExProc);
+	DWORD_PTR cbCodeSize = ((BYTE *)(intptr_t)AfterGetDataProc - (BYTE *)(intptr_t)GetDataProc);
 
 	//
 	// Setup the injection structure:
@@ -115,39 +143,51 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *p
 	ZeroMemory(&InjData, sizeof(InjData));
 
 	// Get pointers to the API calls we will be using in the remote thread
-	InjData.fnSendMessageTimeout = SendMessageTimeout;
-
-	InjData.fnGetWindowLongPtr = IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA;
-	InjData.fnGetClassInfoEx = IsWindowUnicode(hwnd) ? GetClassInfoExW : (PROCGETCLASSINFOEX)GetClassInfoExA;
+	if (pszText)
+		InjData.fnSendMessageTimeout = SendMessageTimeout;
+	if (pProc)
+		InjData.fnGetWindowLongPtr = IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA;
+	if (pClass)
+		InjData.fnGetClassInfoEx = IsWindowUnicode(hwnd) ? GetClassInfoExW : (PROCGETCLASSINFOEXW)GetClassInfoExA;
 
 	// Setup the data the API calls will need
 	InjData.hwnd = (HWND)hwnd;
 	InjData.atom = (ATOM)GetClassLong(hwnd, GCW_ATOM);
 	InjData.hInst = (HINSTANCE)GetClassLongPtr(hwnd, GCLP_HMODULE);
-	InjData.wndproc = 0;
 	InjData.nTextSize = ARRAYSIZE(InjData.szText);
+	InjData.wndproc = 0;
 
 	//
 	// Inject the GetClassInfoExProc function, and our InjData structure!
 	//
-	fReturn = InjectRemoteThread(hwnd, GetClassInfoExProc, cbCodeSize, &InjData, sizeof(InjData));
+#define offsetof(s,m) ((size_t)&(((s*)0)->m))
+	fReturn = IsInjectionDataValid(&InjData) && InjectRemoteThread(hwnd, GetDataProc, cbCodeSize, &InjData, sizeof(InjData), offsetof(INJDATA, wcOutput));
 
 	if (fReturn == FALSE)
 	{
 		// Failed to retrieve class information!
-		*pProc = NULL;
-		ZeroMemory(pClass, sizeof(WNDCLASSEX));
-		pszText[0] = 0;
+		if (pProc)
+			*pProc = NULL;
+		if (pClass)
+			ZeroMemory(pClass, sizeof(WNDCLASSEX));
+		if (pszText)
+			pszText[0] = 0;
 		return FALSE;
 	}
 	else
 	{
-		*pClass = InjData.wcOutput;
-		// As these pointers come from another process, zero them out to avoid accidental misuse
-		pClass->lpszClassName = pClass->lpszMenuName = NULL;
-		*pProc = InjData.wndproc;
+		if (pClass)
+		{
+			*pClass = InjData.wcOutput;
+			// As these pointers come from another process, zero them out to avoid accidental misuse
+			pClass->lpszClassName = pClass->lpszMenuName = NULL;
+		}
 
-		lstrcpyn(pszText, InjData.szText, 200);
+		if (pProc)
+			*pProc = InjData.wndproc;
+
+		if (pszText)
+			StringCchCopy(pszText, nTextLen, InjData.szText);
 		return TRUE;
 	}
 }

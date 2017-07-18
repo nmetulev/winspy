@@ -18,19 +18,11 @@
 //  WM_DRAWITEM for the button.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-#define _WIN32_WINNT 0x0501
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
 #include <uxtheme.h>
 #include <vssym32.h> //<tmschema.h>
 #include "BitmapButton.h"
-
-#pragma comment(lib,    "Uxtheme.lib")
-#pragma comment(lib,    "Delayimp.lib")
-//#pragma comment(linker, "/delayload:Uxtheme.dll")
 
 BOOL    g_fThemeApiAvailable = FALSE;
 
@@ -62,7 +54,7 @@ HRESULT _CloseThemeData(HTHEME hTheme)
 
 //
 //  Subclass procedure for an owner-drawn button.
-//  All this does is to re-enable double-click behaviour for
+//  All this does is to re-enable double-click behavior for
 //  an owner-drawn button.
 //
 static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -173,7 +165,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	// XP/Vista theme support
 	DWORD dwThemeFlags;
 	HTHEME hTheme;
-	BOOL   fDrawThemed = g_fThemeApiAvailable;
+	//BOOL   fDrawThemed = g_fThemeApiAvailable;
 
 	if (dis->itemState & ODS_NOFOCUSRECT)
 		dwDTflags |= DT_HIDEPREFIX;
@@ -218,7 +210,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		if (nTextLen == 0)
 		{
 			// center the image if no text
-			ix = (rect.right - rect.left - sxIcon) / 2;
+			ix = (GetRectWidth(&rect) - sxIcon) / 2;
 		}
 		else
 		{
@@ -229,7 +221,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		}
 
 		// center image vertically
-		iy = (rect.bottom - rect.top - syIcon) / 2;
+		iy = (GetRectHeight(&rect) - syIcon) / 2;
 
 		InflateRect(&rect, -5, -5);
 
@@ -341,7 +333,7 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 	WNDPROC oldproc;
 	DWORD   dwStyle;
 
-	HICON hIcon = (HICON)LoadImage(GetModuleHandle(0),
+	HICON hIcon = (HICON)LoadImage(hInst,
 		MAKEINTRESOURCE(uIconId), IMAGE_ICON, 16, 16, 0);
 
 	// Add on BS_ICON and BS_OWNERDRAW styles

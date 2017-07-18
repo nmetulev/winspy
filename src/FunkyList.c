@@ -7,15 +7,12 @@
 //  Nice-looking owner-drawn list (used for style-lists).
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
 #include "WinSpy.h"
 
 //
 //  Called from WM_MEASUREITEM
 //
-BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis)
+BOOL FunkyList_MeasureItem(MEASUREITEMSTRUCT *mis)
 {
 	mis->itemHeight -= 2;
 	return TRUE;

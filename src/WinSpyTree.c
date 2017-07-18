@@ -8,20 +8,13 @@
 //  window with the system window hierarchy.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
-#include <commctrl.h>
 #include <shellapi.h>
 #include <malloc.h>
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "Utils.h"
-
-#pragma comment(lib, "comctl32.lib")
 
 static HIMAGELIST hImgList = 0;
 
@@ -38,7 +31,7 @@ static HIMAGELIST hImgList = 0;
 #define NUM_CLASS_BITMAPS 35        // (35 for visible, another 35 for invisible windows)
 
 //
-//  Use this structure+variables to help us popuplate the treeview
+//  Use this structure+variables to help us populate the treeview
 //
 #define MAX_WINDOW_DEPTH 500
 
@@ -234,7 +227,7 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 
 	if (uTreeInclude & WINLIST_INCLUDE_CLASS)
 	{
-		VerboseClassName(szClass, ARRAYSIZE(szClass));
+		VerboseClassName(szClass, ARRAYSIZE(szClass), (WORD)GetClassLong(hwnd, GCW_ATOM));
 
 		if (fClassThenText)
 		{
@@ -288,7 +281,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	TCHAR           name[100] = _T("");
 	TCHAR           path[MAX_PATH] = _T("");
 	SHFILEINFO      shfi = { 0 };
-	HIMAGELIST      hImgList;
 	HTREEITEM       hRoot;
 
 	GetWindowThreadProcessId(hwnd, &pid);
@@ -302,7 +294,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 			return &WinStackList[i];
 	}
 
-
 	//
 	// couldn't find one - build a new one instead
 	//
@@ -310,8 +301,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	_stprintf_s(ach, ARRAYSIZE(ach), _T("%s  (%u)"), name, pid);
 
 	SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON);
-	hImgList = TreeView_GetImageList(hwndTree, TVSIL_NORMAL);
-
 
 	// Add the root item
 	tv.hParent = TVI_ROOT;

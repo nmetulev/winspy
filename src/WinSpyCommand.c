@@ -7,14 +7,9 @@
 //  Menu / Control Command handler
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "Utils.h"
 #include "FindTool.h"
 #include "CaptureWindow.h"
@@ -184,7 +179,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 		TreeView_GetItem(hwndTree, &item);
 
-		FlashWindowBorder((HWND)item.lParam, TRUE);
+		FlashWindowBorder((HWND)item.lParam);
 
 		return TRUE;
 
@@ -308,7 +303,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	{
 	case SC_RESTORE:
 
-		if (IsMinimized(hwnd))
+		if (IsWindowMinimized(hwnd))
 		{
 			break;
 		}
@@ -363,7 +358,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 }
 
-UINT WinSpyDlg_TimerHandler(HWND hwnd, UINT_PTR uTimerId)
+UINT WinSpyDlg_TimerHandler(UINT_PTR uTimerId)
 {
 	if (uTimerId == 0)
 	{

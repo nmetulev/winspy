@@ -7,12 +7,6 @@
 //  Implements the Options dialog for WinSpy
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-
 #include "WinSpy.h"
 #include "RegHelper.h"
 #include "resource.h"
@@ -91,6 +85,7 @@ void SaveSettings(void)
 
 INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(lParam);
 	static HWND hwndTarget;
 
 	switch (iMsg)
@@ -152,12 +147,9 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 void ShowOptionsDlg(HWND hwndParent)
 {
-	DialogBox(GetModuleHandle(0), MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
+	DialogBox(hInst, MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
 
-	if (!fShowInCaption)
-	{
-		SetWindowText(hwndParent, szAppName);
-	}
+	UpdateMainWindowText(hwndParent, spy_hCurWnd);
 
 	SendMessage(hwndToolTip, TTM_ACTIVATE, fEnableToolTips, 0);
 }

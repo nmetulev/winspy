@@ -9,20 +9,16 @@
 //  specified window
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 
 //
 //  Called once for each window property
 //
 BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_PTR dwUser)
 {
+	UNREFERENCED_PARAMETER(hwnd);
 	HWND   hwndList = (HWND)dwUser;
 	TCHAR  ach[256];
 	LVITEM lvitem;
@@ -36,7 +32,7 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_P
 	// check that lpszString is a valid string, and not an ATOM in disguise
 	if (((ULONG_PTR)lpszString & ~(ULONG_PTR)0xFFFF) == 0)
 	{
-		_stprintf_s(ach, ARRAYSIZE(ach), szAtomFmt _T(" (Atom)"), (ATOM)lpszString);
+		_stprintf_s(ach, ARRAYSIZE(ach), szAtomFmt _T(" (Atom)"), (ATOM)(intptr_t)lpszString);
 		lvitem.pszText = ach;
 
 		lvitem.lParam = (LPARAM)lpszString;
@@ -60,12 +56,12 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_P
 void EnumWindowProps(HWND hwnd, HWND hwndList)
 {
 	ListView_DeleteAllItems(hwndList);
+	if (hwnd == 0) return;
 	EnumPropsEx(hwnd, PropEnumProcEx, (ULONG_PTR)hwndList);
 }
 
 void SetPropertyInfo(HWND hwnd)
 {
-	if (hwnd == 0) return;
 	EnumWindowProps(hwnd, GetDlgItem(WinSpyTab[PROPERTY_TAB].hwnd, IDC_LIST1));
 }
 

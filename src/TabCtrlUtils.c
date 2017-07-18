@@ -11,11 +11,7 @@
 //  painted. Needs updating if you use in an XP-themed APP.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <commctrl.h>
+#include "WinSpy.h"
 
 //remove flicker from tab control when it is resized
 static LRESULT CALLBACK NoFlickerTabProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

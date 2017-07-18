@@ -9,14 +9,9 @@
 //  specified window
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "Utils.h"
 
 void RemoveHyperlink(HWND hwnd, UINT staticid);
@@ -39,11 +34,21 @@ void SetGeneralInfo(HWND hwnd)
 	int     numbytes;
 	LONG_PTR lp;
 
-	if (hwnd == 0) return;
+	*ach = 0;
 
 	//handle
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
+	}
 	SetDlgItemText(hwndDlg, IDC_HANDLE, ach);
+
+	BOOL fValid = hwnd != NULL;
+	if (hwnd && !IsWindow(hwnd))
+	{
+		fValid = FALSE;
+		_tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
+	}
 
 	//caption
 	ShowDlgItem(hwndDlg, IDC_CAPTION1, SW_SHOW);
@@ -51,76 +56,76 @@ void SetGeneralInfo(HWND hwnd)
 
 	SendDlgItemMessage(hwndDlg, IDC_CAPTION2, CB_RESETCONTENT, 0, 0);
 
-	if (!IsWindow(hwnd))
+	if (fValid)
 	{
-		SetDlgItemText(hwndDlg, IDC_CAPTION1, L"(invalid window)"); // edit box
-		SetDlgItemText(hwndDlg, IDC_CAPTION2, L"(invalid window)"); // combo box
-		SetDlgItemText(hwndDlg, IDC_CLASS, L"(invalid window)");
-		return;
-	}
-
-	// SendMessage is better than GetWindowText,
-	// because it gets text of children in other processes
-	if (spy_fPassword == FALSE)
-	{
-		ach[0] = 0;
-
-		if (!SendMessageTimeout(hwnd, WM_GETTEXT, ARRAYSIZE(ach), (LPARAM)ach,
-			SMTO_ABORTIFHUNG, 100, NULL))
+		// SendMessage is better than GetWindowText,
+		// because it gets text of children in other processes
+		if (spy_fPassword)
 		{
-			GetWindowText(hwnd, ach, ARRAYSIZE(ach));
+			// In this case, the password has already been extracted by GetRemoteWindowInfo()
+			_tcscpy_s(ach, ARRAYSIZE(ach), spy_szPassword);
 		}
+		else
+		{
+			ach[0] = 0;
 
-		SetDlgItemText(hwndDlg, IDC_CAPTION1, ach); // edit box
-		SetDlgItemText(hwndDlg, IDC_CAPTION2, ach); // combo box
+			if (!SendMessageTimeout(hwnd, WM_GETTEXT, ARRAYSIZE(ach), (LPARAM)ach,
+				SMTO_ABORTIFHUNG, 100, NULL))
+			{
+				GetWindowText(hwnd, ach, ARRAYSIZE(ach));
+			}
+		}
 	}
-	else
-	{
-		SetDlgItemText(hwndDlg, IDC_CAPTION1, spy_szPassword);  // edit box
-		SetDlgItemText(hwndDlg, IDC_CAPTION2, spy_szPassword);  // combo box
-	}
+	SetDlgItemText(hwndDlg, IDC_CAPTION1, ach); // edit box
+	SetDlgItemText(hwndDlg, IDC_CAPTION2, ach); // combo box
 
 	//class name
-	GetClassName(hwnd, ach, ARRAYSIZE(ach));
+	if (fValid)
+	{
+		GetClassName(hwnd, ach, ARRAYSIZE(ach));
 
-	if (IsWindowUnicode(hwnd))
-		_tcscat_s(ach, ARRAYSIZE(ach), _T("  (Unicode)"));
-
+		if (IsWindowUnicode(hwnd))
+			_tcscat_s(ach, ARRAYSIZE(ach), _T("  (Unicode)"));
+	}
 	SetDlgItemText(hwndDlg, IDC_CLASS, ach);
 
 	//style
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
-
-	_tcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? _T("  (visible, ") : _T("  (hidden, "));
-
-	_tcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? _T("enabled)") : _T("disabled)"));
-
+	if (fValid)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
+		_tcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? _T("  (visible, ") : _T("  (hidden, "));
+		_tcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? _T("enabled)") : _T("disabled)"));
+	}
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	//rectangle
-	GetWindowRect(hwnd, &rect);
-	x1 = rect.left;
-	y1 = rect.top;
+	if (fValid)
+	{
+		GetWindowRect(hwnd, &rect);
+		x1 = rect.left;
+		y1 = rect.top;
 
-	_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
-		rect.left, rect.top, rect.right, rect.bottom,
-		(rect.right - rect.left), (rect.bottom - rect.top));
-
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+			rect.left, rect.top, rect.right, rect.bottom,
+			GetRectWidth(&rect), GetRectHeight(&rect));
+	}
 	SetDlgItemText(hwndDlg, IDC_RECTANGLE, ach);
 
 	//client rect
-	GetClientRect(hwnd, &rect);
-	MapWindowPoints(hwnd, 0, (POINT *)&rect, 2);
-	x1 = rect.left - x1;
-	y1 = rect.top - y1;
+	if (fValid)
+	{
+		GetClientRect(hwnd, &rect);
+		MapWindowPoints(hwnd, 0, (POINT *)&rect, 2);
+		x1 = rect.left - x1;
+		y1 = rect.top - y1;
 
-	OffsetRect(&rect, -rect.left, -rect.top);
-	OffsetRect(&rect, x1, y1);
+		OffsetRect(&rect, -rect.left, -rect.top);
+		OffsetRect(&rect, x1, y1);
 
-	_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
-		rect.left, rect.top, rect.right, rect.bottom,
-		(rect.right - rect.left), (rect.bottom - rect.top));
-
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+			rect.left, rect.top, rect.right, rect.bottom,
+			GetRectWidth(&rect), GetRectHeight(&rect));
+	}
 	SetDlgItemText(hwndDlg, IDC_CLIENTRECT, ach);
 
 	//restored rect
@@ -134,41 +139,49 @@ void SetGeneralInfo(HWND hwnd)
 	SetDlgItemText(hwndDlg, IDC_RESTOREDRECT, ach);*/
 
 	//window procedure
-	if (spy_WndProc == 0)
+	if (fValid)
 	{
-		_stprintf_s(ach, ARRAYSIZE(ach), _T("N/A"));
-		SetDlgItemText(hwndDlg, IDC_WINDOWPROC, ach);
-
-		ShowDlgItem(hwndDlg, IDC_WINDOWPROC, SW_SHOW);
-		ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, SW_HIDE);
+		if (spy_WndProc == 0)
+		{
+			_stprintf_s(ach, ARRAYSIZE(ach), _T("N/A"));
+		}
+		else
+		{
+			_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
+		}
 	}
-	else
-	{
-		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
-		SetDlgItemText(hwndDlg, IDC_WINDOWPROC2, ach);
-
-		ShowDlgItem(hwndDlg, IDC_WINDOWPROC, SW_HIDE);
-		ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, SW_SHOW);
-	}
+	ShowDlgItem(hwndDlg, IDC_WINDOWPROC, (!fValid || spy_WndProc) ? SW_HIDE : SW_SHOW);
+	ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, (!fValid || spy_WndProc) ? SW_SHOW : SW_HIDE);
+	SetDlgItemText(hwndDlg, IDC_WINDOWPROC, ach);
+	SetDlgItemText(hwndDlg, IDC_WINDOWPROC2, ach);
 
 	//instance handle
-	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+	if (fValid)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+	}
 	SetDlgItemText(hwndDlg, IDC_INSTANCE, ach);
 
 	//user data
-	_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	if (fValid)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	}
 	SetDlgItemText(hwndDlg, IDC_USERDATA, ach);
 
 	//control ID
-	lp = GetWindowLongPtr(hwnd, GWLP_ID);
-	// despite the name "GWLP_ID" suggesting that control ID is pointer-sized,
-	// it would only work properly in WM_COMMAND if it was a WORD,
-	// as it is passed in LOWORD(wParam)
-	_stprintf_s(ach, ARRAYSIZE(ach), _T("%04IX  (%Id)"), lp, lp);
+	if (fValid)
+	{
+		lp = GetWindowLongPtr(hwnd, GWLP_ID);
+		// despite the name "GWLP_ID" suggesting that control ID is pointer-sized,
+		// it would only work properly in WM_COMMAND if it was a WORD,
+		// as it is passed in LOWORD(wParam)
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%04IX  (%Id)"), lp, lp);
+	}
 	SetDlgItemText(hwndDlg, IDC_CONTROLID, ach);
 
 	//extra window bytes
-	numbytes = GetClassLong(hwnd, GCL_CBWNDEXTRA);
+	numbytes = fValid ? GetClassLong(hwnd, GCL_CBWNDEXTRA) : 0;
 
 	FillBytesList(hwndDlg, hwnd, numbytes, GetWindowWord, GetWindowLong, GetWindowLongPtr);
 }

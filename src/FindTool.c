@@ -44,17 +44,14 @@
 //             return 0 (zero) for all other messages
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include "FindTool.h"
-#include "resource.h"
 #include "WinSpy.h"
+
+#include "FindTool.h"
+#include "WindowFromPointEx.h"
+#include "resource.h"
 
 #define INVERT_BORDER 3
 
-HWND WindowFromPointEx(POINT pt, BOOL fShowHidden);
 void CaptureWindow(HWND hwndParent, HWND hwnd);
 
 HWND ShowTransWindow(HWND);
@@ -88,11 +85,11 @@ static HWND hwndCurrent;
 //
 //  Invert the specified window's border
 //
-void InvertWindow(HWND hwnd, BOOL fShowHidden)
+void InvertWindow(HWND hwnd, BOOL fUseScreenDC)
 {
 	RECT rect;
 	RECT rect2;
-	RECT rectc;
+	//RECT rectc;
 	HDC hdc;
 	int x1, y1;
 
@@ -104,16 +101,16 @@ void InvertWindow(HWND hwnd, BOOL fShowHidden)
 	//window rectangle (screen coords)
 	GetWindowRect(hwnd, &rect);
 
-	//client rectangle (screen coords)
-	GetClientRect(hwnd, &rectc);
-	ClientToScreen(hwnd, (POINT *)&rectc.left);
-	ClientToScreen(hwnd, (POINT *)&rectc.right);
-	//MapWindowPoints(hwnd, 0, (POINT *)&rectc, 2);
+	////client rectangle (screen coords)
+	//GetClientRect(hwnd, &rectc);
+	//ClientToScreen(hwnd, (POINT *)&rectc.left);
+	//ClientToScreen(hwnd, (POINT *)&rectc.right);
+	////MapWindowPoints(hwnd, 0, (POINT *)&rectc, 2);
 
 	x1 = rect.left;
 	y1 = rect.top;
 	OffsetRect(&rect, -x1, -y1);
-	OffsetRect(&rectc, -x1, -y1);
+	//OffsetRect(&rectc, -x1, -y1);
 
 	if (rect.bottom - border * 2 < 0)
 		border = 1;
@@ -121,7 +118,7 @@ void InvertWindow(HWND hwnd, BOOL fShowHidden)
 	if (rect.right - border * 2 < 0)
 		border = 1;
 
-	if (fShowHidden == TRUE)
+	if (fUseScreenDC)
 		hwnd = 0;
 
 	hdc = GetWindowDC(hwnd);
@@ -132,48 +129,47 @@ void InvertWindow(HWND hwnd, BOOL fShowHidden)
 	//top edge
 	//border = rectc.top-rect.top;
 	SetRect(&rect2, 0, 0, rect.right, border);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
 
 	//left edge
 	//border = rectc.left-rect.left;
 	SetRect(&rect2, 0, border, border, rect.bottom);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
 
 	//right edge
 	//border = rect.right-rectc.right;
 	SetRect(&rect2, border, rect.bottom - border, rect.right, rect.bottom);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
 
 	//bottom edge
 	//border = rect.bottom-rectc.bottom;
 	SetRect(&rect2, rect.right - border, border, rect.right, rect.bottom - border);
-	if (fShowHidden == TRUE) OffsetRect(&rect2, x1, y1);
+	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
 	InvertRect(hdc, &rect2);
-
 
 	ReleaseDC(hwnd, hdc);
 }
 
-void FlashWindowBorder(HWND hwnd, BOOL fShowHidden)
+void FlashWindowBorder(HWND hwnd)
 {
 	int i;
 
 	for (i = 0; i < 3 * 2; i++)
 	{
-		InvertWindow(hwnd, fShowHidden);
+		InvertWindow(hwnd, TRUE);
 		Sleep(100);
 	}
 }
 
 void LoadFinderResources()
 {
-	hBitmapDrag1 = LoadBitmap(GetModuleHandle(0), MAKEINTRESOURCE(IDB_DRAGTOOL1));
-	hBitmapDrag2 = LoadBitmap(GetModuleHandle(0), MAKEINTRESOURCE(IDB_DRAGTOOL2));
+	hBitmapDrag1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL1));
+	hBitmapDrag2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL2));
 
-	hCursor = LoadCursor(GetModuleHandle(0), MAKEINTRESOURCE(IDC_CURSOR1));
+	hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 }
 
 void FreeFinderResources()
@@ -199,7 +195,7 @@ UINT FireWndFindNotify(HWND hwndTool, UINT uCode, HWND hwnd)
 		return 0;
 }
 
-LRESULT EndFindToolDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
+LRESULT EndFindToolDrag(HWND hwnd)
 {
 	//InvertWindow(hwndCurrent, fShowHidden);
 	HideSel(hwndCurrent);
@@ -220,17 +216,21 @@ LRESULT EndFindToolDrag(HWND hwnd, WPARAM wParam, LPARAM lParam)
 // This hook just monitors the ESCAPE key
 static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 {
-	ULONG state = (ULONG)lParam;
+	BOOL newStateReleased = (ULONG)lParam & (1 << 31);
+	BOOL previousStateDown = (ULONG)lParam & (1 << 30);
 	static int count;
 
 	if (code < 0)
+		return CallNextHookEx(draghook, code, wParam, lParam);
+
+	if (code != HC_ACTION)
 		return CallNextHookEx(draghook, code, wParam, lParam);
 
 	switch (wParam)
 	{
 	case VK_ESCAPE:
 
-		if (!(state & 0x80000000))
+		if (!newStateReleased)
 		{
 			//don't let the current window procedure process a VK_ESCAPE,
 			//because we want it to cancel the mouse capture
@@ -242,7 +242,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 
 	case VK_SHIFT:
 
-		if (state & 0x80000000)
+		if (newStateReleased)
 		{
 			//InvertWindow(hwndCurrent, fShowHidden);
 			HideSel(hwndCurrent);
@@ -252,7 +252,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			if (!(state & 0x40000000))
+			if (!previousStateDown)
 			{
 				//InvertWindow(hwndCurrent, fShowHidden);
 				HideSel(hwndCurrent);
@@ -266,7 +266,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 
 	case VK_CONTROL:
 
-		if (state & 0x80000000)
+		if (newStateReleased)
 		{
 			//InvertWindow(hwndCurrent, fShowHidden);
 			HideSel(hwndCurrent);
@@ -276,7 +276,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 		}
 		else
 		{
-			if (!(state & 0x40000000))
+			if (!previousStateDown)
 			{
 				//InvertWindow(hwndCurrent, fShowHidden);
 				HideSel(hwndCurrent);
@@ -290,7 +290,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 	}
 
 	// Test to see if a key is pressed for first time
-	if (!(state & 0xC0000000))
+	if (!(newStateReleased || previousStateDown))
 	{
 		// Find ASCII character
 		UINT ch = MapVirtualKey((UINT)wParam, 2);
@@ -373,12 +373,12 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		hOldCursor = SetCursor(hCursor);
 
 		// Install keyboard hook to trap ESCAPE key
-		// We could just set the focus to this window to receive
-		// normal keyboard messages - however, we don't want to
-		// steal focus from current window when we use the drag tool,
-		// so a hook is a stealthier way to monitor key presses
+		// I don't see how our window can get the mouse capture
+		// without also getting the keyboard focus,
+		// but attempting to install a desktop-wide hook will definitely fail,
+		// so let's install our keyboard hook for this thread only - at least that works
 		draghookhwnd = hwnd;
-		draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, GetModuleHandle(0), 0);
+		draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
 
 		// Current window has changed
 		FireWndFindNotify(hwnd, WFN_SELCHANGED, hwndCurrent);
@@ -390,7 +390,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		pt.x = (short)LOWORD(lParam);
 		pt.y = (short)HIWORD(lParam);
 
-		if (fDragging == TRUE && ptLast.x != pt.x && ptLast.y != pt.y)
+		if (fDragging && !(ptLast.x == pt.x && ptLast.y == pt.y))
 		{
 			//MoveFindTool(hwnd, wParam, lParam);
 
@@ -420,12 +420,12 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_LBUTTONUP:
 
-		// Mouse has been release, so end the find-tool
-		if (fDragging == TRUE)
+		// Mouse has been released, so end the find-tool
+		if (fDragging)
 		{
 			fDragging = FALSE;
 
-			EndFindToolDrag(hwnd, wParam, lParam);
+			EndFindToolDrag(hwnd);
 			FireWndFindNotify(hwnd, WFN_END, hwndCurrent);
 		}
 
@@ -435,11 +435,11 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CANCELMODE:
 
 		// User has pressed ESCAPE, so cancel the find-tool
-		if (fDragging == TRUE)
+		if (fDragging)
 		{
 			fDragging = FALSE;
 
-			EndFindToolDrag(hwnd, wParam, lParam);
+			EndFindToolDrag(hwnd);
 			FireWndFindNotify(hwnd, WFN_CANCELLED, 0);
 		}
 

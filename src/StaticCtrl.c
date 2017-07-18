@@ -13,11 +13,7 @@
 //  detect mouse clicks.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 // Keep track of how many URL controls we have.
 static LONG    lRefCount = 0;
@@ -137,7 +133,6 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 	WNDPROC oldproc = url->oldproc;
 
 	RECT    rect;
-	UINT    dtstyle = 0;
 	SIZE    sz;
 	int     nTextLen;
 	HANDLE  hOld;
@@ -156,7 +151,7 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 
 		hdc = BeginPaint(hwnd, &ps);
 
-		// Set the font colours
+		// Set the font colors
 		SetTextColor(hdc, url->crLink);
 		SetBkMode(hdc, TRANSPARENT);
 
@@ -215,7 +210,7 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 		lf.lfUnderline = TRUE;
 		hfUnderlined = CreateFontIndirect(&lf);
 
-		hCursor = CreateCursor(GetModuleHandle(0), 5, 2, 32, 32, XORMask, ANDMask);
+		hCursor = CreateCursor(hInst, 5, 2, 32, 32, XORMask, ANDMask);
 	}
 
 	//turn on notify style
@@ -223,7 +218,7 @@ void MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink)
 	SetWindowLong(hwndCtrl, GWL_EXSTYLE, GetWindowLong(hwndCtrl, GWL_EXSTYLE) | WS_EX_TRANSPARENT);
 
 
-	// setup colours
+	// setup colors
 	if (crLink != -1) url->crLink = crLink;
 	else url->crLink = RGB(0, 0, 255);
 	url->crVisited = RGB(128, 0, 128);

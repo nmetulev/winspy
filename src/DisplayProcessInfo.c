@@ -5,20 +5,14 @@
 //
 //  void SetProcesInfo(HWND hwnd)
 //
-//  Fill the process-tab-pane with proces info for the
+//  Fill the process-tab-pane with process info for the
 //  specified window.
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-#include <psapi.h>
-
 #include "WinSpy.h"
-#include "resource.h"
 
+#include <psapi.h>
+#include "resource.h"
 #include <tlhelp32.h>
 
 
@@ -200,20 +194,38 @@ void SetProcessInfo(HWND hwnd)
 	TCHAR ach[32];
 	TCHAR szPath[MAX_PATH];
 
+	*ach = 0;
+
 	HWND  hwndDlg = WinSpyTab[PROCESS_TAB].hwnd;
 
-	dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
+	BOOL fValid = hwnd != NULL;
+	if (hwnd && !IsWindow(hwnd))
+	{
+		fValid = FALSE;
+		_tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
+	}
+
+	if (fValid)
+	{
+		dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
+	}
 
 	// Process Id
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwProcessId, dwProcessId);
+	if (fValid)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwProcessId, dwProcessId);
+	}
 	SetDlgItemText(hwndDlg, IDC_PID, ach);
 
 	// Thread Id
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwThreadId, dwThreadId);
+	if (fValid)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwThreadId, dwThreadId);
+	}
 	SetDlgItemText(hwndDlg, IDC_TID, ach);
 
 	// Try to get process name and path
-	if (GetProcessNameByPid(dwProcessId, ach, ARRAYSIZE(ach),
+	if (fValid && GetProcessNameByPid(dwProcessId, ach, ARRAYSIZE(ach),
 		szPath, ARRAYSIZE(szPath)))
 	{
 		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, ach);
@@ -221,7 +233,7 @@ void SetProcessInfo(HWND hwnd)
 	}
 	else
 	{
-		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, _T("N/A"));
-		SetDlgItemText(hwndDlg, IDC_PROCESSPATH, _T("N/A"));
+		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, fValid ? _T("N/A") : ach);
+		SetDlgItemText(hwndDlg, IDC_PROCESSPATH, fValid ? _T("N/A") : ach);
 	}
 }

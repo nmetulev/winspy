@@ -13,14 +13,8 @@
 //  fExtended  - display standard (FALSE) or extended (TRUE) window styles
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-
-#include "FindTool.h"
 #include "WinSpy.h"
+#include "FindTool.h"
 #include "resource.h"
 #include "Utils.h"
 
@@ -114,11 +108,15 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 
 	case WM_MEASUREITEM:
-		return FunkyList_MeasureItem(hwnd, (UINT)wParam, (MEASUREITEMSTRUCT *)lParam);
+		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem((MEASUREITEMSTRUCT *)lParam));
+		return TRUE;
 
 	case WM_DRAWITEM:
 		if (wParam == IDC_LIST1)
-			return FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam);
+		{
+			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam));
+			return TRUE;
+		}
 		else
 			return FALSE;
 
@@ -239,7 +237,7 @@ void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 	state.dwStyles = 0;
 	state.fExtended = fExtended;
 
-	DialogBoxParam(GetModuleHandle(0), MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
+	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
 
 	// Update the main display
 	SetGeneralInfo(hwndTarget);

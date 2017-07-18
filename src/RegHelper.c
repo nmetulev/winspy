@@ -7,18 +7,13 @@
 //  Implements registry helper functions
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 #include "RegHelper.h"
 
 
 LONG GetSettingBinary(HKEY hkey, TCHAR szKeyName[], void *buf, ULONG nNumBytes)
 {
 	DWORD type = REG_BINARY;
-	ULONG len = nNumBytes;
 
 	if (ERROR_SUCCESS == RegQueryValueEx(hkey, szKeyName, 0, &type, (BYTE *)buf, &nNumBytes))
 	{

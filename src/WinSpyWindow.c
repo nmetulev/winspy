@@ -8,13 +8,8 @@
 //  main window (i.e. sizing, window layout etc)
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <tchar.h>
-
-#include "resource.h"
 #include "WinSpy.h"
+#include "resource.h"
 #include "Utils.h"
 
 HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem);
@@ -196,7 +191,7 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 //
 //  Return TRUE if the specified window is minimized to the taskbar.
 //
-BOOL IsMinimized(HWND hwnd)
+BOOL IsWindowMinimized(HWND hwnd)
 {
 	WINDOWPLACEMENT wp;
 
@@ -227,8 +222,8 @@ void CalcDlgWindowSize(HWND hwnd, SIZE *szDlgUnits, SIZE *szClient, SIZE *szWind
 
 	if (szClient)
 	{
-		szClient->cx = rect.right - rect.left;
-		szClient->cy = rect.bottom - rect.top;
+		szClient->cx = GetRectWidth(&rect);
+		szClient->cy = GetRectHeight(&rect);
 	}
 
 	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
@@ -238,8 +233,8 @@ void CalcDlgWindowSize(HWND hwnd, SIZE *szDlgUnits, SIZE *szClient, SIZE *szWind
 
 	if (szWindow)
 	{
-		szWindow->cx = rect.right - rect.left;
-		szWindow->cy = rect.bottom - rect.top;
+		szWindow->cx = GetRectWidth(&rect);
+		szWindow->cy = GetRectHeight(&rect);
 	}
 }
 
@@ -325,14 +320,14 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 		UnionRect(&rect, &rect, &rect1);
 	}
 
-	nPaneWidth = rect.right - rect.left;
-	nPaneHeight = rect.bottom - rect.top;
+	nPaneWidth = GetRectWidth(&rect);
+	nPaneHeight = GetRectHeight(&rect);
 
 	// Resize the tab control based on this biggest rect
 	SendMessage(hwndTab, TCM_ADJUSTRECT, TRUE, (LPARAM)&rect);
 
-	nTabWidth = rect.right - rect.left;
-	nTabHeight = rect.bottom - rect.top;
+	nTabWidth = GetRectWidth(&rect);
+	nTabHeight = GetRectHeight(&rect);
 
 	// Resize the tab control now we know how big it needs to be
 	SetWindowPos(hwndTab, hwnd, 0, 0, nDesiredTabWidth, nTabHeight, SWP_SIZEONLY);
@@ -354,7 +349,7 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 	cx = nPaneWidth;
 	cy = nPaneHeight;
 
-	nActualPaneWidth = rect.right - rect.left;
+	nActualPaneWidth = GetRectWidth(&rect);
 
 	// Center each dialog-tab in the tab control
 	x += (nActualPaneWidth - nPaneWidth) / 2;
@@ -384,7 +379,7 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 	GetWindowRect(hwndCtrl, &rect);
 	MapWindowPoints(0, hwnd, (POINT *)&rect, 2);
 
-	x = nDesiredTabWidth + nLeftBorder - (rect.right - rect.left);
+	x = nDesiredTabWidth + nLeftBorder - GetRectWidth(&rect);
 	y = rect.top;
 
 	SetWindowPos(hwndCtrl, 0, x, y, 0, 0, SWP_MOVEONLY);
@@ -396,20 +391,20 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 UINT GetWindowLayout(HWND hwnd)
 {
 	RECT rect;
-	BOOL fxMaxed, fyMaxed;
+	BOOL xMaxed, yMaxed;
 
 	GetWindowRect(hwnd, &rect);
 
-	fyMaxed = GetRectHeight(&rect) > szMinimized.cy;
-	fxMaxed = GetRectWidth(&rect) >= szExpanded.cx;
+	yMaxed = GetRectHeight(&rect) > szMinimized.cy;
+	xMaxed = GetRectWidth(&rect) >= szExpanded.cx;
 
-	if (fyMaxed == FALSE)
+	if (yMaxed == FALSE)
 	{
 		return WINSPY_MINIMIZED;
 	}
 	else
 	{
-		if (fxMaxed)
+		if (xMaxed)
 			return WINSPY_EXPANDED;
 		else
 			return WINSPY_NORMAL;
@@ -528,7 +523,7 @@ UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		// Resize the tree control so that it fills the tab control.
 		hwndCtrl = GetDlgItem(hwnd, IDC_TREE1);
 		InflateRect(&rect, 1, 1);
-		MoveWindow(hwndCtrl, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
+		MoveWindow(hwndCtrl, rect.left, rect.top, GetRectWidth(&rect), GetRectHeight(&rect), TRUE);
 
 		// Position the size-grip
 		{
@@ -651,7 +646,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 	UINT layout;
 	HICON hIcon, hOld;
 
-	static UINT oldlayout = -1;
+	static UINT oldlayout = WINSPY_LAYOUT_NO;
 
 	if (wp == 0)
 		return 0;
@@ -732,7 +727,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 // monitor the sizing rectangle so that the main window
 // "snaps" to each of the 3 layouts
 
-UINT WinSpyDlg_Sizing(HWND hwnd, UINT nSide, RECT *prc)
+UINT WinSpyDlg_Sizing(UINT nSide, RECT *prc)
 {
 	int minx;
 	int miny;
@@ -838,8 +833,8 @@ UINT WinSpyDlg_EnterSizeMove(HWND hwnd)
 	RECT rect;
 	GetWindowRect(hwnd, &rect);
 
-	fyMaxed = (rect.bottom - rect.top > szMinimized.cy);
-	fxMaxed = (rect.right - rect.left >= szExpanded.cx);
+	fyMaxed = (GetRectHeight(&rect) > szMinimized.cy);
+	fxMaxed = (GetRectWidth(&rect) >= szExpanded.cx);
 
 	return 0;
 }
@@ -856,8 +851,8 @@ UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 
 	GetWindowRect(hwnd, &rect);
 
-	szCurrent.cx = rect.right - rect.left;
-	szCurrent.cy = rect.bottom - rect.top;
+	szCurrent.cx = GetRectWidth(&rect);
+	szCurrent.cy = GetRectHeight(&rect);
 
 	fyMaxed = (szCurrent.cy > szMinimized.cy);
 	fxMaxed = (szCurrent.cx >= szExpanded.cx);

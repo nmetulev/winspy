@@ -9,15 +9,9 @@
 //  v 1.7.1 - moved system-menu items to appear before the Close item
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-#include <commctrl.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "FindTool.h"
 #include "CaptureWindow.h"
 #include "BitmapButton.h"
@@ -37,7 +31,6 @@ WNDPROC    spy_WndProc;
 BOOL       spy_fPassword = FALSE;   // is it a password (edit) control?
 TCHAR      spy_szPassword[200];
 TCHAR      spy_szClassName[70];
-
 
 static TBBUTTON tbbPin[] =
 {
@@ -67,27 +60,27 @@ static int nCurrentTab = 0;
 //
 void GetRemoteInfo(HWND hwnd)
 {
-	BOOL b;
-
 	ZeroMemory(&spy_WndClassEx, sizeof(WNDCLASSEX));
 	spy_WndClassEx.cbSize = sizeof(WNDCLASSEX);
 
-	b = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
+	if (!hwnd)
+		return;
+
+	BOOL success = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
 
 	//try to use the standard methods to get the window procedure
 	//and class information. If that fails, then we have to inject
 	//a remote thread into the window's process and call the functions
 	//from there.
-	if (spy_WndProc == 0 || b == FALSE || spy_fPassword)
+	if (spy_WndProc == 0 || !success || spy_fPassword)
 	{
-		//Remote Threads only available under Windows NT
-		if (GetVersion() < 0x80000000 && ProcessArchMatches(hwnd))
+		if (ProcessArchMatches(hwnd))
 		{
-			GetRemoteWindowInfo(hwnd, &spy_WndClassEx, &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
+			GetRemoteWindowInfo(hwnd, success ? NULL : &spy_WndClassEx, spy_WndProc ? NULL : &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
 		}
 		else
 		{
-			SendMessage(hwnd, WM_GETTEXT, 200, (LPARAM)spy_szPassword);
+			SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(spy_szPassword), (LPARAM)spy_szPassword);
 		}
 	}
 }
@@ -95,31 +88,40 @@ void GetRemoteInfo(HWND hwnd)
 //
 //  Top-level function for retrieving+displaying a window's
 //  information (styles/class/properties etc)
+//  It updates all the tabs except the Class tab that should be updated explicitly when activated
 //
 void DisplayWindowInfo(HWND hwnd)
 {
-	if (hwnd == 0) return;
 	spy_hCurWnd = hwnd;
 
-	GetClassName(hwnd, spy_szClassName, 70);
-
-	spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
-
-	// If a password-edit control, then we can
-	// inject our thread to get the password text!
-	if (lstrcmpi(spy_szClassName, _T("Edit")) == 0)
+	if (!hwnd)
 	{
-		// If a password control
-		DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+		*spy_szClassName = 0;
+		spy_WndProc = 0;
+		spy_fPassword = FALSE;
+	}
+	else
+	{
+		if (!GetClassName(hwnd, spy_szClassName, 70))
+			*spy_szClassName = 0;
 
-		if (dwStyle & ES_PASSWORD)
-			spy_fPassword = TRUE;
+		spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
+
+		// If a password-edit control, then we can
+		// inject our thread to get the password text!
+		if (lstrcmpi(spy_szClassName, _T("Edit")) == 0)
+		{
+			// If a password control
+			DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+
+			if (dwStyle & ES_PASSWORD)
+				spy_fPassword = TRUE;
+			else
+				spy_fPassword = FALSE;
+		}
 		else
 			spy_fPassword = FALSE;
 	}
-	else
-		spy_fPassword = FALSE;
-
 
 	// do classinfo first, so we can get the window procedure
 	if (spy_fPassword || nCurrentTab == CLASS_TAB)
@@ -136,6 +138,21 @@ void DisplayWindowInfo(HWND hwnd)
 	SetProcessInfo(hwnd);
 }
 
+void UpdateMainWindowText(HWND hwnd, HWND hwndTarget)
+{
+	if (hwndTarget && fShowInCaption)
+	{
+		TCHAR szClass[70] = { 0 };
+		TCHAR ach[90] = { 0 };
+
+		GetClassName(hwndTarget, szClass, ARRAYSIZE(szClass));
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)hwndTarget, szClass);
+		SetWindowText(hwnd, ach);
+	}
+	else
+		SetWindowText(hwnd, szAppName);
+}
+
 //
 //  User-defined callback function for the Find Tool
 //
@@ -143,12 +160,12 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 {
 	HWND hwndMain = GetParent(hwndTool);
 
-	TCHAR ach[90] = { 0 };
-	TCHAR szClass[70] = { 0 };
-
 	static BOOL fFirstDrag = TRUE;
 	static HWND hwndLastTarget;
 	static BOOL fOldShowHidden;
+	static BOOL fWasMinimized;
+	static UINT uLastLayout;
+	BOOL fCanceled = FALSE;
 
 	switch (uCode)
 	{
@@ -157,14 +174,9 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 		spy_hCurWnd = hwnd;
 		spy_WndProc = 0;
 
-		if (fShowInCaption)
-		{
-			GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
-			_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)hwnd, szClass);
-			SetWindowText(hwndMain, ach);
-		}
+		UpdateMainWindowText(hwndMain, hwnd);
 
-		SetGeneralInfo(hwnd);
+		DisplayWindowInfo(hwnd);
 		return 0;
 
 	case WFN_BEGIN:
@@ -173,8 +185,10 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		spy_hCurWnd = hwnd;
 
-		if (fMinimizeWinSpy)
+		fWasMinimized = fMinimizeWinSpy;
+		if (fWasMinimized)
 		{
+			uLastLayout = GetWindowLayout(hwndMain);
 			SetWindowLayout(hwndMain, WINSPY_MINIMIZED);
 			InvalidateRect(hwndMain, 0, 0);
 			UpdateWindow(hwndMain);
@@ -185,34 +199,24 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 	case WFN_CANCELLED:
 
+		fCanceled = TRUE;
 		// Restore the current window + Fall through!
-		spy_hCurWnd = hwndLastTarget;
-
-		if (fShowInCaption)
-		{
-			GetClassName(spy_hCurWnd, szClass, ARRAYSIZE(szClass));
-
-			_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)spy_hCurWnd, szClass);
-			SetWindowText(hwndMain, ach);
-		}
+		UpdateMainWindowText(hwndMain, spy_hCurWnd = hwndLastTarget);
 
 	case WFN_END:
 
 		ShowWindow(hwndMain, SW_SHOW);
 
-		if (fMinimizeWinSpy || fFirstDrag)
+		if (fWasMinimized)
+			SetWindowLayout(hwndMain, uLastLayout);
+		
+		if (!fCanceled && fFirstDrag)
 		{
 			fFirstDrag = FALSE;
 			SetWindowLayout(hwndMain, WINSPY_LASTMAX);
 		}
 
 		DisplayWindowInfo(spy_hCurWnd);
-
-		if (fMinimizeWinSpy)
-		{
-			InvalidateRect(hwndMain, 0, TRUE);
-			InvalidateRect(WinSpyTab[nCurrentTab].hwnd, 0, TRUE);
-		}
 
 		fShowHidden = fOldShowHidden;
 		break;
@@ -329,7 +333,7 @@ HWND CreateTooltip(HWND hwndDlg)
 
 	struct CtrlTipsTag
 	{
-		UINT  uDlgId;   // -1 for main window, 0-n for tab dialogs
+		int  uDlgId;   // -1 for main window, 0 through n for tab dialogs
 		UINT  uCtrlId;
 		TCHAR szText[50];
 
@@ -427,8 +431,8 @@ HWND CreatePinToolbar(HWND hwndDlg)
 	SendMessage(hwndTB, TB_GETITEMRECT, 0, (LPARAM)&rect);
 
 	SetWindowPos(hwndTB, HWND_TOP, 0, 0,
-		rect.right - rect.left,
-		rect.bottom - rect.top, SWP_NOMOVE);
+		GetRectWidth(&rect),
+		GetRectHeight(&rect), SWP_NOMOVE);
 
 	// Setup the bitmap image
 	SendMessage(hwndTB, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
@@ -529,11 +533,11 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT, _T("&About"));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_HELP, _T("&Help\tF1"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, -1, _T(""));
+	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING |
 		(fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
 		_T("Always On &Top\tShift+Y"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, -1, _T(""));
+	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 
 	/*  AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
 		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT,   _T("&About"));
@@ -573,7 +577,7 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 //
 //  WM_NOTIFY handler
 //
-UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
+UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 {
 	NMTREEVIEW   *nmtv = (NMTREEVIEW *)hdr;
 	TVHITTESTINFO hti;
@@ -643,7 +647,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, WPARAM wParam, NMHDR *hdr)
 			}
 			/*else if(!(hti.flags & TVHT_ONITEMICON))
 			{
-				FlashWindowBorder((HWND)tvi.lParam, TRUE);
+				FlashWindowBorder((HWND)tvi.lParam);
 
 				// Return non-zero to prevent item from expanding when double-clicked
 				SetWindowLong(hwnd, DWL_MSGRESULT, TRUE);
@@ -688,10 +692,10 @@ BOOL WinSpyDlg_SysColorChange(HWND hwnd)
 	for (i = 0; i < NUMTABCONTROLITEMS; i++)
 		PostMessage(WinSpyTab[i].hwnd, WM_SYSCOLORCHANGE, 0, 0);
 
-	// Set the treeview colours
+	// Set the treeview colors
 	TreeView_SetBkColor(GetDlgItem(hwnd, IDC_TREE1), GetSysColor(COLOR_WINDOW));
 
-	// Recreate toolbar, so it uses new colour scheme
+	// Recreate toolbar, so it uses new color scheme
 	DestroyWindow(hwndPin);
 
 	hwndPin = CreatePinToolbar(hwnd);
@@ -747,13 +751,13 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return WinSpyDlg_CommandHandler(hwnd, wParam, lParam);
 
 	case WM_TIMER:
-		return WinSpyDlg_TimerHandler(hwnd, wParam);
+		return WinSpyDlg_TimerHandler(wParam);
 
 	case WM_SIZE:
 		return WinSpyDlg_Size(hwnd, wParam, lParam);
 
 	case WM_SIZING:
-		return WinSpyDlg_Sizing(hwnd, (UINT)wParam, (RECT *)lParam);
+		return WinSpyDlg_Sizing((UINT)wParam, (RECT *)lParam);
 
 	case WM_NCHITTEST:
 		return WinSpyDlg_NCHitTest(hwnd, wParam, lParam);
@@ -768,10 +772,11 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return WinSpyDlg_WindowPosChanged(hwnd, (WINDOWPOS *)lParam);
 
 	case WM_NOTIFY:
-		return WinSpyDlg_NotifyHandler(hwnd, wParam, (NMHDR *)lParam);
+		return WinSpyDlg_NotifyHandler(hwnd, (NMHDR *)lParam);
 
 	case WM_DRAWITEM:
-		return DrawBitmapButton((DRAWITEMSTRUCT *)lParam);
+		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
+		return TRUE;
 
 		// Update our layout based on new settings
 	case WM_SETTINGCHANGE:
@@ -803,7 +808,7 @@ void RegisterDialogClass(TCHAR szNewName[])
 
 	// Get the class structure for the system dialog class
 	wc.cbSize = sizeof(wc);
-	GetClassInfoEx(0, _T("#32770"), &wc);
+	GetClassInfoEx(0, WC_DIALOG, &wc);
 
 	// Make sure our new class does not conflict
 	wc.style &= ~CS_GLOBALCLASS;
@@ -818,6 +823,9 @@ void RegisterDialogClass(TCHAR szNewName[])
 //
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(nShowCmd);
 	HWND    hwndMain;
 	HACCEL  hAccelTable;
 	MSG     msg;

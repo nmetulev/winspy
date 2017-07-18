@@ -5,13 +5,16 @@
 extern "C" {
 #endif
 
+#define STRICT
+#define WIN32_LEAN_AND_MEAN
+
 #include <windows.h>
 #include <WindowsX.h>
-#undef IsMinimized
 #include <commctrl.h>
 #include <tchar.h>
 #include <Strsafe.h>
 
+#define UNREFERENCED_PARAMETER(P)          (P)
 #define IDM_WINSPY_ABOUT    100
 
 //
@@ -23,7 +26,7 @@ typedef struct
 	HWND    hwnd;
 	LPCTSTR szText;
 	UINT    id;
-	WNDPROC dlgproc;
+	DLGPROC dlgproc;
 } DialogTab;
 
 extern DialogTab WinSpyTab[];
@@ -132,6 +135,16 @@ inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
 #define STYLE_COMBINATION_MASK(style, extraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, 0, 0
 
 //
+// Define some masks that are not defined in the Windows headers
+//
+#define WS_OVERLAPPED_MASK WS_OVERLAPPED | WS_POPUP | WS_CHILD // 0xC0000000
+#define BS_TEXT_MASK BS_TEXT | BS_ICON | BS_BITMAP // 0x00C0
+#define CBS_TYPE_MASK CBS_SIMPLE | CBS_DROPDOWN | CBS_DROPDOWNLIST //0x0003
+#define SBS_DIR_MASK SBS_HORZ | SBS_VERT //0x0001
+#define CCS_TOP_MASK 0x0003
+#define DTS_FORMAT_MASK 0x000C
+
+//
 //  Use this structure to list each window class with its
 //  associated style table and, optionally, a message to send to the window
 //  to retrieve this set of control-specific extended styles
@@ -150,7 +163,7 @@ typedef struct
 //
 //  Useful functions!
 //
-BOOL FunkyList_MeasureItem(HWND hwnd, UINT uCtrlId, MEASUREITEMSTRUCT *mis);
+BOOL FunkyList_MeasureItem(MEASUREITEMSTRUCT *mis);
 BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis);
 
 //
@@ -160,7 +173,9 @@ void ToggleWindowLayout(HWND hwnd);
 void SetWindowLayout(HWND hwnd, UINT uLayout);
 UINT GetWindowLayout(HWND hwnd);
 void ForceVisibleDisplay(HWND hwnd);
+void UpdateMainWindowText(HWND hwnd, HWND hwndTarget);
 
+#define WINSPY_LAYOUT_NO 0
 #define WINSPY_MINIMIZED 1
 #define WINSPY_NORMAL    2
 #define WINSPY_EXPANDED  3
@@ -172,7 +187,7 @@ void ForceVisibleDisplay(HWND hwnd);
 //
 
 UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam);
-UINT WinSpyDlg_Sizing(HWND hwnd, UINT nSide, RECT *prc);
+UINT WinSpyDlg_Sizing(UINT nSide, RECT *prc);
 UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp);
 UINT WinSpyDlg_EnterSizeMove(HWND hwnd);
 UINT WinSpyDlg_ExitSizeMove(HWND hwnd);
@@ -180,7 +195,7 @@ UINT_PTR WinSpyDlg_NCHitTest(HWND hwnd, WPARAM wParam, LPARAM lParam);
 
 UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
 UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam);
-UINT WinSpyDlg_TimerHandler(HWND hwnd, UINT_PTR uTimerId);
+UINT WinSpyDlg_TimerHandler(UINT_PTR uTimerId);
 
 void WinSpyDlg_SizeContents(HWND hwnd);
 
@@ -191,17 +206,17 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget);
 int WINAPI GetRectWidth(RECT *rect);
 int WINAPI GetRectHeight(RECT *rect);
 
-BOOL IsMinimized(HWND hwnd);
+BOOL IsWindowMinimized(HWND hwnd);
 
 //
 //  Dialog box procedures for each dialog tab.
 //
-LRESULT CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
-LRESULT CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 // Top-level
 void DisplayWindowInfo(HWND hwnd);
@@ -237,7 +252,7 @@ BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass,
 
 BOOL RemoveTabCtrlFlicker(HWND hwndTab);
 
-void VerboseClassName(TCHAR ach[], size_t cch);
+void VerboseClassName(TCHAR ach[], size_t cch, WORD atom);
 
 void RefreshTreeView(HWND hwndTree);
 void InitGlobalWindowTree(HWND hwnd);
@@ -267,7 +282,7 @@ void SetPinState(BOOL fPinned);
 #define PINNED_BOTTOM       2
 
 //
-//  Global variables!! These just control WinSpy behaviour
+//  Global variables!! These just control WinSpy behavior
 //
 extern BOOL fAlwaysOnTop;
 extern BOOL fClassThenText;
@@ -293,6 +308,8 @@ extern HINSTANCE hInst;
 #define szHexFmt _T("%08X")
 #define szPtrFmt _T("%p")
 #define szAppName _T("WinSpy++")
+
+#define szInvalidWindow _T("(invalid window)")
 
 extern HWND  hwndPin;       // Toolbar with pin bitmap
 extern HWND  hwndSizer;     // Sizing grip for bottom-right corner

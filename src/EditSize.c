@@ -8,15 +8,9 @@
 //  window's size / position
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
-#include <commctrl.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 
 //
 //  rect - window coords
@@ -39,8 +33,8 @@ void SetupEdits(HWND hwndDlg, HWND hwndTarget, RECT *prect)
 	// Set the edit control's contents
 	SetDlgItemInt(hwndDlg, IDC_EDITX, rect.left, TRUE);
 	SetDlgItemInt(hwndDlg, IDC_EDITY, rect.top, TRUE);
-	SetDlgItemInt(hwndDlg, IDC_EDITW, rect.right - rect.left, TRUE);
-	SetDlgItemInt(hwndDlg, IDC_EDITH, rect.bottom - rect.top, TRUE);
+	SetDlgItemInt(hwndDlg, IDC_EDITW, GetRectWidth(&rect), TRUE);
+	SetDlgItemInt(hwndDlg, IDC_EDITH, GetRectHeight(&rect), TRUE);
 }
 
 //
@@ -147,7 +141,7 @@ void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget)
 	if (IsWindow(spy_hCurWnd))
 	{
 		DialogBoxParam(
-			GetModuleHandle(0),
+			hInst,
 			MAKEINTRESOURCE(IDD_ADJUSTWINPOS),
 			hwndParent,
 			EditSizeDlgProc,

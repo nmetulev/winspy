@@ -8,14 +8,9 @@
 //  Fill the window-tab-pane with list of child+siblings
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-#include <tchar.h>
+#include "WinSpy.h"
 
 #include "resource.h"
-#include "WinSpy.h"
 #include "Utils.h"
 
 static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
@@ -87,27 +82,37 @@ void SetWindowInfo(HWND hwnd)
 	HWND hParentWnd;
 	TCHAR ach[10];
 
+	*ach = 0;
+
 	HWND hwndList1 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST1);
 	HWND hwndList2 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST2);
-
-	if (hwnd == 0) return;
 
 	ListView_DeleteAllItems(hwndList1);
 	ListView_DeleteAllItems(hwndList2);
 
-	// Get all children of the window
-	EnumChildWindows(hwnd, ChildWindowProc, (LPARAM)hwndList1);
 
-	// Get children of its PARENT (i.e, its siblings!)
-	hParentWnd = GetRealParent(hwnd);
-	if (hParentWnd)
-		EnumChildWindows(hParentWnd, SiblingWindowProc, (LPARAM)hwndList2);
+	// Get all children of the window
+	if (hwnd)
+	{
+		EnumChildWindows(hwnd, ChildWindowProc, (LPARAM)hwndList1);
+
+		// Get children of its PARENT (i.e, its siblings!)
+		hParentWnd = GetRealParent(hwnd);
+		if (hParentWnd)
+			EnumChildWindows(hParentWnd, SiblingWindowProc, (LPARAM)hwndList2);
+	}
 
 	// Set the Parent hyperlink
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hParentWnd);
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hParentWnd);
+	}
 	SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_PARENT, ach);
 
 	// Set the Owner hyperlink
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)GetWindow(hwnd, GW_OWNER));
+	if (hwnd)
+	{
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)GetWindow(hwnd, GW_OWNER));
+	}
 	SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_OWNER, ach);
 }

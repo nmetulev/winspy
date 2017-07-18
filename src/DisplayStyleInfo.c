@@ -35,18 +35,13 @@
 //  v1.6.1 - fixed small bug thanks to Holger Stenger
 //
 
-#define STRICT
-#define WIN32_LEAN_AND_MEAN
+#include "WinSpy.h"
 
-#include <windows.h>
-#include <tchar.h>
 #include <richedit.h>
 #include "resource.h"
-#include "WinSpy.h"
 
 StyleLookupEx WindowStyles[] =
 {
-#define WS_OVERLAPPED_MASK WS_POPUP | WS_CHILD // 0xC0000000
 	STYLE_COMBINATION_MASK(WS_OVERLAPPEDWINDOW, WS_OVERLAPPED_MASK),    // WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
 	STYLE_COMBINATION_MASK(WS_POPUPWINDOW, WS_OVERLAPPED_MASK),         // WS_POPUP | WS_BORDER | WS_SYSMENU
 
@@ -121,7 +116,6 @@ StyleLookupEx ButtonStyles[] =
 
 	STYLE_SIMPLE(BS_LEFTTEXT),                              //0x0020
 
-#define BS_TEXT_MASK BS_ICON | BS_BITMAP // 0x00C0
 	//{ BS_TEXT_MASK
 	STYLE_MASK(BS_TEXT, BS_TEXT_MASK),                      //0x0000
 	STYLE_MASK(BS_ICON, BS_TEXT_MASK),                      //0x0040
@@ -198,7 +192,6 @@ StyleLookupEx RichedStyles[] =
 // Combo box styles (combobox)
 StyleLookupEx ComboStyles[] =
 {
-#define CBS_TYPE_MASK CBS_DROPDOWNLIST //0x0003
 	//{ CBS_TYPE_MASK
 	STYLE_MASK(CBS_SIMPLE, CBS_TYPE_MASK),                  //0x0001
 	STYLE_MASK(CBS_DROPDOWN, CBS_TYPE_MASK),                //0x0002
@@ -246,13 +239,12 @@ StyleLookupEx ListBoxStyles[] =
 // Scrollbar control styles (Scrollbar)
 StyleLookupEx ScrollbarStyles[] =
 {
-#define SBS_HORZ_MASK SBS_VERT //0x0001
-	STYLE_MASK(SBS_HORZ, SBS_VERT),                             //0x0000
-	STYLE_SIMPLE(SBS_VERT),                                     //0x0001
-	STYLE_MASK_DEPENDS(SBS_TOPALIGN, 0, SBS_HORZ, SBS_VERT),    //0x0002
-	STYLE_SIMPLE_DEPENDS(SBS_LEFTALIGN, SBS_VERT),              //0x0002
-	STYLE_MASK_DEPENDS(SBS_BOTTOMALIGN, 0, SBS_HORZ, SBS_VERT), //0x0004
-	STYLE_SIMPLE_DEPENDS(SBS_RIGHTALIGN, SBS_VERT),             //0x0004
+	STYLE_MASK(SBS_HORZ, SBS_DIR_MASK),                             //0x0000
+	STYLE_SIMPLE(SBS_VERT),                                         //0x0001
+	STYLE_MASK_DEPENDS(SBS_TOPALIGN, 0, SBS_HORZ, SBS_DIR_MASK),    //0x0002
+	STYLE_SIMPLE_DEPENDS(SBS_LEFTALIGN, SBS_VERT),                  //0x0002
+	STYLE_MASK_DEPENDS(SBS_BOTTOMALIGN, 0, SBS_HORZ, SBS_DIR_MASK), //0x0004
+	STYLE_SIMPLE_DEPENDS(SBS_RIGHTALIGN, SBS_VERT),                 //0x0004
 	// SBS_SIZEBOXTOPLEFTALIGN and SBS_SIZEBOXBOTTOMRIGHTALIGN actually depend on
 	// the presence of "either SBS_SIZEBOX or SBS_SIZEGRIP",
 	// but our style definition format is not rich enough to express this.
@@ -260,10 +252,10 @@ StyleLookupEx ScrollbarStyles[] =
 	// it would not allow for a meaningful "set style" definition for these styles anyway.
 	// Therefore, we are ignoring this dependency and
 	// defining these styles as ones without dependencies here.
-	STYLE_SIMPLE(SBS_SIZEBOXTOPLEFTALIGN),                      //0x0002
-	STYLE_SIMPLE(SBS_SIZEBOXBOTTOMRIGHTALIGN),                  //0x0004
-	STYLE_SIMPLE(SBS_SIZEBOX),                                  //0x0008
-	STYLE_SIMPLE(SBS_SIZEGRIP),                                 //0x0010
+	STYLE_SIMPLE(SBS_SIZEBOXTOPLEFTALIGN),                          //0x0002
+	STYLE_SIMPLE(SBS_SIZEBOXBOTTOMRIGHTALIGN),                      //0x0004
+	STYLE_SIMPLE(SBS_SIZEBOX),                                      //0x0008
+	STYLE_SIMPLE(SBS_SIZEGRIP),                                     //0x0010
 
 	NULL
 };
@@ -312,7 +304,6 @@ StyleLookupEx StaticStyles[] =
 //  Standard Common controls styles
 StyleLookupEx CommCtrlList[] =
 {
-#define CCS_TOP_MASK 0x0003
 	//{ CCS_TOP_MASK
 	STYLE_MASK(CCS_TOP, CCS_TOP_MASK),              //0x0001
 	STYLE_MASK(CCS_NOMOVEY, CCS_TOP_MASK),          //0x0002
@@ -564,7 +555,6 @@ StyleLookupEx DateTimeStyles[] =
 {
 	STYLE_SIMPLE(DTS_UPDOWN),                                   //0x0001
 	STYLE_SIMPLE(DTS_SHOWNONE),                                 //0x0002
-#define DTS_FORMAT_MASK 0x000C
 	//{ DTS_FORMAT_MASK
 	STYLE_MASK(DTS_SHORTDATEFORMAT, DTS_FORMAT_MASK),           //0x0000
 	STYLE_MASK(DTS_LONGDATEFORMAT, DTS_FORMAT_MASK),            //0x0004
@@ -866,17 +856,19 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyles, BOOL f
 //
 void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyles)
 {
-	TCHAR szClassName[256];
+	// Empty the list
+	SendMessage(hwndStyleList, LB_RESETCONTENT, 0, 0);
 
+	if (!hwndTarget)
+		return;
+
+	SendMessage(hwndStyleList, WM_SETREDRAW, FALSE, 0);
+
+	TCHAR szClassName[256];
 	StyleLookupEx *StyleList;
 
 	//window class
 	GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
-
-	SendMessage(hwndStyleList, WM_SETREDRAW, FALSE, 0);
-
-	// Empty the list
-	SendMessage(hwndStyleList, LB_RESETCONTENT, 0, 0);
 
 	// enumerate the standard window styles, for any window no
 	// matter what class it might be
@@ -924,18 +916,20 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
 //
 void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl)
 {
+	// Empty the list
+	SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
+
+	if (!hwndTarget)
+		return;
+
+	SendMessage(hwndExStyleList, WM_SETREDRAW, FALSE, 0);
+
 	TCHAR szClassName[256];
 	DWORD dwMessage;
-
 	StyleLookupEx *StyleList;
 
 	//window class
 	GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
-
-	SendMessage(hwndExStyleList, WM_SETREDRAW, FALSE, 0);
-
-	// Empty the list
-	SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
 
 	EnumStyles(StyleExList, hwndExStyleList, dwExStyles, fAllStyles);
 
@@ -962,23 +956,37 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 //
 void SetStyleInfo(HWND hwnd)
 {
-	TCHAR ach[12];
+	TCHAR ach[20];
 	DWORD dwStyles;
 	DWORD dwExStyles;
 
 	HWND hwndDlg = WinSpyTab[STYLE_TAB].hwnd;
 	HWND hwndStyle, hwndStyleEx;
 
-	if (hwnd == 0) return;
+	*ach = 0;
+
+	BOOL fValid = hwnd != NULL;
+	if (hwnd && !IsWindow(hwnd))
+	{
+		fValid = FALSE;
+		hwnd = NULL;
+		_tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
+	}
 
 	// Display the window style in static label
-	dwStyles = GetWindowLong(hwnd, GWL_STYLE);
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyles);
+	if (fValid)
+	{
+		dwStyles = GetWindowLong(hwnd, GWL_STYLE);
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwStyles);
+	}
 	SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
 	// Display the extended window style in static label
-	dwExStyles = GetWindowLong(hwnd, GWL_EXSTYLE);
-	_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwExStyles);
+	if (fValid)
+	{
+		dwExStyles = GetWindowLong(hwnd, GWL_EXSTYLE);
+		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, dwExStyles);
+	}
 	SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
 
 	// Find handles to standard and extended style lists
