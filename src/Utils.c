@@ -234,7 +234,7 @@ TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULON
 
 	if (GetFileVersionInfo(szFileName, 0, len, ver))
 	{
-		if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), &codepage, &len))
+		if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), (LPVOID *)&codepage, &len))
 		{
 			_stprintf_s(fmt, ARRAYSIZE(fmt), TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
 				(*codepage) >> 16, szValue);

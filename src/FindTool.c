@@ -49,10 +49,9 @@
 #include "FindTool.h"
 #include "WindowFromPointEx.h"
 #include "resource.h"
+#include "CaptureWindow.h"
 
 #define INVERT_BORDER 3
-
-void CaptureWindow(HWND hwndParent, HWND hwnd);
 
 HWND ShowTransWindow(HWND);
 void ShowSel(HWND);

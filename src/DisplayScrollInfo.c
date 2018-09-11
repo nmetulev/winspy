@@ -62,7 +62,7 @@ void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, LPCTSTR ach, DWOR
 
 void SetScrollbarInfo(HWND hwnd)
 {
-	DWORD dwStyle;
+	DWORD dwStyle = 0;
 	TCHAR  ach[256];
 	HWND   hwndDlg = WinSpyTab[PROPERTY_TAB].hwnd;
 

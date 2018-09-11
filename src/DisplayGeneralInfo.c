@@ -30,7 +30,7 @@ void SetGeneralInfo(HWND hwnd)
 	TCHAR   ach[256];
 	HWND    hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
 	RECT    rect;
-	int     x1, y1;
+	int     x1 = 0, y1 = 0;
 	int     numbytes;
 	LONG_PTR lp;
 

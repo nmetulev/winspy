@@ -14,6 +14,7 @@
 
 #include "WinSpy.h"
 #include "Utils.h"
+#include "WindowFromPointEx.h"
 
 typedef struct
 {

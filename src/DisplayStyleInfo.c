@@ -957,8 +957,8 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 void SetStyleInfo(HWND hwnd)
 {
 	TCHAR ach[20];
-	DWORD dwStyles;
-	DWORD dwExStyles;
+	DWORD dwStyles = 0;
+	DWORD dwExStyles = 0;
 
 	HWND hwndDlg = WinSpyTab[STYLE_TAB].hwnd;
 	HWND hwndStyle, hwndStyleEx;

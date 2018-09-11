@@ -233,8 +233,8 @@ void FillBytesList(
 	HWND hwnd,
 	int numBytes,
 	WORD WINAPI pGetWord(HWND, int),
-	DWORD WINAPI pGetLong(HWND, int),
-	ULONG_PTR WINAPI pGetLongPtr(HWND, int)
+	LONG WINAPI pGetLong(HWND, int),
+	LONG_PTR WINAPI pGetLongPtr(HWND, int)
 )
 {
 	TCHAR ach[256];
@@ -477,6 +477,6 @@ void SetClassInfo(HWND hwnd)
 	//
 	classbytes = spy_WndClassEx.cbClsExtra;
 
-	FillBytesList(hwndDlg, hwnd, classbytes, GetClassWord, GetClassLong, GetClassLongPtr);
+	FillBytesList(hwndDlg, hwnd, classbytes, GetClassWord, (LONG (WINAPI *)(HWND, int))GetClassLong, (LONG_PTR (WINAPI *)(HWND, int))GetClassLongPtr);
 }
 

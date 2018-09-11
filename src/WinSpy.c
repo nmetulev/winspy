@@ -558,11 +558,11 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	SetMenuItemBitmaps(hSysMenu, SC_MAXIMIZE, MF_BYCOMMAND, hBmp1, hBmp2);
 
 	// Set the dialog's Small Icon
-	hIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, 0);
+	hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, 0);
 	SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 
 	// Set the dialog's Large Icon
-	hIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 32, 32, 0);
+	hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 32, 32, 0);
 	SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 
 	// Create tooltips after all other windows

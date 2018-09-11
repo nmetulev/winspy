@@ -14,6 +14,7 @@
 //
 
 #include "WinSpy.h"
+#include "CaptureWindow.h"
 
 //
 //  Define this to include DIB support. (Adds to code size)
@@ -82,7 +83,7 @@ static HPALETTE GetSystemPalette(HDC hdc)
 	return hPal;
 }
 
-static WORD FAR DIBNumColors(LPSTR lpDIB)
+static WORD DIBNumColors(LPSTR lpDIB)
 {
 	WORD wBitCount;  // DIB bit count
 
@@ -113,7 +114,7 @@ static WORD FAR DIBNumColors(LPSTR lpDIB)
 	}
 }
 
-static WORD FAR PaletteSize(LPSTR lpDIB)
+static WORD PaletteSize(LPSTR lpDIB)
 {
 	/* calculate the size required by the palette */
 	if (IS_WIN30_DIB(lpDIB))
@@ -126,7 +127,7 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
 {
 	BITMAP bm;                   // bitmap structure
 	BITMAPINFOHEADER bi;         // bitmap header
-	BITMAPINFOHEADER FAR *lpbi;  // pointer to BITMAPINFOHEADER
+	BITMAPINFOHEADER *lpbi;      // pointer to BITMAPINFOHEADER
 	DWORD dwLen;                 // size of memory block
 	HANDLE hDIB, h;              // handle to DIB, temp handle
 	HDC hDC;                     // handle to DC
@@ -143,7 +144,7 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
 
 	/* if no palette is specified, use default palette */
 	if (hPal == NULL)
-		hPal = GetStockObject(DEFAULT_PALETTE);
+		hPal = (HPALETTE)GetStockObject(DEFAULT_PALETTE);
 
 	/* calculate bits per pixel */
 	biBits = bm.bmPlanes * bm.bmBitsPixel;
@@ -195,7 +196,7 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
 	}
 
 	/* lock memory and get pointer to it */
-	lpbi = (VOID FAR *)GlobalLock(hDIB);
+	lpbi = (BITMAPINFOHEADER *)GlobalLock(hDIB);
 
 	/* use our bitmap info. to fill BITMAPINFOHEADER */
 	*lpbi = bi;
@@ -231,7 +232,7 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
 	}
 
 	/* lock memory block and get pointer to it */
-	lpbi = (VOID FAR *)GlobalLock(hDIB);
+	lpbi = (BITMAPINFOHEADER *)GlobalLock(hDIB);
 
 	/*  call GetDIBits with a NON-NULL lpBits param, and actualy get the
 	 *  bits this time
@@ -285,7 +286,7 @@ BOOL CaptureWindow(HWND hwndOwner, HWND hwnd)
 	hdcMem = CreateCompatibleDC(hdc);
 	hBmp = CreateCompatibleBitmap(hdc, width, height);
 
-	hdcOld = SelectObject(hdcMem, hBmp);
+	hdcOld = (HDC)SelectObject(hdcMem, hBmp);
 
 	//copy the screen contents
 	BitBlt(hdcMem, 0, 0, width, height, hdc, rect.left, rect.top, SRCCOPY);

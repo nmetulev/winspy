@@ -70,7 +70,7 @@ __declspec(code_seg(".inject$a"))
 // - window procedure
 // - window class
 // - text
-static DWORD WINAPI GetDataProc(LPVOID *pParam)
+static DWORD WINAPI GetDataProc(LPVOID pParam)
 {
 	INJDATA *pInjData = (INJDATA *)pParam;
 	BOOL    fRet = TRUE;

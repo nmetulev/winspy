@@ -189,8 +189,8 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 //
 void SetProcessInfo(HWND hwnd)
 {
-	DWORD dwProcessId;
-	DWORD dwThreadId;
+	DWORD dwProcessId = 0;
+	DWORD dwThreadId = 0;
 	TCHAR ach[32];
 	TCHAR szPath[MAX_PATH];
 

@@ -79,7 +79,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 //
 void SetWindowInfo(HWND hwnd)
 {
-	HWND hParentWnd;
+	HWND hParentWnd = NULL;
 	TCHAR ach[10];
 
 	*ach = 0;

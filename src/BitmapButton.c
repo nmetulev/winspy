@@ -60,7 +60,6 @@ HRESULT _CloseThemeData(HTHEME hTheme)
 static LRESULT CALLBACK BBProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	WNDPROC oldproc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	TRACKMOUSEEVENT tme = { sizeof(tme) };
 
 	static BOOL mouseOver;
 	POINT pt;
@@ -228,7 +227,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		// Draw a single-line black border around the button
 		if (hTheme == NULL && (dis->itemState & (ODS_FOCUS | ODS_DEFAULT)))
 		{
-			FrameRect(dis->hDC, &dis->rcItem, GetStockObject(BLACK_BRUSH));
+			FrameRect(dis->hDC, &dis->rcItem, (HBRUSH)GetStockObject(BLACK_BRUSH));
 			InflateRect(&dis->rcItem, -1, -1);
 		}
 
