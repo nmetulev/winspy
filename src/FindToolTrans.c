@@ -178,6 +178,8 @@ void UpdatePanelTrans(HWND hwndPanel, RECT *rect)
 	SelectObject(hdcMem, hold);
 	DeleteDC(hdcMem);
 	ReleaseDC(0, hdcSrc);
+
+    DeleteObject(hbm);
 }
 
 //
