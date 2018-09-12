@@ -163,8 +163,10 @@ HBITMAP CreateHBITMAP(IWICBitmapSource * ipBitmap, PVOID *bits)
 
 	HDC hdcScreen = GetDC(NULL);
 	hbmp = CreateDIBSection(hdcScreen, &bminfo, DIB_RGB_COLORS, &pvImageBits, NULL, 0);
-	*bits = pvImageBits;
 	ReleaseDC(NULL, hdcScreen);
+
+	if (bits)
+		*bits = pvImageBits;
 
 	if (hbmp == NULL)
 		goto Return;

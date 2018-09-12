@@ -16,64 +16,137 @@ HBITMAP LoadPNGImage(UINT id, void **bits);
 
 #define WC_TRANSWINDOW  TEXT("TransWindow")
 
-HBITMAP MakeDockPanelBitmap(RECT *rect)
+HBITMAP ExpandNineGridImage(SIZE outputSize, HBITMAP hbmSrc, RECT edges)
 {
-	int width = GetRectWidth(rect);
-	int height = GetRectHeight(rect);
+    HDC     hdcScreen, hdcDst, hdcSrc;
+    HBITMAP hbmDst;
+    void*   pBits;
+    HANDLE  hOldSrc, hOldDst;
+    BITMAP  bmSrc;
+    
+    // Create a 32bpp DIB of the desired size, this is the output bitmap.
+    BITMAPINFOHEADER bih = { sizeof(bih) };
 
-	DWORD *pdwBox;
+    bih.biWidth       = outputSize.cx;
+    bih.biHeight      = outputSize.cy;
+    bih.biPlanes      = 1;
+    bih.biBitCount    = 32;
+    bih.biCompression = BI_RGB;
+    bih.biSizeImage   = 0;
 
-	static HBITMAP hbmBox, hbm;
-	HDC     hdcBox, hdcDIB, hdcSrc;
-	HANDLE  hOldBox, hOldDIB;
+    hdcScreen = GetDC(0);
+    hbmDst = CreateDIBSection(hdcScreen, (BITMAPINFO *)&bih, DIB_RGB_COLORS, &pBits, 0, 0);
+    
+    // Determine size of the source image.
+    GetObject(hbmSrc, sizeof(bmSrc), &bmSrc);
+    
+    // Prep DCs
+    hdcSrc = CreateCompatibleDC(hdcScreen);
+    hOldSrc = SelectObject(hdcSrc, hbmSrc);
+    
+    hdcDst = CreateCompatibleDC(hdcScreen);
+    hOldDst = SelectObject(hdcDst, hbmDst);
 
-	// 32bpp bitmap
-	BITMAPINFOHEADER bih = { sizeof(bih) };
+    // Sizes of the nine-grid edges
+    int cxEdgeL = edges.left;
+    int cxEdgeR = edges.right;
+    int cyEdgeT = edges.top;
+    int cyEdgeB = edges.bottom;
+               
+    // Precompute sizes and coordinates of the interior boxes 
+    // (that is, the source and dest rects with the edges subtracted out).
+    int cxDstInner = outputSize.cx - (cxEdgeL + cxEdgeR);
+    int cyDstInner = outputSize.cy - (cyEdgeT + cyEdgeB);
+    int cxSrcInner = bmSrc.bmWidth - (cxEdgeL + cxEdgeR);
+    int cySrcInner = bmSrc.bmHeight - (cyEdgeT + cyEdgeB);
+    
+    int xDst1 = cxEdgeL;
+    int xDst2 = outputSize.cx - cxEdgeR;
+    int yDst1 = cyEdgeT;
+    int yDst2 = outputSize.cy - cyEdgeB;
+    
+    int xSrc1 = cxEdgeL;
+    int xSrc2 = bmSrc.bmWidth - cxEdgeR;
+    int ySrc1 = cyEdgeT;
+    int ySrc2 = bmSrc.bmHeight - cyEdgeB;
+    
+    // Upper-left corner
+    BitBlt(
+        hdcDst, 0, 0, cxEdgeL, cyEdgeT, 
+        hdcSrc, 0, 0, 
+        SRCCOPY);
+    
+    // Upper-right corner
+    BitBlt(
+        hdcDst, xDst2, 0, cxEdgeR, cyEdgeT, 
+        hdcSrc, xSrc2, 0, 
+        SRCCOPY);
+    
+    // Lower-left corner
+    BitBlt(
+        hdcDst, 0, yDst2, cxEdgeL, cyEdgeB, 
+        hdcSrc, 0, ySrc2, 
+        SRCCOPY);
+    
+    // Lower-right corner
+    BitBlt(
+        hdcDst, xDst2, yDst2, cxEdgeR, cyEdgeB, 
+        hdcSrc, xSrc2, ySrc2, 
+        SRCCOPY);
 
-	bih.biWidth = width;
-	bih.biHeight = height;
-	bih.biPlanes = 1;
-	bih.biBitCount = 32;
-	bih.biCompression = BI_RGB;
-	bih.biSizeImage = 0;
+    // Left side
+    StretchBlt(
+        hdcDst, 0, yDst1, cxEdgeL, cyDstInner, 
+        hdcSrc, 0, ySrc1, cxEdgeL, cySrcInner, 
+        SRCCOPY);
+    
+    // Right side
+    StretchBlt(
+        hdcDst, xDst2, yDst1, cxEdgeR, cyDstInner, 
+        hdcSrc, xSrc2, ySrc1, cxEdgeR, cySrcInner, 
+        SRCCOPY);
+    
+    // Top side
+    StretchBlt(
+        hdcDst, xDst1, 0, cxDstInner, cyEdgeT, 
+        hdcSrc, xSrc1, 0, cxSrcInner, cyEdgeT,    
+        SRCCOPY);
+    
+    // Bottom side
+    StretchBlt(
+        hdcDst, xDst1, yDst2, cxDstInner, cyEdgeB, 
+        hdcSrc, xSrc1, ySrc2, cxSrcInner, cyEdgeB,    
+        SRCCOPY);
+        
+    // Middle
+    StretchBlt(
+        hdcDst, xDst1, yDst1, cxDstInner, cyDstInner, 
+        hdcSrc, xSrc1, ySrc1, cxSrcInner, cySrcInner, 
+        SRCCOPY);
 
-	hdcSrc = GetDC(0);
+    SelectObject(hdcSrc, hOldSrc);
+    SelectObject(hdcDst, hOldDst);
 
-	if (hbmBox == 0)
-	{
-		hbmBox = LoadPNGImage(IDB_SELBOX, (void **)&pdwBox);
-	}
+    DeleteDC(hdcSrc);
+    DeleteDC(hdcDst);
 
-	hdcBox = CreateCompatibleDC(hdcSrc);
-	hOldBox = SelectObject(hdcBox, hbmBox);
+    ReleaseDC(0, hdcScreen);
+    
+    return hbmDst;
+}
 
-	hbm = CreateDIBSection(hdcSrc, (BITMAPINFO *)&bih, DIB_RGB_COLORS, (void**)&pdwBox, 0, 0);
-	hdcDIB = CreateCompatibleDC(hdcSrc);
-	hOldDIB = SelectObject(hdcDIB, hbm);
+HBITMAP MakeDockPanelBitmap(SIZE outputSize)
+{
+    static HBITMAP hbmBox;
 
-    // corners
-    BitBlt(hdcDIB, 0, 0, 32, 32, hdcBox, 0, 0, SRCCOPY);
-    BitBlt(hdcDIB, width - 32, 0, 32, 32, hdcBox, 32, 0, SRCCOPY);
-    BitBlt(hdcDIB, 0, height - 32, 32, 32, hdcBox, 0, 32, SRCCOPY);
-    BitBlt(hdcDIB, width - 32, height - 32, 32, 32, hdcBox, 32, 32, SRCCOPY);
+    if (hbmBox == 0)
+    {
+        hbmBox = LoadPNGImage(IDB_SELBOX, NULL);
+    }
 
-    // sides
-    StretchBlt(hdcDIB, 0, 32, 32, height - 64, hdcBox, 0, 32, 32, 1, SRCCOPY);
-    StretchBlt(hdcDIB, width - 32, 32, 32, height - 64, hdcBox, 32, 32, 32, 1, SRCCOPY);
-    StretchBlt(hdcDIB, 32, 0, width - 64, 32, hdcBox, 32, 0, 1, 32, SRCCOPY);
-    StretchBlt(hdcDIB, 32, height - 32, width - 64, 32, hdcBox, 32, 32, 1, 32, SRCCOPY);
-
-    // middle
-    StretchBlt(hdcDIB, 32, 32, width - 64, height - 64, hdcBox, 32, 32, 1, 1, SRCCOPY);
-
-	SelectObject(hdcDIB, hOldDIB);
-	SelectObject(hdcBox, hOldBox);
-
-	DeleteDC(hdcBox);
-	DeleteDC(hdcDIB);
-
-	ReleaseDC(0, hdcSrc);
-	return hbm;
+    RECT edges = { 2, 2, 2, 2 };
+    
+    return ExpandNineGridImage(outputSize, hbmBox, edges);
 }
 
 void UpdatePanelTrans(HWND hwndPanel, RECT *rect)
@@ -97,7 +170,7 @@ void UpdatePanelTrans(HWND hwndPanel, RECT *rect)
 	HBITMAP hbm;
 	HANDLE hold;
 
-	hbm = MakeDockPanelBitmap(rect);
+	hbm = MakeDockPanelBitmap(sz);
 	hold = SelectObject(hdcMem, hbm);
 
 	UpdateLayeredWindow(hwndPanel,
