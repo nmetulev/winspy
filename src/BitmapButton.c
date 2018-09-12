@@ -296,20 +296,24 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		DrawText(dis->hDC, szText, -1, &rect, dwDTflags);
 		OffsetRect(&rect, 0, 1);
 
-		// Draw the focus rectangle (only if text present)
-		if ((dis->itemState & ODS_FOCUS) && nTextLen > 0)
+		// Draw the focus rectangle
+		if (dis->itemState & ODS_FOCUS)
 		{
 			if (!(dis->itemState & ODS_NOFOCUSRECT))
 			{
 				// Get a "fresh" copy of the button rectangle
 				CopyRect(&rect, &dis->rcItem);
 
-				if (fRightAlign)
-					rect.right -= sxIcon + bx;
-				else
-					rect.left += sxIcon + bx + 2;
+				if (nTextLen > 0)
+				{
+					if (fRightAlign)
+						rect.right -= sxIcon + bx;
+					else
+						rect.left += sxIcon + bx + 2;
+				}
 
 				InflateRect(&rect, -3, -3);
+
 				DrawFocusRect(dis->hDC, &rect);
 			}
 		}
