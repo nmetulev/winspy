@@ -147,6 +147,7 @@
 #define IDC_POSTER_SEND                 1081
 #define IDC_POSTER_POST                 1082
 #define IDC_POSTER_RESULT               1083
+#define IDC_PROCESS_DPI_AWARENESS       1084
 #define IDM_GENERAL_ONTOP               40003
 #define IDM_GENERAL_VISIBLE             40004
 #define IDM_GENERAL_ENABLED             40005
@@ -200,7 +201,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        167
 #define _APS_NEXT_COMMAND_VALUE         40049
-#define _APS_NEXT_CONTROL_VALUE         1084
+#define _APS_NEXT_CONTROL_VALUE         1085
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
