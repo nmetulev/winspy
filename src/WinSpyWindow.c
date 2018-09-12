@@ -262,12 +262,12 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 	// HARD-CODED sizes for each window layout.
 	// These are DIALOG UNITS, so it's not too bad.
 	duMinimized.cx = 254;
-	duMinimized.cy = 25;//6;
+	duMinimized.cy = 25;
 
 	duNormal.cx = duMinimized.cx;
 	duNormal.cy = 251;
 
-	duExpanded.cx = 432;//390;
+	duExpanded.cx = 500; 
 	duExpanded.cy = duNormal.cy;
 
 	// work out the size (in pixels) of each window layout
