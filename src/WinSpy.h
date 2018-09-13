@@ -37,7 +37,8 @@ extern DialogTab WinSpyTab[];
 #define CLASS_TAB          3
 #define WINDOW_TAB         4
 #define PROCESS_TAB        5
-#define NUMTABCONTROLITEMS 6
+#define DPI_TAB            6
+#define NUMTABCONTROLITEMS 7
 
 #define MAX_STYLE_NAME_CCH 60
 
@@ -217,6 +218,7 @@ INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK DpiDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 // Top-level
 void DisplayWindowInfo(HWND hwnd);
@@ -228,6 +230,7 @@ void SetGeneralInfo(HWND hwnd);
 void SetScrollbarInfo(HWND hwnd);
 void SetPropertyInfo(HWND hwnd);
 void SetProcessInfo(HWND hwnd);
+void SetDpiInfo(HWND hwnd);
 
 void ExitWinSpy(HWND hwnd, UINT uCode);
 

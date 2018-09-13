@@ -104,6 +104,7 @@
     <ClCompile Include="BitmapButton.c" />
     <ClCompile Include="CaptureWindow.c" />
     <ClCompile Include="DisplayClassInfo.c" />
+    <ClCompile Include="DisplayDpiInfo.c" />
     <ClCompile Include="DisplayGeneralInfo.c" />
     <ClCompile Include="DisplayProcessInfo.c" />
     <ClCompile Include="DisplayPropInfo.c" />

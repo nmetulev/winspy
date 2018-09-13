@@ -826,3 +826,22 @@ INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 	return FALSE;
 }
+
+//
+// DPI Tab
+//
+INT_PTR CALLBACK DpiDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(hwnd);
+	UNREFERENCED_PARAMETER(wParam);
+	UNREFERENCED_PARAMETER(lParam);
+
+    switch(iMsg)
+    {
+    case WM_INITDIALOG:
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
