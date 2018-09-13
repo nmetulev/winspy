@@ -111,16 +111,24 @@ DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
 //  Convert the specified string (with a hex-number in it)
 //  into the equivalent hex-value
 //
-DWORD_PTR _tstrtoib16(TCHAR *szHexStr)
+DWORD_PTR _tstrtoib16(PCTSTR pszHexStr)
 {
 	DWORD_PTR num = 0;
+	const TCHAR *pch = pszHexStr;
 
-	TCHAR *hexptr = szHexStr;
-	UINT  ch = *hexptr++;
+	// Skip any leading whitespace
+	while (*pch == ' ')
+		pch++;
 
-	while (isxdigit(ch))
+	// Skip a "0x" prefix if present.
+	if (*pch == '0' && *(pch + 1) == 'x')
+		pch += 2;
+
+	while (isxdigit(*pch))
 	{
 		static_assert(_T('9') < _T('A') && _T('A') < _T('a'), "Incorrect character code values assumption");
+
+		UINT ch = *pch;
 		UINT x = ch <= _T('9') ?
 			ch - _T('0') :
 			10 + (ch < _T('a') ?
@@ -128,7 +136,7 @@ DWORD_PTR _tstrtoib16(TCHAR *szHexStr)
 				ch - _T('a'));
 
 		num = (num << 4) | (x & 0x0f);
-		ch = *hexptr++;
+		pch++;
 	}
 
 	return num;

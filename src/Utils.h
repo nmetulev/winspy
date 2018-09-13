@@ -16,7 +16,7 @@ int WINAPI GetRectHeight(RECT *rect);
 int WINAPI GetRectWidth(RECT *rect);
 
 DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base);
-DWORD_PTR _tstrtoib16(TCHAR *szHexStr);
+DWORD_PTR _tstrtoib16(PCTSTR pszHexStr);
 BOOL EnableDialogTheme(HWND hwnd);
 
 BOOL EnableDebugPrivilege();
