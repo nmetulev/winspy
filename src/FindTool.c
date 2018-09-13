@@ -53,7 +53,7 @@
 
 #define INVERT_BORDER 3
 
-HWND ShowTransWindow(HWND);
+HWND CreateOverlayWindow(HWND hwndToCover);
 void ShowSel(HWND);
 void HideSel(HWND);
 
@@ -196,7 +196,6 @@ UINT FireWndFindNotify(HWND hwndTool, UINT uCode, HWND hwnd)
 
 LRESULT EndFindToolDrag(HWND hwnd)
 {
-	//InvertWindow(hwndCurrent, fShowHidden);
 	HideSel(hwndCurrent);
 	ReleaseCapture();
 	SetCursor(hOldCursor);
@@ -243,20 +242,16 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 
 		if (newStateReleased)
 		{
-			//InvertWindow(hwndCurrent, fShowHidden);
 			HideSel(hwndCurrent);
 			FireWndFindNotify(draghookhwnd, WFN_SHIFT_UP, 0);
-			//InvertWindow(hwndCurrent, fShowHidden);
 			ShowSel(hwndCurrent);
 		}
 		else
 		{
 			if (!previousStateDown)
 			{
-				//InvertWindow(hwndCurrent, fShowHidden);
 				HideSel(hwndCurrent);
 				FireWndFindNotify(draghookhwnd, WFN_SHIFT_DOWN, 0);
-				//InvertWindow(hwndCurrent, fShowHidden);
 				ShowSel(hwndCurrent);
 			}
 		}
@@ -267,20 +262,16 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 
 		if (newStateReleased)
 		{
-			//InvertWindow(hwndCurrent, fShowHidden);
 			HideSel(hwndCurrent);
 			FireWndFindNotify(draghookhwnd, WFN_CTRL_UP, 0);
-			//InvertWindow(hwndCurrent, fShowHidden);
 			ShowSel(hwndCurrent);
 		}
 		else
 		{
 			if (!previousStateDown)
 			{
-				//InvertWindow(hwndCurrent, fShowHidden);
 				HideSel(hwndCurrent);
 				FireWndFindNotify(draghookhwnd, WFN_CTRL_DOWN, 0);
-				//InvertWindow(hwndCurrent, fShowHidden);
 				ShowSel(hwndCurrent);
 			}
 		}
@@ -296,10 +287,8 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 
 		if (ch == _T('c') || ch == _T('C'))
 		{
-			//InvertWindow(hwndCurrent, fShowHidden);
 			HideSel(hwndCurrent);
 			CaptureWindow(GetParent(draghookhwnd), hwndCurrent);
-			//InvertWindow(hwndCurrent, fShowHidden);
 			ShowSel(hwndCurrent);
 			return -1;
 		}
@@ -312,7 +301,7 @@ void ShowSel(HWND hwnd)
 {
 	if (fTransSel)
 	{
-		hwndTransPanel = ShowTransWindow(hwnd);
+		hwndTransPanel = CreateOverlayWindow(hwnd);
 
 		if (hwndTransPanel == 0)
 		{
@@ -406,10 +395,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (hWndPoint != hwndCurrent)
 			{
 				HideSel(hwndCurrent);
-				//InvertWindow(hwndCurrent, fShowHidden);
-
 				FireWndFindNotify(hwnd, WFN_SELCHANGED, hWndPoint);
-				//InvertWindow(hWndPoint, fShowHidden);
 				ShowSel(hWndPoint);
 
 				hwndCurrent = hWndPoint;

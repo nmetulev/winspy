@@ -23,7 +23,9 @@ typedef UINT(CALLBACK * WNDFINDPROC) (HWND hwndTool, UINT uCode, HWND hwnd);
 #define WFN_CAPTURE      8  // Capture key pressed
 
 BOOL MakeFinderTool(HWND hwnd, WNDFINDPROC wfp);
-void InvertWindow(HWND hwnd, BOOL fShowHidden);
+
+void InvertWindow(HWND hwnd, BOOL fUseScreenDC);
+
 void FlashWindowBorder(HWND hwnd);
 
 #ifdef __cplusplus

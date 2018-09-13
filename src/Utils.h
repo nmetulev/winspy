@@ -30,6 +30,12 @@ HWND GetRealParent(HWND hWnd);
 
 BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz);
 
+HBITMAP LoadPNGImage(UINT id, void **bits);
+
+HBITMAP ExpandNineGridImage(SIZE outputSize, HBITMAP hbmSrc, RECT edges);
+
+void UpdateLayeredWindowContent(HWND hwnd, RECT rc, HBITMAP hbmp, BYTE alpha);
+
 #ifdef __cplusplus
 }
 #endif
