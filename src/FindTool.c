@@ -152,17 +152,6 @@ void InvertWindow(HWND hwnd, BOOL fUseScreenDC)
 	ReleaseDC(hwnd, hdc);
 }
 
-void FlashWindowBorder(HWND hwnd)
-{
-	int i;
-
-	for (i = 0; i < 3 * 2; i++)
-	{
-		InvertWindow(hwnd, TRUE);
-		Sleep(100);
-	}
-}
-
 void LoadFinderResources()
 {
 	hBitmapDrag1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL1));
