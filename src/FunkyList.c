@@ -79,20 +79,27 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 			dis->rcItem.top + 0,
 			ETO_OPAQUE, &dis->rcItem, szText, (UINT)_tcslen(szText), 0);
 
-		//Draw the style bytes
-		if ((dis->itemState & ODS_SELECTED))
-			SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
+        if (!pStyle && (szText[0] == '<'))
+        {
+            // This is an error message.  Do not draw the value on the right.
+        }
 		else
-			SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
+		{
+			//Draw the style bytes
+			if ((dis->itemState & ODS_SELECTED))
+				SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
+			else
+				SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 
-		if (pStyle)
-			_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, pStyle->value); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
+			if (pStyle)
+				_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, pStyle->value); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
 
-		dis->rcItem.right -= 4;
+			dis->rcItem.right -= 4;
 
-		DrawText(dis->hDC, szText, -1, &dis->rcItem, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
+			DrawText(dis->hDC, szText, -1, &dis->rcItem, DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
 
-		dis->rcItem.right += 4;
+			dis->rcItem.right += 4;
+		}
 
 		SetTextColor(dis->hDC, crFG);
 		SetBkColor(dis->hDC, crBG);

@@ -945,8 +945,33 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 		// Add them if required
 		if (StyleList != 0)
 		{
-			dwExStyles = (DWORD)SendMessage(hwndTarget, dwMessage, 0, 0);
-			EnumStyles(StyleList, hwndExStyleList, dwExStyles, fAllStyles);
+            // Use SendMessageTimeout to prefent winspy from hanging if the 
+            // process/thread owning the widow isn't responding.  For example,
+            // when the other application is broken into a debugger.
+            LRESULT lr;
+            DWORD_PTR result;
+
+            lr = SendMessageTimeout(
+                   hwndTarget,
+                   dwMessage,
+                   0, 0,
+                   SMTO_BLOCK | SMTO_ERRORONEXIT,
+                   250, // Half second
+                   &result);
+
+            if (lr)
+            {
+                dwExStyles = (DWORD)result;
+                EnumStyles(StyleList, hwndExStyleList, dwExStyles, fAllStyles);
+            }
+            else
+            {
+                // Failed to send the message, we don't have a great place to
+                // indicate a failure, appending an error message to the end
+                // of the style listbox works.
+                int idx = (int)SendMessage(hwndExStyleList, LB_ADDSTRING, 0, (LPARAM)L"<Error: Failed to query custom styles>");
+                SendMessage(hwndExStyleList, LB_SETITEMDATA, idx, 0);
+            }
 		}
 	}
 
