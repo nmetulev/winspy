@@ -232,6 +232,7 @@ StyleLookupEx ListBoxStyles[] =
 	STYLE_SIMPLE(LBS_DISABLENOSCROLL),          //0x1000
 	STYLE_SIMPLE(LBS_NODATA),                   //0x2000
 	STYLE_SIMPLE(LBS_NOSEL),                    //0x4000
+	STYLE_SIMPLE(LBS_COMBOBOX),                 //0x8000
 
 	NULL
 };
@@ -720,6 +721,7 @@ ClassStyleLookup StandardControls[] =
 	_T("ComboBox"),             ComboStyles,        0,
 	_T("Edit"),                 EditStyles,         0,
 	_T("ListBox"),              ListBoxStyles,      0,
+	_T("ComboLBox"),            ListBoxStyles,      0,
 
 	_T("RICHEDIT"),             RichedStyles,       0,
 	_T("RichEdit20A"),          RichedStyles,       0,
