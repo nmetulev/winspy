@@ -153,10 +153,6 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 
 		// Set the font colors
 		SetTextColor(hdc, url->crLink);
-		SetBkMode(hdc, TRANSPARENT);
-
-		SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));//GetClassLong(GetParent(hwnd), GCL_HBRBACKGROUND));
-		//SetBkColor(hdc, );//GetSysColor(COLOR_3DFACE));
 
 		hOld = SelectObject(hdc, hfUnderlined);
 
@@ -170,7 +166,7 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
 		ExtTextOut(hdc, 0, (rect.bottom - sz.cy), 0/*ETO_OPAQUE*/, &rect, szWinText, nTextLen, 0);
 
 		SelectObject(hdc, hOld);
-		//DefWindowProc(hwnd, WM_PAINT, hdc, 0);
+
 		EndPaint(hwnd, &ps);
 
 		return 0;
