@@ -17,7 +17,7 @@ LRESULT CALLBACK FlashWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (msg == WM_TIMER)
     {
-        LONG iteration = GetWindowLong(hwnd, GWL_USERDATA);
+        LONG_PTR iteration = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
         if (iteration == FLASH_TIMER_ITERATIONS)
         {
@@ -29,7 +29,7 @@ LRESULT CALLBACK FlashWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             ShowWindow(hwnd, fHide ? SW_HIDE : SW_SHOWNOACTIVATE);
 
-            SetWindowLong(hwnd, GWL_USERDATA, iteration + 1);
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, iteration + 1);
 
             SetTimer(hwnd, FLASH_TIMER_ID, FLASH_TIMER_FREQUENCY, NULL);
         }
@@ -100,7 +100,7 @@ HWND CreateFlashWindow(HWND hwndToCover)
             0, 0, 0, 0,
             SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE|SWP_SHOWWINDOW);
 
-        SetWindowLong(hwnd, GWL_USERDATA, 0);
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
 
         SetTimer(hwnd, FLASH_TIMER_ID, FLASH_TIMER_FREQUENCY, NULL);
     }
