@@ -174,7 +174,7 @@ void ToggleWindowLayout(HWND hwnd);
 void SetWindowLayout(HWND hwnd, UINT uLayout);
 UINT GetWindowLayout(HWND hwnd);
 void ForceVisibleDisplay(HWND hwnd);
-void UpdateMainWindowText(HWND hwnd, HWND hwndTarget);
+void UpdateMainWindowText();
 
 #define WINSPY_LAYOUT_NO 0
 #define WINSPY_MINIMIZED 1

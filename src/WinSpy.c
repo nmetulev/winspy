@@ -17,6 +17,7 @@
 #include "BitmapButton.h"
 #include "Utils.h"
 
+HWND        g_hwndMain;     // Main winspy window
 HWND        hwndPin;        // Toolbar with pin bitmap
 HWND        hwndSizer;      // Sizing grip for bottom-right corner
 HWND        hwndToolTip;    // tooltip for main window controls only
@@ -95,13 +96,13 @@ void DisplayWindowInfo(HWND hwnd)
 {
 	spy_hCurWnd = hwnd;
 
-	if (!hwnd)
-	{
-		*spy_szClassName = 0;
-		spy_WndProc = 0;
-		spy_fPassword = FALSE;
-	}
-	else
+	spy_szClassName[0] = '\0';
+	spy_WndProc = NULL;
+	spy_fPassword = FALSE;
+
+	UpdateMainWindowText();
+
+	if (hwnd)
 	{
 		if (!GetClassName(hwnd, spy_szClassName, 70))
 			*spy_szClassName = 0;
@@ -140,19 +141,21 @@ void DisplayWindowInfo(HWND hwnd)
     SetDpiInfo(hwnd);
 }
 
-void UpdateMainWindowText(HWND hwnd, HWND hwndTarget)
+void UpdateMainWindowText()
 {
-	if (hwndTarget && fShowInCaption)
+	if (spy_hCurWnd && fShowInCaption)
 	{
 		TCHAR szClass[70] = { 0 };
 		TCHAR ach[90] = { 0 };
 
-		GetClassName(hwndTarget, szClass, ARRAYSIZE(szClass));
-		_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)hwndTarget, szClass);
-		SetWindowText(hwnd, ach);
+		GetClassName(spy_hCurWnd, szClass, ARRAYSIZE(szClass));
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)spy_hCurWnd, szClass);
+		SetWindowText(g_hwndMain, ach);
 	}
 	else
-		SetWindowText(hwnd, szAppName);
+	{
+		SetWindowText(spy_hCurWnd, szAppName);
+	}
 }
 
 //
@@ -173,19 +176,12 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 	{
 	case WFN_SELCHANGED:
 
-		spy_hCurWnd = hwnd;
-		spy_WndProc = 0;
-
-		UpdateMainWindowText(hwndMain, hwnd);
-
 		DisplayWindowInfo(hwnd);
 		return 0;
 
 	case WFN_BEGIN:
 
 		hwndLastTarget = spy_hCurWnd;
-
-		spy_hCurWnd = hwnd;
 
 		fWasMinimized = fMinimizeWinSpy;
 		if (fWasMinimized)
@@ -203,7 +199,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		fCanceled = TRUE;
 		// Restore the current window + Fall through!
-		UpdateMainWindowText(hwndMain, spy_hCurWnd = hwndLastTarget);
+		spy_hCurWnd = hwndLastTarget;
 
 	case WFN_END:
 
@@ -456,6 +452,8 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	int     i;
 	HICON   hIcon;
 	TCITEM  tcitem;
+
+	g_hwndMain = hwnd;
 
 	// Initialize the finder tool
 	MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), WndFindProc);

@@ -149,7 +149,7 @@ void ShowOptionsDlg(HWND hwndParent)
 {
 	DialogBox(hInst, MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
 
-	UpdateMainWindowText(hwndParent, spy_hCurWnd);
+	UpdateMainWindowText();
 
 	SendMessage(hwndToolTip, TTM_ACTIVATE, fEnableToolTips, 0);
 }
