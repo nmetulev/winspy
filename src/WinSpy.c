@@ -87,6 +87,45 @@ void GetRemoteInfo(HWND hwnd)
 	}
 }
 
+void UpdateTabs(BOOL fForceClassUpdate)
+{
+    HWND hwnd = spy_hCurWnd;
+
+    // do classinfo first, so we can get the window procedure
+
+    if (fForceClassUpdate || nCurrentTab == CLASS_TAB)
+    {
+        GetRemoteInfo(hwnd);
+        SetClassInfo(hwnd);
+    }
+
+    if (nCurrentTab == GENERAL_TAB)
+    {
+        SetGeneralInfo(hwnd);
+    }
+    else if (nCurrentTab == STYLE_TAB)
+    {
+        SetStyleInfo(hwnd);
+    }
+    else if (nCurrentTab == PROPERTY_TAB)
+    {
+        SetPropertyInfo(hwnd);
+        SetScrollbarInfo(hwnd);
+    }
+    else if (nCurrentTab == PROCESS_TAB)
+    {
+        SetProcessInfo(hwnd);
+    }
+    else if (nCurrentTab == WINDOW_TAB)
+    {
+        SetWindowInfo(hwnd);
+    }
+    else if (nCurrentTab == DPI_TAB)
+    {
+        SetDpiInfo(hwnd);
+    }
+}
+
 //
 //  Top-level function for retrieving+displaying a window's
 //  information (styles/class/properties etc)
@@ -125,20 +164,7 @@ void DisplayWindowInfo(HWND hwnd)
 			spy_fPassword = FALSE;
 	}
 
-	// do classinfo first, so we can get the window procedure
-	if (spy_fPassword || nCurrentTab == CLASS_TAB)
-	{
-		GetRemoteInfo(hwnd);
-		SetClassInfo(hwnd);
-	}
-
-	SetGeneralInfo(hwnd);
-	SetStyleInfo(hwnd);
-	SetPropertyInfo(hwnd);
-	SetWindowInfo(hwnd);
-	SetScrollbarInfo(hwnd);
-	SetProcessInfo(hwnd);
-    SetDpiInfo(hwnd);
+	UpdateTabs(spy_fPassword);
 }
 
 void UpdateMainWindowText()
@@ -598,11 +624,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 
 		SetWindowPos(WinSpyTab[nCurrentTab].hwnd, HWND_TOP, 0, 0, 0, 0, SWP_SHOWONLY);
 
-		if (nCurrentTab == CLASS_TAB)
-		{
-			GetRemoteInfo(spy_hCurWnd);
-			SetClassInfo(spy_hCurWnd);
-		}
+		UpdateTabs(FALSE);
 
 		return TRUE;
 
