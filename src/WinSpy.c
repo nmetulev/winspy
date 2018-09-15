@@ -129,7 +129,6 @@ void UpdateTabs(BOOL fForceClassUpdate)
 //
 //  Top-level function for retrieving+displaying a window's
 //  information (styles/class/properties etc)
-//  It updates all the tabs except the Class tab that should be updated explicitly when activated
 //
 void DisplayWindowInfo(HWND hwnd)
 {

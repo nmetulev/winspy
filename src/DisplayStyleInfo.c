@@ -956,7 +956,7 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
                    dwMessage,
                    0, 0,
                    SMTO_BLOCK | SMTO_ERRORONEXIT,
-                   250, // Half second
+                   250, // 1/4 second
                    &result);
 
             if (lr)
