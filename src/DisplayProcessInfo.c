@@ -307,5 +307,12 @@ void SetProcessInfo(HWND hwnd)
 		SetDlgItemText(hwndDlg, IDC_PROCESSPATH, fValid ? _T("N/A") : ach);
 	}
 
-    DetermineDPIAwareness(dwProcessId);
+    if (fValid)
+    {
+        DetermineDPIAwareness(dwProcessId);
+    }
+    else
+    {
+        SetDlgItemText(hwndDlg, IDC_PROCESS_DPI_AWARENESS, ach);
+    }
 }

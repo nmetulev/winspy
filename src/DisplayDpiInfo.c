@@ -99,39 +99,53 @@ void SetDpiInfo(HWND hwnd)
 {
     HWND hwndDlg = WinSpyTab[DPI_TAB].hwnd;
     CHAR szTemp[100];
-    PSTR pszValue;
+    PSTR pszValue = NULL;
+    BOOL fValid;
 
     InitializeDpiApis();
 
+    fValid = (hwnd && IsWindow(hwnd));
+
+    if (!fValid)
+    {
+        pszValue = (hwnd == NULL) ? "" : "(invalid window)";
+    }
+
     // DPI field
 
-    if (s_pfnGetDpiForWindow)
+    if (fValid)
     {
-        UINT dpi     = s_pfnGetDpiForWindow(hwnd);
-        UINT percent = (UINT)(dpi * 100 / 96);
+        if (s_pfnGetDpiForWindow)
+        {
+            UINT dpi     = s_pfnGetDpiForWindow(hwnd);
+            UINT percent = (UINT)(dpi * 100 / 96);
 
-        sprintf_s(szTemp, ARRAYSIZE(szTemp), "%d (%u%%)", dpi, percent);
-        pszValue = szTemp;
-    }
-    else
-    {
-        pszValue = "<UNAVAILABLE>";
+            sprintf_s(szTemp, ARRAYSIZE(szTemp), "%d (%u%%)", dpi, percent);
+            pszValue = szTemp;
+        }
+        else
+        {
+            pszValue = "<Unavailable>";
+        }
     }
 
     SetDlgItemTextA(hwndDlg, IDC_WINDOW_DPI, pszValue);
 
     // DPI awareness field
 
-    if (s_pfnGetWindowDpiAwarenessContext)
+    if (fValid)
     {
-        DPI_AWARENESS_CONTEXT dpiContext = s_pfnGetWindowDpiAwarenessContext(hwnd);
+        if (s_pfnGetWindowDpiAwarenessContext)
+        {
+            DPI_AWARENESS_CONTEXT dpiContext = s_pfnGetWindowDpiAwarenessContext(hwnd);
 
-        DescribeDpiAwarenessContext(szTemp, ARRAYSIZE(szTemp), dpiContext);
-        pszValue = szTemp;
-    }
-    else
-    {
-        pszValue = "<UNAVAILABLE>";
+            DescribeDpiAwarenessContext(szTemp, ARRAYSIZE(szTemp), dpiContext);
+            pszValue = szTemp;
+        }
+        else
+        {
+            pszValue = "<Unavailable>";
+        }
     }
 
     SetDlgItemTextA(hwndDlg, IDC_WINDOW_DPI_AWARENESS, pszValue);

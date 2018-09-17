@@ -168,13 +168,23 @@ void DisplayWindowInfo(HWND hwnd)
 
 void UpdateMainWindowText()
 {
-	if (spy_hCurWnd && fShowInCaption)
+	HWND hwnd = spy_hCurWnd;
+
+	if (hwnd && fShowInCaption)
 	{
 		TCHAR szClass[70] = { 0 };
 		TCHAR ach[90] = { 0 };
 
-		GetClassName(spy_hCurWnd, szClass, ARRAYSIZE(szClass));
-		_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [") szHexFmt _T(", %s]"), szAppName, (UINT)(UINT_PTR)spy_hCurWnd, szClass);
+		if (IsWindow(hwnd))
+		{
+			GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
+		}
+		else
+		{
+			 _tcscpy_s(szClass, ARRAYSIZE(szClass), szInvalidWindow);
+		}
+
+		_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [%08x, %s]"), szAppName, (UINT)(UINT_PTR)hwnd, szClass);
 		SetWindowText(g_hwndMain, ach);
 	}
 	else
