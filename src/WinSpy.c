@@ -173,7 +173,7 @@ void UpdateMainWindowText()
 	if (hwnd && fShowInCaption)
 	{
 		TCHAR szClass[70] = { 0 };
-		TCHAR ach[90] = { 0 };
+		TCHAR ach[100] = { 0 };
 
 		if (IsWindow(hwnd))
 		{
