@@ -15,13 +15,13 @@
 #include "resource.h"
 #include <tlhelp32.h>
 
+void DescribeProcessDpiAwareness(PSTR pszBuffer, size_t cchBuffer, DWORD dwProcessId);
 
 typedef BOOL(WINAPI * EnumProcessModulesProc)(HANDLE, HMODULE *, DWORD, LPDWORD);
 typedef DWORD(WINAPI * GetModuleBaseNameProc)(HANDLE, HMODULE, LPTSTR, DWORD);
 typedef DWORD(WINAPI * GetModuleFileNameExProc)(HANDLE, HMODULE, LPTSTR, DWORD);
 
 typedef BOOL(WINAPI * QueryFullProcessImageNameProc)(HANDLE hProcess, DWORD dwFlags, LPTSTR lpExeName, PDWORD lpdwSize);
-typedef BOOL(WINAPI * GetProcessDpiAwarenessProc)(HANDLE, int *);
 
 BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
@@ -187,74 +187,6 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 
 
 //
-// DetermineDPIAwareness
-//
-void DetermineDPIAwareness(DWORD dwProcessId)
-{
-    static GetProcessDpiAwarenessProc fnGetProcessDpiAwareness = NULL;
-    static BOOL fCheckedForProc = FALSE;
-
-    HWND  hwndDlg = WinSpyTab[PROCESS_TAB].hwnd;
-    CHAR  szValue[MAX_PATH] = "?";
-    PCSTR pszValue = szValue;
-
-    if (!fCheckedForProc)
-    {
-        fnGetProcessDpiAwareness = (GetProcessDpiAwarenessProc)GetProcAddress(GetModuleHandleA("user32"), "GetProcessDpiAwarenessInternal");
-        fCheckedForProc = TRUE;
-    }
-
-    if (fnGetProcessDpiAwareness)
-    {
-        HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
-
-        if (hProcess)
-        {
-            int dwLevel;
-
-            if (fnGetProcessDpiAwareness(hProcess, &dwLevel))
-            {
-                switch (dwLevel)
-                {
-                    case 0: // PROCESS_DPI_UNAWARE
-                        pszValue = "Unaware";
-                        break;
-
-                    case 1: // PROCESS_SYSTEM_DPI_AWARE
-                        pszValue = "System Aware";
-                        break;
-
-                    case 2: // PROCESS_PER_MONITOR_DPI_AWARE
-                        pszValue = "Per-Monitor Aware";
-                        break;
-
-                    default:
-                        sprintf_s(szValue, ARRAYSIZE(szValue), "Unknown (%d)", dwLevel);
-                        break;
-                }
-            }
-
-            CloseHandle(hProcess);
-        }
-        else
-        {
-            DWORD dwError = GetLastError();
-            
-            if (dwError == ERROR_ACCESS_DENIED)
-            {
-                pszValue = "<Access Denied>";
-            }
-        }
-    }
-    else
-    {
-        pszValue = "<Unavailable>";
-    }
-
-    SetDlgItemTextA(hwndDlg, IDC_PROCESS_DPI_AWARENESS, pszValue);
-}
-
-//
 //  Update the Process tab for the specified window
 //
 void SetProcessInfo(HWND hwnd)
@@ -309,7 +241,9 @@ void SetProcessInfo(HWND hwnd)
 
     if (fValid)
     {
-        DetermineDPIAwareness(dwProcessId);
+        CHAR szDpi[100];
+        DescribeProcessDpiAwareness(szDpi, ARRAYSIZE(szDpi), dwProcessId);
+        SetDlgItemTextA(hwndDlg, IDC_PROCESS_DPI_AWARENESS, szDpi);
     }
     else
     {
