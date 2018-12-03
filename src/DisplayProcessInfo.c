@@ -15,7 +15,8 @@
 #include "resource.h"
 #include <tlhelp32.h>
 
-void DescribeProcessDpiAwareness(PSTR pszBuffer, size_t cchBuffer, DWORD dwProcessId);
+void DescribeProcessDpiAwareness(DWORD dwProcessId, PSTR pszAwareness, size_t cchAwareness, PSTR pszDpi, size_t cchDpi);
+BOOL IsGetSystemDpiForProcessPresent();
 
 typedef BOOL(WINAPI * EnumProcessModulesProc)(HANDLE, HMODULE *, DWORD, LPDWORD);
 typedef DWORD(WINAPI * GetModuleBaseNameProc)(HANDLE, HMODULE, LPTSTR, DWORD);
@@ -241,12 +242,24 @@ void SetProcessInfo(HWND hwnd)
 
     if (fValid)
     {
+        CHAR szMode[100];
         CHAR szDpi[100];
-        DescribeProcessDpiAwareness(szDpi, ARRAYSIZE(szDpi), dwProcessId);
-        SetDlgItemTextA(hwndDlg, IDC_PROCESS_DPI_AWARENESS, szDpi);
+
+        DescribeProcessDpiAwareness(dwProcessId, szMode, ARRAYSIZE(szMode), szDpi, ARRAYSIZE(szDpi));
+
+        SetDlgItemTextA(hwndDlg, IDC_PROCESS_DPI_AWARENESS, szMode);
+        SetDlgItemTextA(hwndDlg, IDC_PROCESS_SYSTEM_DPI, szDpi);
+
+        if (!IsGetSystemDpiForProcessPresent())
+        {
+            ShowWindow(GetDlgItem(hwndDlg, IDC_PROCESS_SYSTEM_DPI_LABEL), SW_HIDE);
+            ShowWindow(GetDlgItem(hwndDlg, IDC_PROCESS_SYSTEM_DPI), SW_HIDE);
+        }
     }
     else
     {
         SetDlgItemText(hwndDlg, IDC_PROCESS_DPI_AWARENESS, ach);
+        SetDlgItemText(hwndDlg, IDC_PROCESS_SYSTEM_DPI, ach);
     }
 }
+

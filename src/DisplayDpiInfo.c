@@ -34,14 +34,14 @@ typedef DPI_AWARENESS_CONTEXT (WINAPI * PFN_GetWindowDpiAwarenessContext)(HWND);
 typedef BOOL (WINAPI * PFN_AreDpiAwarenessContextsEqual)(DPI_AWARENESS_CONTEXT, DPI_AWARENESS_CONTEXT);
 typedef BOOL (WINAPI * PFN_GetProcessDpiAwareness)(HANDLE, int *);
 typedef DPI_AWARENESS_CONTEXT (WINAPI * PFN_GetDpiAwarenessContextForProcess)(HANDLE);
-typedef UINT (WINAPI * PFN_GetDpiFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
+typedef UINT (WINAPI * PFN_GetSystemDpiForProcess)(HANDLE);
 
 static PFN_GetDpiForWindow s_pfnGetDpiForWindow = NULL;
 static PFN_GetWindowDpiAwarenessContext s_pfnGetWindowDpiAwarenessContext = NULL;
 static PFN_AreDpiAwarenessContextsEqual s_pfnAreDpiAwarenessContextsEqual = NULL;
 static PFN_GetProcessDpiAwareness s_pfnGetProcessDpiAwareness = NULL;
 static PFN_GetDpiAwarenessContextForProcess s_pfnGetDpiAwarenessContextForProcess = NULL;
-static PFN_GetDpiFromDpiAwarenessContext s_pfnGetDpiFromDpiAwarenessContext = NULL;
+static PFN_GetSystemDpiForProcess s_pfnGetSystemDpiForProcess = NULL;
 
 static BOOL s_fCheckedForAPIs = FALSE;
 
@@ -56,13 +56,20 @@ void InitializeDpiApis()
         s_pfnAreDpiAwarenessContextsEqual = (PFN_AreDpiAwarenessContextsEqual)GetProcAddress(hmod, "AreDpiAwarenessContextsEqual");
         s_pfnGetProcessDpiAwareness = (PFN_GetProcessDpiAwareness)GetProcAddress(hmod, "GetProcessDpiAwareness");
         s_pfnGetDpiAwarenessContextForProcess = (PFN_GetDpiAwarenessContextForProcess)GetProcAddress(hmod, "GetDpiAwarenessContextForProcess");
-        s_pfnGetDpiFromDpiAwarenessContext = (PFN_GetDpiFromDpiAwarenessContext)GetProcAddress(hmod, "GetDpiFromDpiAwarenessContext");
+        s_pfnGetSystemDpiForProcess = (PFN_GetSystemDpiForProcess)GetProcAddress(hmod, "GetSystemDpiForProcess");
 
         s_fCheckedForAPIs = TRUE;
     }
 }
 
-void DescribeDpiAwarenessContext(PSTR pszBuffer, size_t cchBuffer, DPI_AWARENESS_CONTEXT dpiContext, BOOL fIncludeDpiValue)
+BOOL IsGetSystemDpiForProcessPresent()
+{
+    InitializeDpiApis();
+
+    return (s_pfnGetSystemDpiForProcess != NULL);
+}
+
+void DescribeDpiAwarenessContext(DPI_AWARENESS_CONTEXT dpiContext, PSTR pszBuffer, size_t cchBuffer)
 {
     PSTR pszValue = NULL;
 
@@ -84,15 +91,7 @@ void DescribeDpiAwarenessContext(PSTR pszBuffer, size_t cchBuffer, DPI_AWARENESS
     }
     else if (s_pfnAreDpiAwarenessContextsEqual(dpiContext, DPI_AWARENESS_CONTEXT_SYSTEM_AWARE))
     {
-        if (fIncludeDpiValue && s_pfnGetDpiFromDpiAwarenessContext)
-        {
-            UINT dpi = s_pfnGetDpiFromDpiAwarenessContext(dpiContext);
-            sprintf_s(pszBuffer, cchBuffer, "System Aware  (%u DPI)", dpi);
-        }
-        else
-        {
-            pszValue = "System Aware";
-        }
+        pszValue = "System Aware";
     }
     else
     {
@@ -105,13 +104,14 @@ void DescribeDpiAwarenessContext(PSTR pszBuffer, size_t cchBuffer, DPI_AWARENESS
     }
 }
 
-void DescribeProcessDpiAwareness(PSTR pszBuffer, size_t cchBuffer, DWORD dwProcessId)
+void DescribeProcessDpiAwareness(DWORD dwProcessId, PSTR pszAwareness, size_t cchAwareness, PSTR pszDpi, size_t cchDpi)
 {
-    CHAR  szValue[MAX_PATH] = "?";
-    PCSTR pszValue = szValue;
     HANDLE hProcess = NULL;
 
     InitializeDpiApis();
+
+    *pszAwareness = '\0';
+    *pszDpi = '\0';
 
     if (s_pfnGetDpiAwarenessContextForProcess || s_pfnGetProcessDpiAwareness)
     {
@@ -123,14 +123,14 @@ void DescribeProcessDpiAwareness(PSTR pszBuffer, size_t cchBuffer, DWORD dwProce
 
             if (dwError == ERROR_ACCESS_DENIED)
             {
-                pszValue = "<Access Denied>";
+                StringCchCopyA(pszAwareness, cchAwareness, "<Access Denied>");
+                StringCchCopyA(pszDpi, cchDpi, "<Access Denied>");
             }
-
         }
     }
     else
     {
-        pszValue = "<Unavailable>";
+        StringCchCopyA(pszAwareness, cchAwareness, "<Unavailable>");
     }
 
     if (hProcess)
@@ -141,11 +141,13 @@ void DescribeProcessDpiAwareness(PSTR pszBuffer, size_t cchBuffer, DWORD dwProce
 
             if (dpiContext)
             {
-                DescribeDpiAwarenessContext(szValue, ARRAYSIZE(szValue), dpiContext, TRUE);
+                DescribeDpiAwarenessContext(dpiContext, pszAwareness, cchAwareness);
             }
         }
         else if (s_pfnGetProcessDpiAwareness)
         {
+            CHAR  szValue[MAX_PATH] = "?";
+            PCSTR pszValue = szValue;
             int dwLevel;
 
             if (s_pfnGetProcessDpiAwareness(hProcess, &dwLevel))
@@ -169,15 +171,27 @@ void DescribeProcessDpiAwareness(PSTR pszBuffer, size_t cchBuffer, DWORD dwProce
                         break;
                 }
             }
-        }
-    }
 
-    if (hProcess)
-    {
+            StringCchCopyA(pszAwareness, cchAwareness, pszValue);
+        }
+
+        if (s_pfnGetSystemDpiForProcess)
+        {
+            UINT dpi = s_pfnGetSystemDpiForProcess(hProcess);
+            UINT percent = (UINT)(dpi * 100 / 96);
+
+            if (dpi)
+            {
+                sprintf_s(pszDpi, cchDpi, "%d  (%u%%)", dpi, percent);
+            }
+            else
+            {
+                StringCchCopyA(pszDpi, cchDpi, "<Unavailable>");
+            }
+        }
+
         CloseHandle(hProcess);
     }
-
-    StringCchCopyA(pszBuffer, cchBuffer, pszValue);
 }
 
 //
@@ -208,7 +222,7 @@ void SetDpiInfo(HWND hwnd)
             UINT dpi     = s_pfnGetDpiForWindow(hwnd);
             UINT percent = (UINT)(dpi * 100 / 96);
 
-            sprintf_s(szTemp, ARRAYSIZE(szTemp), "%d (%u%%)", dpi, percent);
+            sprintf_s(szTemp, ARRAYSIZE(szTemp), "%d  (%u%%)", dpi, percent);
             pszValue = szTemp;
         }
         else
@@ -227,7 +241,7 @@ void SetDpiInfo(HWND hwnd)
         {
             DPI_AWARENESS_CONTEXT dpiContext = s_pfnGetWindowDpiAwarenessContext(hwnd);
 
-            DescribeDpiAwarenessContext(szTemp, ARRAYSIZE(szTemp), dpiContext, FALSE);
+            DescribeDpiAwarenessContext(dpiContext, szTemp, ARRAYSIZE(szTemp));
             pszValue = szTemp;
         }
         else
