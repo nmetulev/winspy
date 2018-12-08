@@ -287,20 +287,26 @@ void SetPinState(BOOL fPinned);
 //
 //  Global variables!! These just control WinSpy behavior
 //
-extern BOOL fAlwaysOnTop;
-extern BOOL fClassThenText;
-extern BOOL fEnableToolTips;
-extern BOOL fFullDragging;
-extern BOOL fMinimizeWinSpy;
-extern BOOL fPinWindow;
-extern BOOL fShowDimmed;
-extern BOOL fShowHidden;
-extern BOOL fShowInCaption;
-extern BOOL fSaveWinPos;
-extern UINT uTreeInclude;
+typedef struct
+{
+    BOOL  fAlwaysOnTop;
+    BOOL  fClassThenText;
+    BOOL  fEnableToolTips;
+    BOOL  fFullDragging;
+    BOOL  fMinimizeWinSpy;
+    BOOL  fPinWindow;
+    BOOL  fShowDimmed;
+    BOOL  fShowHidden;
+    BOOL  fShowInCaption;
+    BOOL  fSaveWinPos;
+    UINT  uTreeInclude;
 
-extern POINT ptPinPos;
-extern UINT  uPinnedCorner;
+    // These two variables help us to position WinSpy++ intelligently when it resizes.
+    POINT ptPinPos;
+    UINT  uPinnedCorner;
+} Options;
+
+extern Options g_opts;
 
 //
 //  Application global variables

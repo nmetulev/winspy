@@ -295,12 +295,12 @@ void ShowSel(HWND hwnd)
 		if (hwndTransPanel == 0)
 		{
 			fTransSel = FALSE;
-			InvertWindow(hwnd, fShowHidden);
+			InvertWindow(hwnd, g_opts.fShowHidden);
 		}
 	}
 	else
 	{
-		InvertWindow(hwnd, fShowHidden);
+		InvertWindow(hwnd, g_opts.fShowHidden);
 	}
 }
 
@@ -313,7 +313,7 @@ void HideSel(HWND hwnd)
 	}
 	else
 	{
-		InvertWindow(hwnd, fShowHidden);
+		InvertWindow(hwnd, g_opts.fShowHidden);
 	}
 }
 
@@ -376,7 +376,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ptLast = pt;
 			ClientToScreen(hwnd, (POINT *)&pt);
 
-			hWndPoint = WindowFromPointEx(pt, fShowHidden);
+			hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
 
 			if (hWndPoint == 0)
 				return 0;

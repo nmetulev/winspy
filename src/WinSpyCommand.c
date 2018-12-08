@@ -39,13 +39,13 @@ void ShowHelp(HWND hwndMain, UINT uCommand, DWORD dwData)
 
 void SetPinState(BOOL fPinned)
 {
-	fPinWindow = fPinned;
+	g_opts.fPinWindow = fPinned;
 
 	SendMessage(hwndPin, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
-		MAKELPARAM(fPinWindow, 0));
+		MAKELPARAM(fPinned, 0));
 
 	SendMessage(hwndPin, TB_CHECKBUTTON, IDM_WINSPY_PIN,
-		MAKELPARAM(fPinWindow, 0));
+		MAKELPARAM(fPinned, 0));
 
 }
 
@@ -127,27 +127,27 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 	case IDM_WINSPY_PIN:
 
-		fPinWindow = !fPinWindow;
+		g_opts.fPinWindow = !g_opts.fPinWindow;
 
 		SendMessage(hwndPin, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
-			MAKELPARAM(fPinWindow, 0));
+			MAKELPARAM(g_opts.fPinWindow, 0));
 
 		// if from an accelerator, then we have to manually check the
 		if (HIWORD(wParam) == 1)
 		{
 			SendMessage(hwndPin, TB_CHECKBUTTON, IDM_WINSPY_PIN,
-				MAKELPARAM(fPinWindow, 0));
+				MAKELPARAM(g_opts.fPinWindow, 0));
 		}
 
-		GetPinnedPosition(hwnd, &ptPinPos);
+		GetPinnedPosition(hwnd, &g_opts.ptPinPos);
 		return TRUE;
 
 	case IDC_HIDDEN:
-		fShowHidden = IsDlgButtonChecked(hwnd, IDC_HIDDEN);
+		g_opts.fShowHidden = IsDlgButtonChecked(hwnd, IDC_HIDDEN);
 		return TRUE;
 
 	case IDC_MINIMIZE:
-		fMinimizeWinSpy = IsDlgButtonChecked(hwnd, IDC_MINIMIZE);
+		g_opts.fMinimizeWinSpy = IsDlgButtonChecked(hwnd, IDC_MINIMIZE);
 		return TRUE;
 
 	case IDM_WINSPY_GENERAL:

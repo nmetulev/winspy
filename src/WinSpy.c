@@ -170,7 +170,7 @@ void UpdateMainWindowText()
 {
 	HWND hwnd = spy_hCurWnd;
 
-	if (hwnd && fShowInCaption)
+	if (hwnd && g_opts.fShowInCaption)
 	{
 		TCHAR szClass[70] = { 0 };
 		TCHAR ach[100] = { 0 };
@@ -218,7 +218,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		hwndLastTarget = spy_hCurWnd;
 
-		fWasMinimized = fMinimizeWinSpy;
+		fWasMinimized = g_opts.fMinimizeWinSpy;
 		if (fWasMinimized)
 		{
 			uLastLayout = GetWindowLayout(hwndMain);
@@ -227,7 +227,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 			UpdateWindow(hwndMain);
 		}
 
-		fOldShowHidden = fShowHidden;
+		fOldShowHidden = g_opts.fShowHidden;
 		break;
 
 	case WFN_CANCELLED:
@@ -251,7 +251,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 		DisplayWindowInfo(spy_hCurWnd);
 
-		fShowHidden = fOldShowHidden;
+		g_opts.fShowHidden = fOldShowHidden;
 		break;
 
 	case WFN_CTRL_UP:
@@ -264,12 +264,12 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 	case WFN_SHIFT_UP:
 		SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_SHOWONLY);
-		fShowHidden = fOldShowHidden;
+		g_opts.fShowHidden = fOldShowHidden;
 		break;
 
 	case WFN_SHIFT_DOWN:
 		SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_HIDEONLY);
-		fShowHidden = TRUE;
+		g_opts.fShowHidden = TRUE;
 		break;
 
 	}
@@ -431,7 +431,7 @@ HWND CreateTooltip(HWND hwndDlg)
 		fRet = (BOOL)SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM)&ti);
 	}
 
-	SendMessage(hwndTT, TTM_ACTIVATE, fEnableToolTips, 0);
+	SendMessage(hwndTT, TTM_ACTIVATE, g_opts.fEnableToolTips, 0);
 
 	return hwndTT;
 }
@@ -469,10 +469,10 @@ HWND CreatePinToolbar(HWND hwndDlg)
 
 	// Setup the bitmap image
 	SendMessage(hwndTB, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
-		(LPARAM)MAKELPARAM(fPinWindow, 0));
+		(LPARAM)MAKELPARAM(g_opts.fPinWindow, 0));
 
 	// Checked / Unchecked
-	SendMessage(hwndTB, TB_CHECKBUTTON, IDM_WINSPY_PIN, MAKELONG(fPinWindow, 0));
+	SendMessage(hwndTB, TB_CHECKBUTTON, IDM_WINSPY_PIN, MAKELONG(g_opts.fPinWindow, 0));
 
 	return hwndTB;
 }
@@ -526,8 +526,8 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	InitStockStyleLists();
 
 	//
-	CheckDlgButton(hwnd, IDC_MINIMIZE, fMinimizeWinSpy);
-	CheckDlgButton(hwnd, IDC_HIDDEN, fShowHidden);
+	CheckDlgButton(hwnd, IDC_MINIMIZE, g_opts.fMinimizeWinSpy);
+	CheckDlgButton(hwnd, IDC_HIDDEN, g_opts.fShowHidden);
 
 	// Position our contents, work out how big the various
 	// layouts are (depending on current system settings for border
@@ -536,13 +536,13 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 
 	// Make sure we test for this FIRST, before we do ANY SetWindowPos'.
 	// Otherwise, we will get a WM_WINDOWPOSCHANGED, and set fAlwaysOnTop to 0!
-	if (fAlwaysOnTop)
+	if (g_opts.fAlwaysOnTop)
 	{
 		SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_ZONLY);
 	}
 
 	// See what the registry settings are, and setup accordingly
-	if (fSaveWinPos && ptPinPos.x != CW_USEDEFAULT && ptPinPos.y != CW_USEDEFAULT)
+	if (g_opts.fSaveWinPos && g_opts.ptPinPos.x != CW_USEDEFAULT && g_opts.ptPinPos.y != CW_USEDEFAULT)
 	{
 		SetWindowLayout(hwnd, WINSPY_MINIMIZED);
 	}
@@ -550,8 +550,8 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	{
 		RECT rect;
 		GetWindowRect(hwnd, &rect);
-		ptPinPos.x = rect.left;
-		ptPinPos.y = rect.top;
+		g_opts.ptPinPos.x = rect.left;
+		g_opts.ptPinPos.y = rect.top;
 	}
 
 	// display the general tab
@@ -570,7 +570,7 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_HELP, _T("&Help\tF1"));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING |
-		(fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
+		(g_opts.fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
 		_T("Always On &Top\tShift+Y"));
 	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 

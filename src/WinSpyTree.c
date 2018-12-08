@@ -210,7 +210,7 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 	//
 	// Window handle in hex format
 	//
-	if (uTreeInclude & WINLIST_INCLUDE_HANDLE)
+	if (g_opts.uTreeInclude & WINLIST_INCLUDE_HANDLE)
 	{
 		_stprintf_s(szTotal, cchTotal, szHexFmt _T("  "), (UINT)(UINT_PTR)hwnd);
 	}
@@ -227,11 +227,11 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 	idx = IconFromClassName(szClass, dwStyle);
 
-	if (uTreeInclude & WINLIST_INCLUDE_CLASS)
+	if (g_opts.uTreeInclude & WINLIST_INCLUDE_CLASS)
 	{
 		VerboseClassName(szClass, ARRAYSIZE(szClass), (WORD)GetClassLong(hwnd, GCW_ATOM));
 
-		if (fClassThenText)
+		if (g_opts.fClassThenText)
 		{
 			_tcscat_s(szTotal, cchTotal, szClass);
 			_tcscat_s(szTotal, cchTotal, _T("  "));
@@ -262,7 +262,7 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 	// add on the last quote
 	_tcscat_s(szTotal, cchTotal, _T("\""));
 
-	if (!fClassThenText)
+	if (!g_opts.fClassThenText)
 	{
 		_tcscat_s(szTotal, cchTotal, _T("  "));
 		_tcscat_s(szTotal, cchTotal, szClass);
@@ -403,7 +403,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 	if (idx != -1)
 		tv.item.iImage = idx;
 
-	if (fShowDimmed && !IsWindowVisible(hwnd) && hwnd != hwndTree)
+	if (g_opts.fShowDimmed && !IsWindowVisible(hwnd) && hwnd != hwndTree)
 		tv.item.iImage += NUM_CLASS_BITMAPS;
 
 	//set the selected bitmap to be the same

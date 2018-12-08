@@ -11,20 +11,7 @@
 #include "RegHelper.h"
 #include "resource.h"
 
-BOOL fSaveWinPos;
-BOOL fAlwaysOnTop;
-BOOL fMinimizeWinSpy;
-BOOL fFullDragging;
-BOOL fShowHidden;
-BOOL fShowDimmed;
-UINT uTreeInclude;
-BOOL fClassThenText;
-BOOL fPinWindow;
-BOOL fShowInCaption;
-BOOL fEnableToolTips;
-
-extern POINT ptPinPos;
-extern UINT  uPinnedCorner;
+Options g_opts;
 
 extern HWND hwndToolTip;
 
@@ -38,22 +25,22 @@ void LoadSettings(void)
 
 	RegCreateKeyEx(HKEY_CURRENT_USER, szRegLoc, 0, _T(""), 0, KEY_READ, NULL, &hkey, NULL);
 
-	fSaveWinPos = GetSettingBool(hkey, _T("SavePosition"), TRUE);
-	fAlwaysOnTop = GetSettingBool(hkey, _T("AlwaysOnTop"), FALSE);
-	fMinimizeWinSpy = GetSettingBool(hkey, _T("MinimizeWinSpy"), TRUE);
-	fFullDragging = GetSettingBool(hkey, _T("FullDragging"), TRUE);
-	fShowHidden = GetSettingBool(hkey, _T("ShowHidden"), FALSE);
-	fShowDimmed = GetSettingBool(hkey, _T("ShowDimmed"), TRUE);
-	fClassThenText = GetSettingBool(hkey, _T("ClassThenText"), TRUE);
-	fPinWindow = GetSettingBool(hkey, _T("PinWindow"), FALSE);
-	fShowInCaption = GetSettingBool(hkey, _T("ShowInCaption"), TRUE);
-	fEnableToolTips = GetSettingBool(hkey, _T("EnableToolTips"), FALSE);
-	uTreeInclude = GetSettingInt(hkey, _T("TreeItems"), WINLIST_INCLUDE_ALL);
+	g_opts.fSaveWinPos = GetSettingBool(hkey, _T("SavePosition"), TRUE);
+	g_opts.fAlwaysOnTop = GetSettingBool(hkey, _T("AlwaysOnTop"), FALSE);
+	g_opts.fMinimizeWinSpy = GetSettingBool(hkey, _T("MinimizeWinSpy"), TRUE);
+	g_opts.fFullDragging = GetSettingBool(hkey, _T("FullDragging"), TRUE);
+	g_opts.fShowHidden = GetSettingBool(hkey, _T("ShowHidden"), FALSE);
+	g_opts.fShowDimmed = GetSettingBool(hkey, _T("ShowDimmed"), TRUE);
+	g_opts.fClassThenText = GetSettingBool(hkey, _T("ClassThenText"), TRUE);
+	g_opts.fPinWindow = GetSettingBool(hkey, _T("PinWindow"), FALSE);
+	g_opts.fShowInCaption = GetSettingBool(hkey, _T("ShowInCaption"), TRUE);
+	g_opts.fEnableToolTips = GetSettingBool(hkey, _T("EnableToolTips"), FALSE);
+	g_opts.uTreeInclude = GetSettingInt(hkey, _T("TreeItems"), WINLIST_INCLUDE_ALL);
 
-	uPinnedCorner = GetSettingInt(hkey, _T("PinCorner"), 0);
+	g_opts.uPinnedCorner = GetSettingInt(hkey, _T("PinCorner"), 0);
 
-	ptPinPos.x = GetSettingInt(hkey, _T("xpos"), CW_USEDEFAULT);
-	ptPinPos.y = GetSettingInt(hkey, _T("ypos"), CW_USEDEFAULT);
+	g_opts.ptPinPos.x = GetSettingInt(hkey, _T("xpos"), CW_USEDEFAULT);
+	g_opts.ptPinPos.y = GetSettingInt(hkey, _T("ypos"), CW_USEDEFAULT);
 
 	RegCloseKey(hkey);
 }
@@ -64,21 +51,21 @@ void SaveSettings(void)
 
 	RegCreateKeyEx(HKEY_CURRENT_USER, szRegLoc, 0, _T(""), 0, KEY_WRITE, NULL, &hkey, NULL);
 
-	WriteSettingBool(hkey, _T("SavePosition"), fSaveWinPos);
-	WriteSettingBool(hkey, _T("AlwaysOnTop"), fAlwaysOnTop);
-	WriteSettingBool(hkey, _T("MinimizeWinSpy"), fMinimizeWinSpy);
-	WriteSettingBool(hkey, _T("FullDragging"), fFullDragging);
-	WriteSettingBool(hkey, _T("ShowHidden"), fShowHidden);
-	WriteSettingBool(hkey, _T("ShowDimmed"), fShowDimmed);
-	WriteSettingBool(hkey, _T("ClassThenText"), fClassThenText);
-	WriteSettingBool(hkey, _T("PinWindow"), fPinWindow);
-	WriteSettingBool(hkey, _T("ShowInCaption"), fShowInCaption);
-	WriteSettingBool(hkey, _T("EnableToolTips"), fEnableToolTips);
-	WriteSettingInt(hkey, _T("TreeItems"), uTreeInclude);
-	WriteSettingInt(hkey, _T("PinCorner"), uPinnedCorner);
+	WriteSettingBool(hkey, _T("SavePosition"), g_opts.fSaveWinPos);
+	WriteSettingBool(hkey, _T("AlwaysOnTop"), g_opts.fAlwaysOnTop);
+	WriteSettingBool(hkey, _T("MinimizeWinSpy"), g_opts.fMinimizeWinSpy);
+	WriteSettingBool(hkey, _T("FullDragging"), g_opts.fFullDragging);
+	WriteSettingBool(hkey, _T("ShowHidden"), g_opts.fShowHidden);
+	WriteSettingBool(hkey, _T("ShowDimmed"), g_opts.fShowDimmed);
+	WriteSettingBool(hkey, _T("ClassThenText"), g_opts.fClassThenText);
+	WriteSettingBool(hkey, _T("PinWindow"), g_opts.fPinWindow);
+	WriteSettingBool(hkey, _T("ShowInCaption"), g_opts.fShowInCaption);
+	WriteSettingBool(hkey, _T("EnableToolTips"), g_opts.fEnableToolTips);
+	WriteSettingInt(hkey, _T("TreeItems"), g_opts.uTreeInclude);
+	WriteSettingInt(hkey, _T("PinCorner"), g_opts.uPinnedCorner);
 
-	WriteSettingInt(hkey, _T("xpos"), ptPinPos.x);
-	WriteSettingInt(hkey, _T("ypos"), ptPinPos.y);
+	WriteSettingInt(hkey, _T("xpos"), g_opts.ptPinPos.x);
+	WriteSettingInt(hkey, _T("ypos"), g_opts.ptPinPos.y);
 
 	RegCloseKey(hkey);
 }
@@ -91,18 +78,18 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 	switch (iMsg)
 	{
 	case WM_INITDIALOG:
-		CheckDlgButton(hwnd, IDC_OPTIONS_SAVEPOS, fSaveWinPos);
-		CheckDlgButton(hwnd, IDC_OPTIONS_FULLDRAG, fFullDragging);
-		CheckDlgButton(hwnd, IDC_OPTIONS_DIR, fClassThenText);
-		CheckDlgButton(hwnd, IDC_OPTIONS_SHOWHIDDEN, fShowDimmed);
-		CheckDlgButton(hwnd, IDC_OPTIONS_SHOWINCAPTION, fShowInCaption);
-		CheckDlgButton(hwnd, IDC_OPTIONS_TOOLTIPS, fEnableToolTips);
+		CheckDlgButton(hwnd, IDC_OPTIONS_SAVEPOS, g_opts.fSaveWinPos);
+		CheckDlgButton(hwnd, IDC_OPTIONS_FULLDRAG, g_opts.fFullDragging);
+		CheckDlgButton(hwnd, IDC_OPTIONS_DIR, g_opts.fClassThenText);
+		CheckDlgButton(hwnd, IDC_OPTIONS_SHOWHIDDEN, g_opts.fShowDimmed);
+		CheckDlgButton(hwnd, IDC_OPTIONS_SHOWINCAPTION, g_opts.fShowInCaption);
+		CheckDlgButton(hwnd, IDC_OPTIONS_TOOLTIPS, g_opts.fEnableToolTips);
 
 		CheckDlgButton(hwnd, IDC_OPTIONS_INCHANDLE,
-			(uTreeInclude & WINLIST_INCLUDE_HANDLE) ? TRUE : FALSE);
+			(g_opts.uTreeInclude & WINLIST_INCLUDE_HANDLE) ? TRUE : FALSE);
 
 		CheckDlgButton(hwnd, IDC_OPTIONS_INCCLASS,
-			(uTreeInclude & WINLIST_INCLUDE_CLASS) ? TRUE : FALSE);
+			(g_opts.uTreeInclude & WINLIST_INCLUDE_CLASS) ? TRUE : FALSE);
 
 		return TRUE;
 
@@ -115,20 +102,20 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		{
 		case IDOK:
 
-			fSaveWinPos = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SAVEPOS);
-			fFullDragging = IsDlgButtonChecked(hwnd, IDC_OPTIONS_FULLDRAG);
-			fClassThenText = IsDlgButtonChecked(hwnd, IDC_OPTIONS_DIR);
-			fShowDimmed = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SHOWHIDDEN);
-			fShowInCaption = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SHOWINCAPTION);
-			fEnableToolTips = IsDlgButtonChecked(hwnd, IDC_OPTIONS_TOOLTIPS);
+			g_opts.fSaveWinPos = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SAVEPOS);
+			g_opts.fFullDragging = IsDlgButtonChecked(hwnd, IDC_OPTIONS_FULLDRAG);
+			g_opts.fClassThenText = IsDlgButtonChecked(hwnd, IDC_OPTIONS_DIR);
+			g_opts.fShowDimmed = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SHOWHIDDEN);
+			g_opts.fShowInCaption = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SHOWINCAPTION);
+			g_opts.fEnableToolTips = IsDlgButtonChecked(hwnd, IDC_OPTIONS_TOOLTIPS);
 
-			uTreeInclude = 0;
+			g_opts.uTreeInclude = 0;
 
 			if (IsDlgButtonChecked(hwnd, IDC_OPTIONS_INCHANDLE))
-				uTreeInclude |= WINLIST_INCLUDE_HANDLE;
+				g_opts.uTreeInclude |= WINLIST_INCLUDE_HANDLE;
 
 			if (IsDlgButtonChecked(hwnd, IDC_OPTIONS_INCCLASS))
-				uTreeInclude |= WINLIST_INCLUDE_CLASS;
+				g_opts.uTreeInclude |= WINLIST_INCLUDE_CLASS;
 
 			EndDialog(hwnd, 0);
 			return TRUE;
@@ -151,5 +138,5 @@ void ShowOptionsDlg(HWND hwndParent)
 
 	UpdateMainWindowText();
 
-	SendMessage(hwndToolTip, TTM_ACTIVATE, fEnableToolTips, 0);
+	SendMessage(hwndToolTip, TTM_ACTIVATE, g_opts.fEnableToolTips, 0);
 }

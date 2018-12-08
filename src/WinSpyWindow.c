@@ -36,13 +36,6 @@ static int nBottomBorder;       // pixels between bottomside + tab
 
 static BOOL fxMaxed, fyMaxed;   // Remember our sized state when a size/move starts
 
-//
-//  These two variables help us to position WinSpy++
-//  intelligently when it resizes.
-//
-UINT   uPinnedCorner = PINNED_TOPLEFT;  // which corner has been pinned
-POINT  ptPinPos;                        // coords of pinned corner
-
 void RefreshTreeView(HWND hwndTree);
 
 //
@@ -128,7 +121,7 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 	// get
 	GetWorkArea(&rect, &rcDisplay);
 
-	uPinnedCorner = PINNED_NONE;
+	UINT uPinnedCorner = PINNED_NONE;
 
 	if (rect.left + szLastExp.cx >= rcDisplay.right)
 		uPinnedCorner |= PINNED_RIGHT;
@@ -140,7 +133,7 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 	else
 		uPinnedCorner |= PINNED_TOP;
 
-	if (fPinWindow == FALSE)
+	if (g_opts.fPinWindow == FALSE)
 		uPinnedCorner = PINNED_TOPLEFT;
 
 	switch (uPinnedCorner)
@@ -186,6 +179,8 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 		pt->y = rect.top;
 		uPinnedCorner &= ~PINNED_BOTTOM;
 	}
+
+    g_opts.uPinnedCorner = uPinnedCorner;
 }
 
 //
@@ -439,6 +434,7 @@ void SetWindowLayout(HWND hwnd, UINT uLayout)
 
 	SIZE   *psz;
 	POINT  ptPos;
+    POINT  ptPinPos = g_opts.ptPinPos;
 
 	// Decide which layout we are going to use
 	switch (uLayout)
@@ -462,7 +458,7 @@ void SetWindowLayout(HWND hwnd, UINT uLayout)
 
 	// Now work out where the top-left corner needs to
 	// be, taking into account where the pinned-corner is
-	switch (uPinnedCorner)
+	switch (g_opts.uPinnedCorner)
 	{
 	default:
 	case PINNED_TOPLEFT:
@@ -712,11 +708,11 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 
 		// Set the global flag (just so we can remember it in the registry)
 		if (dwStyle & WS_EX_TOPMOST)
-			fAlwaysOnTop = TRUE;
+			g_opts.fAlwaysOnTop = TRUE;
 		else
-			fAlwaysOnTop = FALSE;
+			g_opts.fAlwaysOnTop = FALSE;
 
-		CheckSysMenu(hwnd, IDM_WINSPY_ONTOP, fAlwaysOnTop);
+		CheckSysMenu(hwnd, IDM_WINSPY_ONTOP, g_opts.fAlwaysOnTop);
 	}
 
 
@@ -887,7 +883,7 @@ UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 		}
 	}
 
-	GetPinnedPosition(hwnd, &ptPinPos);
+	GetPinnedPosition(hwnd, &g_opts.ptPinPos);
 
 	uOldLayout = uLayout;
 
@@ -901,7 +897,7 @@ UINT_PTR WinSpyDlg_NCHitTest(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	uHitTest = DefWindowProc(hwnd, WM_NCHITTEST, wParam, lParam);
 
 	// Allow full-window dragging
-	if (fFullDragging &&    uHitTest == HTCLIENT)
+	if (g_opts.fFullDragging &&    uHitTest == HTCLIENT)
 		uHitTest = HTCAPTION;
 
 	SetWindowLongPtr(hwnd, DWLP_MSGRESULT, uHitTest);
@@ -915,6 +911,7 @@ BOOL WinSpy_ZoomTo(HWND hwnd, UINT uCorner)
 {
 	RECT rcDisplay;
 	RECT rect;
+	POINT ptPinPos;
 
 	//SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDisplay, FALSE);
 	GetWindowRect(hwnd, &rect);
@@ -948,7 +945,8 @@ BOOL WinSpy_ZoomTo(HWND hwnd, UINT uCorner)
 
 	SetPinState(TRUE);
 
-	uPinnedCorner = uCorner;
+	g_opts.ptPinPos = ptPinPos; 
+	g_opts.uPinnedCorner = uCorner;
 	SetWindowLayout(hwnd, WINSPY_MINIMIZED);
 
 	return TRUE;
