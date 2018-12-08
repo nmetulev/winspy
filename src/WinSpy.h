@@ -23,10 +23,10 @@ extern "C" {
 //
 typedef struct
 {
-	HWND    hwnd;
-	LPCTSTR szText;
-	UINT    id;
-	DLGPROC dlgproc;
+    HWND    hwnd;
+    LPCTSTR szText;
+    UINT    id;
+    DLGPROC dlgproc;
 } DialogTab;
 
 extern DialogTab WinSpyTab[];
@@ -48,8 +48,8 @@ extern DialogTab WinSpyTab[];
 //
 typedef struct
 {
-	LPCTSTR szName;
-	UINT value;
+    LPCTSTR szName;
+    UINT value;
 } ConstLookupType;
 
 //
@@ -57,8 +57,8 @@ typedef struct
 //
 typedef struct
 {
-	LPCTSTR szName;
-	HANDLE handle;
+    LPCTSTR szName;
+    HANDLE handle;
 } HandleLookupType;
 
 //
@@ -99,20 +99,20 @@ typedef struct
 
 typedef struct
 {
-	LPCTSTR name;       // Textual name of style
-	DWORD   value;      // The value of the style
-	DWORD   extraMask;  // The extra bits determining the mask for testing presence of the style
+    LPCTSTR name;       // Textual name of style
+    DWORD   value;      // The value of the style
+    DWORD   extraMask;  // The extra bits determining the mask for testing presence of the style
 
-	// This style is only applicable if the following style is present:
-	DWORD dependencyValue;
-	DWORD dependencyExtraMask;
+    // This style is only applicable if the following style is present:
+    DWORD dependencyValue;
+    DWORD dependencyExtraMask;
 } StyleLookupEx;
 
 inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
 {
-	if (((pStyle->dependencyValue | pStyle->dependencyExtraMask) & value) != pStyle->dependencyValue)
-		return FALSE;
-	return ((pStyle->value | pStyle->extraMask) & value) == pStyle->value;
+    if (((pStyle->dependencyValue | pStyle->dependencyExtraMask) & value) != pStyle->dependencyValue)
+        return FALSE;
+    return ((pStyle->value | pStyle->extraMask) & value) == pStyle->value;
 }
 
 // Because static_assert is a statement which is not an expression, it cannot be used where an expression is expected.
@@ -152,9 +152,9 @@ inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
 //
 typedef struct
 {
-	LPCTSTR        szClassName;
-	StyleLookupEx  *stylelist;
-	DWORD           dwMessage;
+    LPCTSTR        szClassName;
+    StyleLookupEx  *stylelist;
+    DWORD           dwMessage;
 } ClassStyleLookup;
 
 #define WINLIST_INCLUDE_HANDLE  1       // handle, classname
@@ -251,7 +251,7 @@ void LoadSettings(void);
 void SaveSettings(void);
 
 BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass,
-	WNDPROC *pProc, TCHAR *pszText, int nTextLen);
+    WNDPROC *pProc, TCHAR *pszText, int nTextLen);
 
 BOOL RemoveTabCtrlFlicker(HWND hwndTab);
 
