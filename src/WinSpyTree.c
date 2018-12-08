@@ -52,12 +52,9 @@ typedef struct
 
 } WinProc;
 
-static WinProc *WinStackList;
-int WinStackCount;
+static WinProc *g_WinStackList;
+int g_WinStackCount;
 
-//static WinStackType WindowStack[MAX_WINDOW_DEPTH];
-//static int          nWindowZ = 0;     //Current position in the window stack
-//static HTREEITEM    hRoot;                //Main root. Not used?
 
 //
 //  Define a lookup table, of windowclass to image index
@@ -290,10 +287,10 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	//
 	// look for an existing process/window stack:
 	//
-	for (i = 0; i < WinStackCount; i++)
+	for (i = 0; i < g_WinStackCount; i++)
 	{
-		if (WinStackList[i].dwProcessId == pid)
-			return &WinStackList[i];
+		if (g_WinStackList[i].dwProcessId == pid)
+			return &g_WinStackList[i];
 	}
 
 	//
@@ -317,13 +314,13 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	tv.item.lParam = (LPARAM)GetDesktopWindow();
 
 	hRoot = TreeView_InsertItem(hwndTree, &tv);
-	WinStackList[WinStackCount].hRoot = hRoot;//TVI_ROOT ;
-	WinStackList[WinStackCount].dwProcessId = pid;
-	WinStackList[WinStackCount].nWindowZ = 1;
-	WinStackList[WinStackCount].windowStack[0].hRoot = hRoot;
-	WinStackList[WinStackCount].windowStack[0].hwnd = 0;
+	g_WinStackList[g_WinStackCount].hRoot = hRoot;//TVI_ROOT ;
+	g_WinStackList[g_WinStackCount].dwProcessId = pid;
+	g_WinStackList[g_WinStackCount].nWindowZ = 1;
+	g_WinStackList[g_WinStackCount].windowStack[0].hRoot = hRoot;
+	g_WinStackList[g_WinStackCount].windowStack[0].hwnd = 0;
 
-	return &WinStackList[WinStackCount++];
+	return &g_WinStackList[g_WinStackCount++];
 }
 
 //
@@ -604,8 +601,12 @@ void RefreshTreeView(HWND hwndTree)
 {
 	DWORD dwStyle;
 
-	WinStackList = (WinProc*)malloc(1000 * sizeof(WinStackList[0]));
-	WinStackCount = 0;
+    if (!g_WinStackList)
+    {
+        g_WinStackList = (WinProc*)malloc(1000 * sizeof(WinProc));
+    }
+
+	g_WinStackCount = 0;
 
 	EnableWindow(hwndTree, TRUE);
 
@@ -629,7 +630,4 @@ void RefreshTreeView(HWND hwndTree)
 		SWP_NOZORDER | SWP_NOACTIVATE | SWP_DRAWFRAME);
 
 	InvalidateRect(hwndTree, 0, TRUE);
-
-	//free(WinStackList);
-	WinStackList = 0;
 }
