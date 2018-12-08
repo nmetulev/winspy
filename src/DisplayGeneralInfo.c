@@ -84,6 +84,8 @@ void SetGeneralInfo(HWND hwnd)
 	{
 		GetClassName(hwnd, ach, ARRAYSIZE(ach));
 
+		VerboseClassName(ach, ARRAYSIZE(ach), (WORD)GetClassLong(hwnd, GCW_ATOM));
+
 		if (IsWindowUnicode(hwnd))
 			_tcscat_s(ach, ARRAYSIZE(ach), _T("  (Unicode)"));
 	}

@@ -93,6 +93,8 @@ ClassImageLookup ClassImage[] =
 	_T("RICHEDIT"),             8,  0, 0, 0,
 	_T("RichEdit20A"),          8,  0, 0, 0,
 	_T("RichEdit20W"),          8,  0, 0, 0,
+	_T("RICHEDIT50W"),          8,  0, 0, 0,
+	_T("RICHEDIT60W"),          8,  0, 0, 0,
 
 	_T("Scrollbar"),            9,  0, SBS_VERT, 0,
 	_T("Scrollbar"),            11, 0, SBS_SIZEBOX | SBS_SIZEGRIP, 0,
