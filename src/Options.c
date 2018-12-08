@@ -35,6 +35,7 @@ void LoadSettings(void)
 	g_opts.fPinWindow = GetSettingBool(hkey, _T("PinWindow"), FALSE);
 	g_opts.fShowInCaption = GetSettingBool(hkey, _T("ShowInCaption"), TRUE);
 	g_opts.fEnableToolTips = GetSettingBool(hkey, _T("EnableToolTips"), FALSE);
+	g_opts.fShowDesktopRoot = GetSettingBool(hkey, _T("ShowDesktopRoot"), FALSE);
 	g_opts.uTreeInclude = GetSettingInt(hkey, _T("TreeItems"), WINLIST_INCLUDE_ALL);
 
 	g_opts.uPinnedCorner = GetSettingInt(hkey, _T("PinCorner"), 0);
@@ -61,6 +62,7 @@ void SaveSettings(void)
 	WriteSettingBool(hkey, _T("PinWindow"), g_opts.fPinWindow);
 	WriteSettingBool(hkey, _T("ShowInCaption"), g_opts.fShowInCaption);
 	WriteSettingBool(hkey, _T("EnableToolTips"), g_opts.fEnableToolTips);
+	WriteSettingBool(hkey, _T("ShowDesktopRoot"), g_opts.fShowDesktopRoot);
 	WriteSettingInt(hkey, _T("TreeItems"), g_opts.uTreeInclude);
 	WriteSettingInt(hkey, _T("PinCorner"), g_opts.uPinnedCorner);
 
@@ -84,6 +86,7 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		CheckDlgButton(hwnd, IDC_OPTIONS_SHOWHIDDEN, g_opts.fShowDimmed);
 		CheckDlgButton(hwnd, IDC_OPTIONS_SHOWINCAPTION, g_opts.fShowInCaption);
 		CheckDlgButton(hwnd, IDC_OPTIONS_TOOLTIPS, g_opts.fEnableToolTips);
+        CheckDlgButton(hwnd, IDC_OPTIONS_DESKTOPROOT, g_opts.fShowDesktopRoot);
 
 		CheckDlgButton(hwnd, IDC_OPTIONS_INCHANDLE,
 			(g_opts.uTreeInclude & WINLIST_INCLUDE_HANDLE) ? TRUE : FALSE);
@@ -108,6 +111,7 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			g_opts.fShowDimmed = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SHOWHIDDEN);
 			g_opts.fShowInCaption = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SHOWINCAPTION);
 			g_opts.fEnableToolTips = IsDlgButtonChecked(hwnd, IDC_OPTIONS_TOOLTIPS);
+			g_opts.fShowDesktopRoot = IsDlgButtonChecked(hwnd, IDC_OPTIONS_DESKTOPROOT);
 
 			g_opts.uTreeInclude = 0;
 

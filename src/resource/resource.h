@@ -124,6 +124,7 @@
 #define IDC_EDITX                       1063
 #define IDC_OPTIONS_TOOLTIPS            1063
 #define IDC_SPINX                       1064
+#define IDC_OPTIONS_DESKTOPROOT         1064
 #define IDC_SPINY                       1065
 #define IDC_APPLY                       1065
 #define IDC_SPINW                       1066

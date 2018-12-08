@@ -52,9 +52,9 @@ typedef struct
 
 } WinProc;
 
-static WinProc *g_WinStackList;
-int g_WinStackCount;
-
+WinProc     *g_WinStackList;
+int          g_WinStackCount;
+HTREEITEM    g_hRoot;
 
 //
 //  Define a lookup table, of windowclass to image index
@@ -256,8 +256,17 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 		GetWindowText(hwnd, pszCaption, (int)cchCaption);
 	}
 
-	// add on the last quote
-	_tcscat_s(szTotal, cchTotal, _T("\""));
+    // If the caption is empty, then remove the leading quote.
+    // Otherwise, add the closing quote.
+
+    if (*pszCaption != '\0')
+    {
+        _tcscat_s(szTotal, cchTotal, _T("\""));
+    }
+    else
+    {
+        *(pszCaption - 1) = '\0';
+    }
 
 	if (!g_opts.fClassThenText)
 	{
@@ -302,7 +311,7 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 	SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON);
 
 	// Add the root item
-	tv.hParent = TVI_ROOT;
+	tv.hParent = g_hRoot;
 	tv.hInsertAfter = TVI_LAST;
 	tv.item.mask = TVIF_STATE | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
 	tv.item.state = 0;//TVIS_EXPANDED;
@@ -463,34 +472,35 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 //
 void FillGlobalWindowTree(HWND hwndTree)
 {
-	TVINSERTSTRUCT tv;
-	static TCHAR ach[MIN_FORMAT_LEN];
+    if (g_opts.fShowDesktopRoot)
+    {
+        TVINSERTSTRUCT tv;
+        TCHAR ach[MIN_FORMAT_LEN];
 
-	FormatWindowText(GetDesktopWindow(), ach, ARRAYSIZE(ach));
+        FormatWindowText(GetDesktopWindow(), ach, ARRAYSIZE(ach));
 
-	//Add the root item
-	tv.hParent = TVI_ROOT;
-	tv.hInsertAfter = TVI_LAST;
-	tv.item.mask = TVIF_STATE | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-	tv.item.state = TVIS_EXPANDED;
-	tv.item.stateMask = TVIS_EXPANDED;
-	tv.item.pszText = ach;
-	tv.item.cchTextMax = ARRAYSIZE(ach);
-	tv.item.iImage = DESKTOP_IMAGE;
-	tv.item.iSelectedImage = DESKTOP_IMAGE;
-	tv.item.lParam = (LPARAM)GetDesktopWindow();
-	//tv.itemex.iIntegral = 1;
+        //Add the root item
+        tv.hParent = TVI_ROOT;
+        tv.hInsertAfter = TVI_LAST;
+        tv.item.mask = TVIF_STATE | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+        tv.item.state = TVIS_EXPANDED;
+        tv.item.stateMask = TVIS_EXPANDED;
+        tv.item.pszText = ach;
+        tv.item.cchTextMax = ARRAYSIZE(ach);
+        tv.item.iImage = DESKTOP_IMAGE;
+        tv.item.iSelectedImage = DESKTOP_IMAGE;
+        tv.item.lParam = (LPARAM)GetDesktopWindow();
 
-	//hRoot = TreeView_InsertItem(hwndTree, &tv);
+        g_hRoot = TreeView_InsertItem(hwndTree, &tv);
+    }
+    else
+    {
+        g_hRoot = TVI_ROOT;
+    }
 
-	//WindowStack[0].hRoot = hRoot;
-	//WindowStack[0].hwnd = 0;
+    // EnumChildWindows does the hard work for us
 
-	//nWindowZ = 1;
-
-	// EnumChildWindows does the hard work for us
-	//
-	EnumChildWindows(GetDesktopWindow(), AllWindowProc, (LPARAM)hwndTree);
+    EnumChildWindows(GetDesktopWindow(), AllWindowProc, (LPARAM)hwndTree);
 }
 
 //
