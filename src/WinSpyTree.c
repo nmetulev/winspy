@@ -308,8 +308,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     GetProcessNameByPid(pid, name, 100, path, MAX_PATH);
     _stprintf_s(ach, ARRAYSIZE(ach), _T("%s  (%u)"), name, pid);
 
-    SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON);
-
     // Add the root item
     tv.hParent = g_hRoot;
     tv.hInsertAfter = TVI_LAST;
@@ -318,9 +316,18 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     tv.item.stateMask = 0;//TVIS_EXPANDED;
     tv.item.pszText = ach;
     tv.item.cchTextMax = ARRAYSIZE(ach);
-    tv.item.iImage = ImageList_AddIcon(hImgList, shfi.hIcon);//DESKTOP_IMAGE;
-    tv.item.iSelectedImage = tv.item.iImage;
     tv.item.lParam = (LPARAM)GetDesktopWindow();
+
+    if (SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON))
+    {
+        tv.item.iImage = ImageList_AddIcon(hImgList, shfi.hIcon);
+        tv.item.iSelectedImage = tv.item.iImage;
+    }
+    else
+    {
+        tv.item.iImage = WINDOW_IMAGE;
+        tv.item.iSelectedImage = WINDOW_IMAGE;
+    }
 
     hRoot = TreeView_InsertItem(hwndTree, &tv);
     g_WinStackList[g_WinStackCount].hRoot = hRoot;//TVI_ROOT ;
@@ -472,12 +479,14 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 //
 void FillGlobalWindowTree(HWND hwndTree)
 {
+    HWND hwndDesktop = GetDesktopWindow();
+
     if (g_opts.fShowDesktopRoot)
     {
         TVINSERTSTRUCT tv;
         TCHAR ach[MIN_FORMAT_LEN];
 
-        FormatWindowText(GetDesktopWindow(), ach, ARRAYSIZE(ach));
+        FormatWindowText(hwndDesktop, ach, ARRAYSIZE(ach));
 
         //Add the root item
         tv.hParent = TVI_ROOT;
@@ -489,7 +498,7 @@ void FillGlobalWindowTree(HWND hwndTree)
         tv.item.cchTextMax = ARRAYSIZE(ach);
         tv.item.iImage = DESKTOP_IMAGE;
         tv.item.iSelectedImage = DESKTOP_IMAGE;
-        tv.item.lParam = (LPARAM)GetDesktopWindow();
+        tv.item.lParam = (LPARAM)hwndDesktop;
 
         g_hRoot = TreeView_InsertItem(hwndTree, &tv);
     }
@@ -500,7 +509,7 @@ void FillGlobalWindowTree(HWND hwndTree)
 
     // EnumChildWindows does the hard work for us
 
-    EnumChildWindows(GetDesktopWindow(), AllWindowProc, (LPARAM)hwndTree);
+    EnumChildWindows(hwndDesktop, AllWindowProc, (LPARAM)hwndTree);
 }
 
 //
