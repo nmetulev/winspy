@@ -129,6 +129,7 @@
 #define IDC_APPLY                       1065
 #define IDC_SPINW                       1066
 #define IDC_CAPTION1                    1066
+#define IDC_OPTIONS_LIST_SHOWHIDDEN     1066
 #define IDC_SPINH                       1067
 #define IDC_PROCESSNAME                 1067
 #define IDC_PROCESSNAME2                1068

@@ -17,6 +17,7 @@
 *.user
 *.zip
 *.VC.db
+*.suo
 
 # ignore the following files:
 BuildLog.htm

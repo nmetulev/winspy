@@ -301,6 +301,7 @@ typedef struct
     BOOL  fSaveWinPos;
     BOOL  fShowDesktopRoot;
     UINT  uTreeInclude;
+    BOOL  fShowHiddenInList;
 
     // These two variables help us to position WinSpy++ intelligently when it resizes.
     POINT ptPinPos;

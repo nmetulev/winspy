@@ -347,6 +347,11 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
 {
     HWND hwndTree = (HWND)lParam;
+    BOOL fIsVisible = IsWindowVisible(hwnd);
+
+    // Ignore it if it is hidden and we are omitting hidden windows from the list.
+    if (!fIsVisible && !g_opts.fShowHiddenInList)
+        return TRUE;
 
     static TCHAR szTotal[MIN_FORMAT_LEN];
 
@@ -416,7 +421,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     if (idx != -1)
         tv.item.iImage = idx;
 
-    if (g_opts.fShowDimmed && !IsWindowVisible(hwnd) && hwnd != hwndTree)
+    if (g_opts.fShowDimmed && !fIsVisible && hwnd != hwndTree)
         tv.item.iImage += NUM_CLASS_BITMAPS;
 
     //set the selected bitmap to be the same
