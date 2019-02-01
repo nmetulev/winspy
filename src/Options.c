@@ -44,6 +44,18 @@ void LoadSettings(void)
     g_opts.ptPinPos.x = GetSettingInt(hkey, _T("xpos"), CW_USEDEFAULT);
     g_opts.ptPinPos.y = GetSettingInt(hkey, _T("ypos"), CW_USEDEFAULT);
 
+    // Ignore the saved window position if it no longer lies within the
+    // bounds of a monitor.
+
+    if (g_opts.fSaveWinPos && (g_opts.ptPinPos.x != CW_USEDEFAULT) && (g_opts.ptPinPos.y != CW_USEDEFAULT))
+    {
+        if (!MonitorFromPoint(g_opts.ptPinPos, MONITOR_DEFAULTTONULL))
+        {
+            g_opts.ptPinPos.x = CW_USEDEFAULT;
+            g_opts.ptPinPos.y = CW_USEDEFAULT;
+        }
+    }
+
     RegCloseKey(hkey);
 }
 
