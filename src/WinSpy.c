@@ -661,7 +661,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 
 			if (hdr->code == NM_RCLICK)
 			{
-				hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU3));
+				hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_INTREE));
 				hPopup = GetSubMenu(hMenu, 0);
 
 				WinSpy_SetupPopupMenu(hPopup, (HWND)tvi.lParam);

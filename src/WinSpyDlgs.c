@@ -246,7 +246,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 				ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
 			}
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU5));
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(ID_MENU_BYTES));
 
 			// Show the menu
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
@@ -287,7 +287,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			// Show our popup menu under this button
 			hCtrl = spy_hCurWnd;
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU2));
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_ONTAB));
 			hPopup = GetSubMenu(hMenu, 0);
 
 			GetWindowRect((HWND)lParam, &rect);
@@ -580,7 +580,7 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 				ClientToScreen(hwndList1, &pt);
 			}
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU4));
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_PROPERTY));
 
 			// Show the menu
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
@@ -693,7 +693,7 @@ INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 				ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
 			}
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU5));
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(ID_MENU_BYTES));
 
 			// Show the menu
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
@@ -742,7 +742,7 @@ INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 			// Load the menu
 			dwThreadId = GetWindowThreadProcessId(spy_hCurWnd, &dwProcessId);
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU1));
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_PROCESS));
 			hPopup = GetSubMenu(hMenu, 0);
 
 			GetWindowRect((HWND)lParam, &rect);
