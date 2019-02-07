@@ -11,6 +11,7 @@
 
 #include "WinSpy.h"
 
+#include <shellapi.h>
 #include <psapi.h>
 #include "resource.h"
 #include <tlhelp32.h>
@@ -190,57 +191,75 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 //
 //  Update the Process tab for the specified window
 //
-void SetProcessInfo(HWND hwnd)
+void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 {
-	DWORD dwProcessId = 0;
-	DWORD dwThreadId = 0;
-	TCHAR ach[32];
-	TCHAR szPath[MAX_PATH];
+    DWORD dwProcessId = 0;
+    DWORD dwThreadId = 0;
+    TCHAR ach[32];
+    TCHAR szPath[MAX_PATH];
+    BOOL  fValid;
+    HWND  hwndDlg = WinSpyTab[PROCESS_TAB].hwnd;
+    PCTSTR pszDefault = _T("");
 
-	*ach = 0;
+    if (hwnd)
+    {
+        if (IsWindow(hwnd))
+        {
+            fValid = TRUE;
+            dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
+        }
+        else
+        {
+            fValid = FALSE;
+            pszDefault = szInvalidWindow;
+        }
+    }
+    else
+    {
+        fValid = FALSE;
+        dwProcessId = dwOverridePID;
+    }
 
-	HWND  hwndDlg = WinSpyTab[PROCESS_TAB].hwnd;
+    // Process Id
 
-	BOOL fValid = hwnd != NULL;
-	if (hwnd && !IsWindow(hwnd))
-	{
-		fValid = FALSE;
-		_tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
-	}
+    if (dwProcessId)
+    {
+        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwProcessId, dwProcessId);
+        SetDlgItemText(hwndDlg, IDC_PID, ach);
+    }
+    else
+    {
+        SetDlgItemText(hwndDlg, IDC_PID, pszDefault);
+    }
 
-	if (fValid)
-	{
-		dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
-	}
 
-	// Process Id
-	if (fValid)
-	{
-		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwProcessId, dwProcessId);
-	}
-	SetDlgItemText(hwndDlg, IDC_PID, ach);
-
-	// Thread Id
-	if (fValid)
-	{
-		_stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwThreadId, dwThreadId);
-	}
-	SetDlgItemText(hwndDlg, IDC_TID, ach);
-
-	// Try to get process name and path
-	if (fValid && GetProcessNameByPid(dwProcessId, ach, ARRAYSIZE(ach),
-		szPath, ARRAYSIZE(szPath)))
-	{
-		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, ach);
-		SetDlgItemText(hwndDlg, IDC_PROCESSPATH, szPath);
-	}
-	else
-	{
-		SetDlgItemText(hwndDlg, IDC_PROCESSNAME, fValid ? _T("N/A") : ach);
-		SetDlgItemText(hwndDlg, IDC_PROCESSPATH, fValid ? _T("N/A") : ach);
-	}
+    // Thread Id
 
     if (fValid)
+    {
+        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwThreadId, dwThreadId);
+        SetDlgItemText(hwndDlg, IDC_TID, ach);
+    }
+    else
+    {
+        SetDlgItemText(hwndDlg, IDC_TID, pszDefault);
+    }
+
+
+    // Try to get process name and path
+    if (dwProcessId && GetProcessNameByPid(dwProcessId, ach, ARRAYSIZE(ach),
+        szPath, ARRAYSIZE(szPath)))
+    {
+        SetDlgItemText(hwndDlg, IDC_PROCESSNAME, ach);
+        SetDlgItemText(hwndDlg, IDC_PROCESSPATH, szPath);
+    }
+    else
+    {
+        SetDlgItemText(hwndDlg, IDC_PROCESSNAME, fValid ? _T("N/A") : pszDefault);
+        SetDlgItemText(hwndDlg, IDC_PROCESSPATH, fValid ? _T("N/A") : pszDefault);
+    }
+
+    if (dwProcessId)
     {
         CHAR szMode[100];
         CHAR szDpi[100];
@@ -258,8 +277,109 @@ void SetProcessInfo(HWND hwnd)
     }
     else
     {
-        SetDlgItemText(hwndDlg, IDC_PROCESS_DPI_AWARENESS, ach);
-        SetDlgItemText(hwndDlg, IDC_PROCESS_SYSTEM_DPI, ach);
+        SetDlgItemText(hwndDlg, IDC_PROCESS_DPI_AWARENESS, pszDefault);
+        SetDlgItemText(hwndDlg, IDC_PROCESS_SYSTEM_DPI, pszDefault);
     }
+}
+
+
+TCHAR szWarning1[] = _T("Are you sure you want to close this process?");
+TCHAR szWarning2[] = _T("WARNING: Terminating a process can cause undesired\r\n")\
+_T("results including loss of data and system instability. The\r\n")\
+_T("process will not be given the chance to save its state or\r\n")\
+_T("data before it is terminated. Are you sure you want to\r\n")\
+_T("terminate the process?");
+
+void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND hwnd, DWORD dwProcessId)
+{
+    DWORD dwThreadId = 0;
+    HMENU hMenu, hPopup;
+    UINT  uCmd;
+    DWORD dwFlags;
+
+    hMenu  = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_PROCESS));
+    hPopup = GetSubMenu(hMenu, 0);
+
+    if (hwnd)
+    {
+        dwProcessId = 0;
+        (void)GetWindowThreadProcessId(hwnd, &dwProcessId);
+    }
+    else
+    {
+        // If there is no current window, then we are working off a process
+        // node selected in the window tree.  The 'End Process (safe)' option
+        // is currently built around posting WM_QUIT to the current window's
+        // thread.  For now, we just disable the option because we don't
+        // know what thread to target.  This could be enabled by enumerating
+        // the windows in the process to pick a suitable thread.
+
+        EnableMenuItem(hPopup, IDM_WINSPY_POSTQUIT, MF_BYCOMMAND | MF_GRAYED);
+    }
+
+    if (fForButton)
+    {
+        dwFlags = TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_RETURNCMD;
+    }
+    else
+    {
+        dwFlags = TPM_RIGHTBUTTON | TPM_RETURNCMD;
+    }
+
+    uCmd = TrackPopupMenu(hPopup, dwFlags, x, y, 0, hwndParent, 0);
+
+    switch (uCmd)
+    {
+        case IDM_WINSPY_FINDEXE:
+        {
+            TCHAR szExplorer[MAX_PATH];
+            TCHAR szName[32];
+            TCHAR szPath[MAX_PATH];
+
+            if (GetProcessNameByPid(dwProcessId, szName, ARRAYSIZE(szName), szPath, ARRAYSIZE(szPath)))
+            {
+                _stprintf_s(szExplorer, ARRAYSIZE(szExplorer), _T("/select,\"%s\""), szPath);
+                ShellExecute(0, _T("open"), _T("explorer"), szExplorer, 0, SW_SHOW);
+            }
+            else
+            {
+                MessageBox(hwndParent, _T("Invalid Process Id"), szAppName, MB_OK | MB_ICONWARNING);
+            }
+        }
+        break;
+
+        // Forcibly terminate!
+        case IDM_WINSPY_TERMINATE:
+        {
+            if (MessageBox(hwndParent, szWarning2, szAppName, MB_YESNO | MB_ICONWARNING) == IDYES)
+            {
+                HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
+
+                if (hProcess)
+                {
+                    TerminateProcess(hProcess, (UINT)-1);
+                    CloseHandle(hProcess);
+                }
+                else
+                {
+                    MessageBox(hwndParent, _T("Invalid Process Id"), szAppName, MB_OK | MB_ICONWARNING);
+                }
+            }
+
+            break;
+        }
+
+        // Cleanly exit. Won't work if app. is hung
+        case IDM_WINSPY_POSTQUIT:
+        {
+            if (MessageBox(hwndParent, szWarning1, szAppName, MB_YESNO | MB_ICONWARNING) == IDYES)
+            {
+                PostThreadMessage(dwThreadId, WM_QUIT, 0, 0);
+            }
+            break;
+        }
+    }
+
+    DestroyMenu(hMenu);
 }
 

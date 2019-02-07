@@ -12,8 +12,6 @@
 #include "resource.h"
 #include "Utils.h"
 
-HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem);
-
 #if (WINVER < 0x500)
 #error "Please install latest Platform SDK or define WINVER >= 0x500"
 #endif
@@ -36,7 +34,6 @@ static int nBottomBorder;       // pixels between bottomside + tab
 
 static BOOL fxMaxed, fyMaxed;   // Remember our sized state when a size/move starts
 
-void RefreshTreeView(HWND hwndTree);
 
 //
 //  Added: Multimonitor support!!
@@ -839,8 +836,6 @@ UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 {
 	RECT rect;
 	UINT uLayout;
-	HWND hwndTree;
-	HTREEITEM hItem;
 
 	static UINT uOldLayout = WINSPY_MINIMIZED;
 
@@ -871,16 +866,7 @@ UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 
 	if (uLayout == WINSPY_EXPANDED && uOldLayout != WINSPY_EXPANDED)
 	{
-		hwndTree = GetDlgItem(hwnd, IDC_TREE1);
-
-		RefreshTreeView(hwndTree);
-		hItem = FindTreeItemByHwnd(hwndTree, spy_hCurWnd, NULL);
-		if (hItem)
-		{
-			// Move it into view!
-			SendMessage(hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hItem);
-			SendMessage(hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hItem);
-		}
+		WindowTree_Refresh(spy_hCurWnd, FALSE);
 	}
 
 	GetPinnedPosition(hwnd, &g_opts.ptPinPos);

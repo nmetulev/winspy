@@ -157,10 +157,6 @@ typedef struct
     DWORD           dwMessage;
 } ClassStyleLookup;
 
-#define WINLIST_INCLUDE_HANDLE  1       // handle, classname
-#define WINLIST_INCLUDE_CLASS   2       // classname, caption
-#define WINLIST_INCLUDE_ALL     3       // handle, caption, classname
-
 //
 //  Useful functions!
 //
@@ -229,7 +225,7 @@ void SetStyleInfo(HWND hwnd);
 void SetGeneralInfo(HWND hwnd);
 void SetScrollbarInfo(HWND hwnd);
 void SetPropertyInfo(HWND hwnd);
-void SetProcessInfo(HWND hwnd);
+void SetProcessInfo(HWND hwnd, DWORD dwOverridePID);
 void SetDpiInfo(HWND hwnd);
 
 void ExitWinSpy(HWND hwnd, UINT uCode);
@@ -257,11 +253,10 @@ BOOL RemoveTabCtrlFlicker(HWND hwndTab);
 
 void VerboseClassName(TCHAR ach[], size_t cch, WORD atom);
 
-void RefreshTreeView(HWND hwndTree);
-void InitGlobalWindowTree(HWND hwnd);
-void DeInitGlobalWindowTree(HWND hwnd);
 void InitStockStyleLists();
 BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize);
+
+void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND hwnd, DWORD dwProcessId);
 
 //
 //  Pinned-window support
@@ -337,6 +332,8 @@ extern BOOL       spy_fPassword;
 extern TCHAR      spy_szPassword[];
 extern TCHAR      spy_szClassName[];
 
+extern DWORD      g_dwSelectedPID;
+
 //
 //  Useful SetWindowPos constants (saves space!)
 //
@@ -345,6 +342,22 @@ extern TCHAR      spy_szClassName[];
 #define SWP_ZONLY     (SWP_NOSIZE | SWP_NOMOVE   | SWP_NOACTIVATE)
 #define SWP_SHOWONLY  (SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE | SWP_SHOWWINDOW)
 #define SWP_HIDEONLY  (SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE | SWP_HIDEWINDOW)
+
+//
+//  Window tree
+//
+
+#define WINLIST_INCLUDE_HANDLE  1       // handle, classname
+#define WINLIST_INCLUDE_CLASS   2       // classname, caption
+#define WINLIST_INCLUDE_ALL     3       // handle, caption, classname
+
+void WindowTree_Initialize(HWND hwndTree);
+void WindowTree_Destroy();
+void WindowTree_Refresh(HWND hwndToSelect, BOOL fSetFocus);
+void WindowTree_OnRightClick(NMHDR *pnm);
+void WindowTree_OnSelectionChanged(NMHDR *pnm);
+void WindowTree_Locate(HWND hwnd);
+HWND WindowTree_GetSelectedWindow();
 
 #ifdef __cplusplus
 }

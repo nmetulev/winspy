@@ -14,8 +14,6 @@
 #include "FindTool.h"
 #include "CaptureWindow.h"
 
-HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem);
-
 void ShowHelp(HWND hwndMain, UINT uCommand, DWORD dwData)
 {
 	TCHAR szPath[MAX_PATH];
@@ -51,15 +49,12 @@ void SetPinState(BOOL fPinned)
 
 UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-	HTREEITEM   hItem;
-	TVITEM      item;
 	NMHDR       hdr;
 	UINT        uLayout;
 
 	HWND hwndGeneral;
 	HWND hwndFocus;
 	HWND hwndCtrl;
-	HWND hwndTree;
 
 	switch (LOWORD(wParam))
 	{
@@ -170,16 +165,12 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 	case IDC_FLASH:
 
-		hwndTree = GetDlgItem(hwnd, IDC_TREE1);
+        HWND hwndSelected = WindowTree_GetSelectedWindow();
 
-		hItem = TreeView_GetSelection(hwndTree);
-
-		item.mask = TVIF_PARAM | TVIF_HANDLE;
-		item.hItem = hItem;
-
-		TreeView_GetItem(hwndTree, &item);
-
-		FlashWindowBorder((HWND)item.lParam);
+        if (hwndSelected)
+        {
+            FlashWindowBorder(hwndSelected);
+        }
 
 		return TRUE;
 
@@ -187,18 +178,8 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 		if (GetWindowLayout(hwnd) == WINSPY_NORMAL)
 		{
-			hwndTree = GetDlgItem(hwnd, IDC_TREE1);
-
-			RefreshTreeView(hwndTree);
-			SetWindowLayout(hwnd, WINSPY_EXPANDED);
-
-			hItem = FindTreeItemByHwnd(hwndTree, spy_hCurWnd, NULL);
-			if (hItem)
-			{
-				// Move it into view!
-				SendMessage(hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hItem);
-				SendMessage(hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hItem);
-			}
+            WindowTree_Refresh(spy_hCurWnd, FALSE);
+            SetWindowLayout(hwnd, WINSPY_EXPANDED);
 		}
 		else
 		{
@@ -253,39 +234,17 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 	case IDC_LOCATE:
 
-		hwndTree = GetDlgItem(hwnd, IDC_TREE1);
-
-		// Find treeview item that contains our window handle
-		hItem = FindTreeItemByHwnd(hwndTree, spy_hCurWnd, NULL);
-		if (!hItem)
-		{
-			RefreshTreeView(hwndTree);
-			hItem = FindTreeItemByHwnd(hwndTree, spy_hCurWnd, NULL);
-		}
-
-		if (hItem)
-		{
-			// Move it into view!
-			SendMessage(hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hItem);
-			SendMessage(hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hItem);
-			SetFocus(hwndTree);
-		}
+        if (spy_hCurWnd)
+        {
+            WindowTree_Locate(spy_hCurWnd);
+        }
 
 		return TRUE;
 
 	case IDC_REFRESH:
-		hwndTree = GetDlgItem(hwnd, IDC_TREE1);
 
-		RefreshTreeView(hwndTree);
+        WindowTree_Refresh(spy_hCurWnd, TRUE);
 
-		hItem = FindTreeItemByHwnd(hwndTree, spy_hCurWnd, NULL);
-		if (hItem)
-		{
-			// Move it into view!
-			SendMessage(hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hItem);
-			SendMessage(hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hItem);
-			SetFocus(hwndTree);
-		}
 		return TRUE;
 	}
 

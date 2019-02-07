@@ -10,7 +10,6 @@
 
 #include "WinSpy.h"
 
-#include <shellapi.h>
 #include "resource.h"
 #include "BitmapButton.h"
 #include "CaptureWindow.h"
@@ -20,12 +19,6 @@ void  MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink);
 void  RemoveHyperlink(HWND hwnd, UINT staticid);
 void  GetRemoteInfo(HWND hwnd);
 
-TCHAR szWarning1[] = _T("Are you sure you want to close this process?");
-TCHAR szWarning2[] = _T("WARNING: Terminating a process can cause undesired\r\n")\
-_T("results including loss of data and system instability. The\r\n")\
-_T("process will not be given the chance to save its state or\r\n")\
-_T("data before it is terminated. Are you sure you want to\r\n")\
-_T("terminate the process?");
 
 //
 // save the tree-structure to clipboard?
@@ -715,17 +708,13 @@ INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 
 	return FALSE;
 }
-
+   
 //
 //  Process Tab
 //
 INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	HMENU  hMenu, hPopup;
 	RECT   rect;
-	UINT   uCmd;
-	DWORD  dwThreadId;
-	DWORD  dwProcessId;
 
 	switch (iMsg)
 	{
@@ -739,68 +728,16 @@ INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 		{
 		case IDC_PROCESS_MENU:
 
-			// Load the menu
-			dwThreadId = GetWindowThreadProcessId(spy_hCurWnd, &dwProcessId);
+            GetWindowRect((HWND)lParam, &rect);
+            
+            ShowProcessContextMenu(
+                (HWND)lParam,
+                rect.right,
+                rect.bottom,
+                TRUE,
+                spy_hCurWnd,
+                g_dwSelectedPID);
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_PROCESS));
-			hPopup = GetSubMenu(hMenu, 0);
-
-			GetWindowRect((HWND)lParam, &rect);
-
-			//
-			// Display a popup menu underneath the close button
-			//
-			uCmd = TrackPopupMenu(hPopup, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_RETURNCMD,
-				rect.right, rect.bottom, 0, hwnd, 0);
-
-			switch (uCmd)
-			{
-			case IDM_WINSPY_FINDEXE:
-			{
-				TCHAR szExplorer[MAX_PATH];
-				TCHAR szPath[MAX_PATH];
-
-				GetDlgItemText(hwnd, IDC_PROCESSPATH, szPath, ARRAYSIZE(szPath));
-
-				_stprintf_s(szExplorer, ARRAYSIZE(szExplorer), _T("/select,\"%s\""), szPath);
-				ShellExecute(0, _T("open"), _T("explorer"), szExplorer, 0, SW_SHOW);
-			}
-			break;
-
-			// Forcibly terminate!
-			case IDM_WINSPY_TERMINATE:
-
-				if (MessageBox(hwnd, szWarning2, szAppName, MB_YESNO | MB_ICONWARNING) == IDYES)
-				{
-					HANDLE hProcess;
-
-					hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, dwProcessId);
-
-
-					if (hProcess != 0)
-					{
-						TerminateProcess(hProcess, (UINT)-1);
-						CloseHandle(hProcess);
-					}
-					else
-					{
-						MessageBox(hwnd, _T("Invalid Process Id"), szAppName, MB_OK | MB_ICONWARNING);
-					}
-				}
-				break;
-
-				// Cleanly exit. Won't work if app. is hung
-			case IDM_WINSPY_POSTQUIT:
-
-				if (MessageBox(hwnd, szWarning1, szAppName, MB_YESNO | MB_ICONWARNING) == IDYES)
-				{
-					PostThreadMessage(dwThreadId, WM_QUIT, 0, 0);
-				}
-				break;
-
-			}
-
-			DestroyMenu(hMenu);
 			return TRUE;
 
 		}

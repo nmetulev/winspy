@@ -16,6 +16,7 @@
 #include "resource.h"
 #include "Utils.h"
 
+static HWND       g_hwndTree;
 static HIMAGELIST hImgList = 0;
 
 
@@ -29,6 +30,30 @@ static HIMAGELIST hImgList = 0;
 #define POPUP_IMAGE       4
 #define CONTROL_START     5         // where the control images start
 #define NUM_CLASS_BITMAPS 35        // (35 for visible, another 35 for invisible windows)
+
+
+//
+// TREENODE
+//
+// Struct used to hold per tree item state.  The TVITEM::lParam for every
+// item in the tree is a pointer to one of these.  Different fields are
+// relevant for different types of items (process vs. window nodes).
+//
+// All TREENODE instances are allocated in a global pool (g_TreeNodes).
+//
+
+typedef struct
+{
+    HWND        hwnd;               // Only set for window nodes
+    DWORD       dwPID;              // Only set for process nodes
+    HTREEITEM   hTreeItem;
+}
+TREENODE;
+
+TREENODE *g_TreeNodes;
+size_t    g_cTreeNodes;
+size_t    g_cTreeNodesInUse;
+
 
 //
 //  Use this structure+variables to help us populate the treeview
@@ -45,10 +70,10 @@ typedef struct
 typedef struct
 {
     DWORD        dwProcessId;
-    HTREEITEM    hRoot;             //Main root. Not used?
+    HTREEITEM    hRoot;             // Main root.
 
     WinStackType windowStack[MAX_WINDOW_DEPTH];
-    int          nWindowZ;          //Current position in the window stack
+    int          nWindowZ;          // Current position in the window stack
 
 } WinProc;
 
@@ -278,6 +303,47 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
 }
 
 //
+// Returns a clean/empty TREENODE struct to be used for a newly inserted
+// treeview item.
+//
+// Note that the callers do not need to explicitly manage the lifetime of
+// these objects.  They are allocated out of a simple arena allocator.
+// When the treeview contents are reset, all outstanding TREENODE instances
+// are implicitly freed by virtue of g_cTreeNodesInUse being reset back to
+// zero.  The array slots will then be recycled as the tree is repopulated.
+//
+TREENODE *AllocateTreeNode()
+{
+    // Grow the array if it is full.
+
+    if (g_cTreeNodesInUse == g_cTreeNodes)
+    {
+        size_t    cNew  = g_cTreeNodes + 1000;
+        size_t    cbNew = cNew * sizeof(TREENODE);
+        TREENODE *rgNew = (TREENODE *)realloc(g_TreeNodes, cbNew);
+
+        if (!rgNew)
+        {
+            return NULL;
+        }
+
+        g_TreeNodes  = rgNew;
+
+        g_cTreeNodes = cNew;
+    }
+
+    // Hand out the next item.
+
+    TREENODE *pNode = &g_TreeNodes[g_cTreeNodesInUse];
+
+    g_cTreeNodesInUse++;
+
+    ZeroMemory(pNode, sizeof(*pNode));
+
+    return pNode;
+}
+
+//
 //
 //
 WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
@@ -289,7 +355,6 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     TCHAR           name[100] = _T("");
     TCHAR           path[MAX_PATH] = _T("");
     SHFILEINFO      shfi = { 0 };
-    HTREEITEM       hRoot;
 
     GetWindowThreadProcessId(hwnd, &pid);
 
@@ -308,6 +373,17 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     GetProcessNameByPid(pid, name, 100, path, MAX_PATH);
     _stprintf_s(ach, ARRAYSIZE(ach), _T("%s  (%u)"), name, pid);
 
+    TREENODE *pNode = AllocateTreeNode();
+
+    if (pNode)
+    {
+        pNode->dwPID = pid;
+    }
+    else
+    {
+        return NULL;
+    }
+
     // Add the root item
     tv.hParent = g_hRoot;
     tv.hInsertAfter = TVI_LAST;
@@ -316,7 +392,7 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     tv.item.stateMask = 0;//TVIS_EXPANDED;
     tv.item.pszText = ach;
     tv.item.cchTextMax = ARRAYSIZE(ach);
-    tv.item.lParam = (LPARAM)GetDesktopWindow();
+    tv.item.lParam = (LPARAM)pNode;
 
     if (SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON))
     {
@@ -329,11 +405,12 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
         tv.item.iSelectedImage = WINDOW_IMAGE;
     }
 
-    hRoot = TreeView_InsertItem(hwndTree, &tv);
-    g_WinStackList[g_WinStackCount].hRoot = hRoot;//TVI_ROOT ;
+    pNode->hTreeItem = TreeView_InsertItem(hwndTree, &tv);
+
+    g_WinStackList[g_WinStackCount].hRoot = pNode->hTreeItem;
     g_WinStackList[g_WinStackCount].dwProcessId = pid;
     g_WinStackList[g_WinStackCount].nWindowZ = 1;
-    g_WinStackList[g_WinStackCount].windowStack[0].hRoot = hRoot;
+    g_WinStackList[g_WinStackCount].windowStack[0].hRoot = pNode->hTreeItem;
     g_WinStackList[g_WinStackCount].windowStack[0].hwnd = 0;
 
     return &g_WinStackList[g_WinStackCount++];
@@ -370,8 +447,18 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     static HWND      hwndLast;
 
     TVINSERTSTRUCT tv;
+    TREENODE *pNode = AllocateTreeNode();
 
-    //
+    if (pNode)
+    {
+        pNode->hwnd = hwnd;
+    }
+    else
+    {
+        return FALSE;
+    }
+
+
     //
     //
     //
@@ -388,7 +475,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     tv.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
     tv.item.pszText = szTotal;
     tv.item.cchTextMax = ARRAYSIZE(szTotal);
-    tv.item.lParam = (LPARAM)(hwnd);
+    tv.item.lParam = (LPARAM)pNode;
 
     //
     // set the image, depending on what type of window we have
@@ -471,7 +558,9 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     }
 
     // Finally add the node
-    hTreeLast = TreeView_InsertItem(hwndTree, &tv);
+    pNode->hTreeItem = TreeView_InsertItem(hwndTree, &tv);
+
+    hTreeLast = pNode->hTreeItem;
     hwndLast = hwnd;
 
     return TRUE;
@@ -486,12 +575,28 @@ void FillGlobalWindowTree(HWND hwndTree)
 {
     HWND hwndDesktop = GetDesktopWindow();
 
+    // hwndDesktop = FindWindowEx(HWND_MESSAGE, NULL, NULL, NULL);                       
+    // hwndDesktop = GetRealParent(hwndDesktop);                   
+    
     if (g_opts.fShowDesktopRoot)
     {
         TVINSERTSTRUCT tv;
         TCHAR ach[MIN_FORMAT_LEN];
 
         FormatWindowText(hwndDesktop, ach, ARRAYSIZE(ach));
+
+        TREENODE *pNode = AllocateTreeNode();
+
+        if (pNode)
+        {
+            pNode->hwnd = hwndDesktop;
+        }
+        else
+        {
+            g_hRoot = TVI_ROOT;
+            return;
+        }
+
 
         //Add the root item
         tv.hParent = TVI_ROOT;
@@ -503,9 +608,10 @@ void FillGlobalWindowTree(HWND hwndTree)
         tv.item.cchTextMax = ARRAYSIZE(ach);
         tv.item.iImage = DESKTOP_IMAGE;
         tv.item.iSelectedImage = DESKTOP_IMAGE;
-        tv.item.lParam = (LPARAM)hwndDesktop;
+        tv.item.lParam = (LPARAM)pNode;
 
-        g_hRoot = TreeView_InsertItem(hwndTree, &tv);
+        pNode->hTreeItem = TreeView_InsertItem(hwndTree, &tv);
+        g_hRoot = pNode->hTreeItem;
     }
     else
     {
@@ -520,8 +626,10 @@ void FillGlobalWindowTree(HWND hwndTree)
 //
 //  Initialize the TreeView resource
 //
-void InitGlobalWindowTree(HWND hwndTree)
+void WindowTree_Initialize(HWND hwndTree)
 {
+    g_hwndTree = hwndTree;
+
     HBITMAP hBitmap;
     TCITEM  tcitem;
     HWND    hwndTab;
@@ -562,67 +670,42 @@ void InitGlobalWindowTree(HWND hwndTree)
 //
 //  Clean up TreeView resources
 //
-void DeInitGlobalWindowTree(HWND hwndTree)
+void WindowTree_Destroy()
 {
-    TreeView_SetImageList(hwndTree, 0, TVSIL_NORMAL);
+    TreeView_SetImageList(g_hwndTree, 0, TVSIL_NORMAL);
     ImageList_Destroy(hImgList);
 }
 
 //
-//  Find the specified window (hwndTarget) in the TreeView.
-//  Set hItem = NULL to start.
+//  Find the specified window in the TreeView.
 //
-HTREEITEM FindTreeItemByHwnd(HWND hwndTree, HWND hwndTarget, HTREEITEM hItem)
+//  Note that there is no need to interrogate state from the treeview.
+//  We can simply traverse the list of all TREENODEs to perform the HWND
+//  to HTREEITEM mapping.
+//
+
+HTREEITEM FindTreeItemByHwnd(HWND hwnd)
 {
-    if (!hwndTarget)
-        return NULL;
-
-    // Start at root if necessary
-    if (hItem == NULL)
-        hItem = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_ROOT, 0);
-
-    while (hItem != NULL)
+    if (hwnd)
     {
-        TVITEM item;
-
-        item.hItem = hItem;
-        item.mask = TVIF_PARAM | TVIF_CHILDREN;
-        item.lParam = (LPARAM)hwndTarget;
-
-        // Search!
-        SendMessage(hwndTree, TVM_GETITEM, 0, (LPARAM)&item);
-
-        // Did we find it??
-        if (item.lParam == (LPARAM)hwndTarget)
-            return hItem;
-
-        if (item.cChildren != 0)
+        for (size_t i = 0; i < g_cTreeNodesInUse; i++)
         {
-            // Recursively traverse child items.
-            HTREEITEM hItemFound, hItemChild;
-
-            hItemChild = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_CHILD, (LPARAM)hItem);
-
-            hItemFound = FindTreeItemByHwnd(hwndTree, hwndTarget, hItemChild);
-
-            // Did we find it?
-            if (hItemFound != NULL)
-                return hItemFound;
+            if (g_TreeNodes[i].hwnd == hwnd)
+            {
+                return g_TreeNodes[i].hTreeItem;
+            }
         }
-
-        // Go to next sibling item.
-        hItem = (HTREEITEM)SendMessage(hwndTree, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)hItem);
     }
 
-    // Not found.
     return NULL;
 }
 
 //
 //  Update the TreeView with current window list
 //
-void RefreshTreeView(HWND hwndTree)
+void WindowTree_Refresh(HWND hwndToSelect, BOOL fSetFocus)
 {
+    HWND  hwndTree = g_hwndTree;
     DWORD dwStyle;
 
     if (!g_WinStackList)
@@ -631,6 +714,7 @@ void RefreshTreeView(HWND hwndTree)
     }
 
     g_WinStackCount = 0;
+    g_cTreeNodesInUse = 0;
 
     EnableWindow(hwndTree, TRUE);
 
@@ -654,4 +738,143 @@ void RefreshTreeView(HWND hwndTree)
         SWP_NOZORDER | SWP_NOACTIVATE | SWP_DRAWFRAME);
 
     InvalidateRect(hwndTree, 0, TRUE);
+
+    if (hwndToSelect)
+    {
+        HTREEITEM hti = FindTreeItemByHwnd(hwndToSelect);
+
+        if (hti)
+        {
+            SendMessage(hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hti);
+            SendMessage(hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hti);
+
+            if (fSetFocus)
+            {
+                SetFocus(hwndTree);
+            }
+        }
+    }
 }
+
+
+void WindowTree_OnRightClick(NMHDR *pnm)
+{
+    TVHITTESTINFO hti;
+    TVITEM        tvi;
+
+    UINT   uCmd;
+    HMENU  hMenu, hPopup;
+    POINT  pt;
+    HWND   hwndTree   = pnm->hwndFrom;
+    HWND   hwndDialog = GetParent(hwndTree);
+
+    // Find out where in the TreeView the mouse has been clicked
+    GetCursorPos(&pt);
+
+    hti.pt = pt;
+    ScreenToClient(hwndTree, &hti.pt);
+
+    // Find item which has been right-clicked on
+    if (TreeView_HitTest(hwndTree, &hti) &&
+        (hti.flags & (TVHT_ONITEM | TVHT_ONITEMRIGHT)))
+    {
+        // Now get the window handle, which is stored in the lParam
+        // portion of the TVITEM structure.
+        ZeroMemory(&tvi, sizeof(tvi));
+        tvi.mask = TVIF_HANDLE | TVIF_PARAM;
+        tvi.hItem = hti.hItem;
+
+        TreeView_GetItem(hwndTree, &tvi);
+
+        TREENODE *pNode = (TREENODE *)tvi.lParam;
+
+        if (pNode->hwnd)
+        {
+            hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_INTREE));
+            hPopup = GetSubMenu(hMenu, 0);
+
+            WinSpy_SetupPopupMenu(hPopup, pNode->hwnd);
+
+            // Show the menu
+            uCmd = TrackPopupMenu(hPopup, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwndDialog, 0);
+
+            // Act accordingly
+            WinSpy_PopupCommandHandler(hwndDialog, uCmd, pNode->hwnd);
+
+            DestroyMenu(hMenu);
+        }
+        else
+        {
+            ShowProcessContextMenu(g_hwndTree, pt.x, pt.y, FALSE, pNode->hwnd, pNode->dwPID);
+        }
+    }
+}
+
+
+void WindowTree_OnSelectionChanged(NMHDR *pnm)
+{
+    NMTREEVIEW *pnmtv = (NMTREEVIEW *)pnm;
+    TVITEM      item;
+
+    //Find the window handle stored in the TreeView item's lParam
+    ZeroMemory(&item, sizeof(item));
+
+    item.mask = TVIF_HANDLE | TVIF_PARAM;
+    item.hItem = pnmtv->itemNew.hItem;
+
+    // Get TVITEM structure
+    TreeView_GetItem(pnm->hwndFrom, &item);
+
+    TREENODE *pNode = (TREENODE *)item.lParam;
+
+    g_dwSelectedPID = pNode->dwPID;
+
+    DisplayWindowInfo(pNode->hwnd);
+}
+
+
+void WindowTree_Locate(HWND hwnd)
+{
+    HTREEITEM hti = FindTreeItemByHwnd(hwnd);
+
+    if (!hti)
+    {
+        WindowTree_Refresh(NULL, FALSE);
+        hti = FindTreeItemByHwnd(hwnd);
+    }
+
+    if (hti)
+    {
+        SendMessage(g_hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hti);
+        SendMessage(g_hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hti);
+        SetFocus(g_hwndTree);
+    }
+}
+
+
+HWND WindowTree_GetSelectedWindow()
+{
+    HTREEITEM hti = TreeView_GetSelection(g_hwndTree);
+    HWND hwnd = NULL;
+
+    if (hti)
+    {
+        TVITEM item;
+
+        ZeroMemory(&item, sizeof(item));
+
+        item.mask = TVIF_PARAM | TVIF_HANDLE;
+        item.hItem = hti;
+
+        TreeView_GetItem(g_hwndTree, &item);
+
+        if (item.lParam)
+        {
+            TREENODE *pNode = (TREENODE *)item.lParam;
+            hwnd = pNode->hwnd;
+        }
+    }
+
+    return hwnd;
+}
+

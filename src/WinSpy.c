@@ -32,6 +32,7 @@ WNDPROC    spy_WndProc;
 BOOL       spy_fPassword = FALSE;   // is it a password (edit) control?
 TCHAR      spy_szPassword[200];
 TCHAR      spy_szClassName[70];
+DWORD      g_dwSelectedPID;         // Set only when a process node is selected in the treeview
 
 static TBBUTTON tbbPin[] =
 {
@@ -114,7 +115,7 @@ void UpdateTabs(BOOL fForceClassUpdate)
     }
     else if (nCurrentTab == PROCESS_TAB)
     {
-        SetProcessInfo(hwnd);
+        SetProcessInfo(hwnd, g_dwSelectedPID);
     }
     else if (nCurrentTab == WINDOW_TAB)
     {
@@ -189,7 +190,7 @@ void UpdateMainWindowText()
 	}
 	else
 	{
-		SetWindowText(spy_hCurWnd, szAppName);
+		SetWindowText(g_hwndMain, szAppName);
 	}
 }
 
@@ -500,7 +501,7 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 	hwndPin = CreatePinToolbar(hwnd);
 
 	// Load image lists etc
-	InitGlobalWindowTree(GetDlgItem(hwnd, IDC_TREE1));
+	WindowTree_Initialize(GetDlgItem(hwnd, IDC_TREE1));
 
 	// Create each dialog-tab pane,
 	for (i = 0; i < NUMTABCONTROLITEMS; i++)
@@ -614,14 +615,6 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 //
 UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 {
-	NMTREEVIEW   *nmtv = (NMTREEVIEW *)hdr;
-	TVHITTESTINFO hti;
-	TVITEM        tvi;
-
-	UINT   uCmd;
-	HMENU  hMenu, hPopup;
-	POINT  pt;
-
 	switch (hdr->code)
 	{
 		// TabView selection has changed, so show appropriate tab-pane
@@ -638,71 +631,18 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 		return TRUE;
 
 		// TreeView has been right-clicked, so show the popup menu
-	case NM_DBLCLK:
 	case NM_RCLICK:
 
-		// Find out where in the TreeView the mouse has been clicked
-		GetCursorPos(&pt);
+        WindowTree_OnRightClick(hdr);
 
-		hti.pt = pt;
-		ScreenToClient(hdr->hwndFrom, &hti.pt);
-
-		// Find item which has been right-clicked on
-		if (TreeView_HitTest(hdr->hwndFrom, &hti) &&
-			(hti.flags & (TVHT_ONITEM | TVHT_ONITEMRIGHT)))
-		{
-			// Now get the window handle, which is stored in the lParam
-			// portion of the TVITEM structure.
-			ZeroMemory(&tvi, sizeof(tvi));
-			tvi.mask = TVIF_HANDLE | TVIF_PARAM;
-			tvi.hItem = hti.hItem;
-
-			TreeView_GetItem(hdr->hwndFrom, &tvi);
-
-			if (hdr->code == NM_RCLICK)
-			{
-				hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_INTREE));
-				hPopup = GetSubMenu(hMenu, 0);
-
-				WinSpy_SetupPopupMenu(hPopup, (HWND)tvi.lParam);
-
-				// Show the menu
-				uCmd = TrackPopupMenu(hPopup, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
-
-				// Act accordingly
-				WinSpy_PopupCommandHandler(hwnd, uCmd, (HWND)tvi.lParam);
-
-				DestroyMenu(hMenu);
-
-				return TRUE;
-			}
-			/*else if(!(hti.flags & TVHT_ONITEMICON))
-			{
-				FlashWindowBorder((HWND)tvi.lParam);
-
-				// Return non-zero to prevent item from expanding when double-clicked
-				SetWindowLong(hwnd, DWL_MSGRESULT, TRUE);
-				return TRUE;
-			}*/
-		}
-
-		return TRUE;
+        return TRUE;
 
 		// TreeView selection has changed, so update the main window properties
 	case TVN_SELCHANGED:
 
 		if (IsWindowVisible(GetDlgItem(hwnd, IDC_TREE1)))
 		{
-			//Find the window handle stored in the TreeView item's lParam
-			ZeroMemory(&tvi, sizeof(tvi));
-
-			tvi.mask = TVIF_HANDLE | TVIF_PARAM;
-			tvi.hItem = nmtv->itemNew.hItem;
-
-			// Get TVITEM structure
-			TreeView_GetItem(hdr->hwndFrom, &tvi);
-
-			DisplayWindowInfo((HWND)tvi.lParam);
+            WindowTree_OnSelectionChanged(hdr);
 		}
 
 		return TRUE;
@@ -769,7 +709,7 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return TRUE;
 
 	case WM_DESTROY:
-		DeInitGlobalWindowTree(GetDlgItem(hwnd, IDC_TREE1));
+		WindowTree_Destroy();
 		return TRUE;
 
 	case WM_SYSCOLORCHANGE:
