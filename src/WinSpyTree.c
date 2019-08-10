@@ -874,12 +874,9 @@ HWND WindowTree_GetSelectedWindow()
 
         TreeView_GetItem(g_hwndTree, &item);
 
-        if (item.lParam)
-        {
-            ptrdiff_t nodeIndex = (ptrdiff_t)item.lParam;
-            TREENODE *pNode = &g_TreeNodes[nodeIndex];
-            hwnd = pNode->hwnd;
-        }
+        ptrdiff_t nodeIndex = (ptrdiff_t)item.lParam;
+        TREENODE *pNode = &g_TreeNodes[nodeIndex];
+        hwnd = pNode->hwnd;
     }
 
     return hwnd;
