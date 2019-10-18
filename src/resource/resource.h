@@ -39,7 +39,7 @@
 #define IDB_SELBOX                      162
 #define IDR_MENU_PROPERTY               163
 #define IDD_PROPERTY_EDIT               164
-#define ID_MENU_BYTES                   165
+#define IDR_MENU_BYTES                  165
 #define IDD_POSTER                      166
 #define IDD_TAB_DPI                     167
 #define IDC_LIST1                       1000

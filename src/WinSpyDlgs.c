@@ -239,7 +239,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 				ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
 			}
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(ID_MENU_BYTES));
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_BYTES));
 
 			// Show the menu
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
@@ -686,7 +686,7 @@ INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 				ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
 			}
 
-			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(ID_MENU_BYTES));
+			hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_BYTES));
 
 			// Show the menu
 			uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
