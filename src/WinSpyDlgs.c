@@ -364,7 +364,7 @@ INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 		return TRUE;
 
 	case WM_MEASUREITEM:
-		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem((MEASUREITEMSTRUCT *)lParam));
+        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem(hwnd, (MEASUREITEMSTRUCT *)lParam));
 		return TRUE;
 
 	case WM_DRAWITEM:
@@ -436,7 +436,7 @@ INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		width -= GetSystemMetrics(SM_CXVSCROLL);
 
 		lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
-		lvcol.cx = 64;
+        lvcol.cx = DPIScale(hwnd, 64);
 		lvcol.iSubItem = 0;
 		lvcol.pszText = _T("Handle");
 		ListView_InsertColumn(hwndList1, 0, &lvcol);
@@ -444,13 +444,13 @@ INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		width -= lvcol.cx;
 
 		lvcol.pszText = _T("Class Name");
-		lvcol.cx = 100;
+        lvcol.cx = DPIScale(hwnd, 100);
 		ListView_InsertColumn(hwndList1, 1, &lvcol);
 		ListView_InsertColumn(hwndList2, 1, &lvcol);
 		width -= lvcol.cx;
 
 		lvcol.pszText = _T("Window Text");
-		lvcol.cx = max(width, 64);
+        lvcol.cx = max(width, DPIScale(hwnd, 64));
 		ListView_InsertColumn(hwndList1, 2, &lvcol);
 		ListView_InsertColumn(hwndList2, 2, &lvcol);
 
@@ -525,15 +525,17 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 		width = rect.right;
 		width -= GetSystemMetrics(SM_CXVSCROLL);
 
+        int cxHandle = DPIScale(hwnd, 20 + 12 * sizeof(LONG_PTR));
+
 		// Insert "Property" header-item
 		lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
 		lvcol.iSubItem = 0;
-		lvcol.cx = width - (20 + 12 * sizeof(LONG_PTR));
+        lvcol.cx = width - cxHandle;
 		lvcol.pszText = _T("Property Name");
 		ListView_InsertColumn(hwndList1, 0, &lvcol);
 
 		// Insert "Handle" header-item
-		lvcol.cx = 20 + 12 * sizeof(LONG_PTR);
+        lvcol.cx = cxHandle;
 		lvcol.pszText = _T("Handle");
 		ListView_InsertColumn(hwndList1, 1, &lvcol);
 

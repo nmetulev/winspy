@@ -36,7 +36,7 @@ DWORD      g_dwSelectedPID;         // Set only when a process node is selected 
 
 static TBBUTTON tbbPin[] =
 {
-	{   0,  IDM_WINSPY_PIN,     TBSTATE_ENABLED, TBSTYLE_CHECK,  0, 0   },
+    {   0,  IDM_WINSPY_PIN,     TBSTATE_ENABLED, TBSTYLE_CHECK,  0, 0   },
 };
 
 #define IDC_PIN_TOOLBAR 2000 // must be unique, so check resource.h
@@ -45,12 +45,12 @@ static TBBUTTON tbbPin[] =
 
 DialogTab WinSpyTab[NUMTABCONTROLITEMS] =
 {
-	0, _T("General"),       IDD_TAB_GENERAL,    GeneralDlgProc,
-	0, _T("Styles"),        IDD_TAB_STYLES,     StyleDlgProc,
-	0, _T("Properties"),    IDD_TAB_PROPERTIES, PropertyDlgProc,
-	0, _T("Class"),         IDD_TAB_CLASS,      ClassDlgProc,
-	0, _T("Windows"),       IDD_TAB_WINDOWS,    WindowDlgProc,
-	0, _T("Process"),       IDD_TAB_PROCESS,    ProcessDlgProc,
+    0, _T("General"),       IDD_TAB_GENERAL,    GeneralDlgProc,
+    0, _T("Styles"),        IDD_TAB_STYLES,     StyleDlgProc,
+    0, _T("Properties"),    IDD_TAB_PROPERTIES, PropertyDlgProc,
+    0, _T("Class"),         IDD_TAB_CLASS,      ClassDlgProc,
+    0, _T("Windows"),       IDD_TAB_WINDOWS,    WindowDlgProc,
+    0, _T("Process"),       IDD_TAB_PROCESS,    ProcessDlgProc,
     0, _T("DPI"),           IDD_TAB_DPI,        DpiDlgProc,
 };
 
@@ -63,29 +63,29 @@ static int nCurrentTab = 0;
 //
 void GetRemoteInfo(HWND hwnd)
 {
-	ZeroMemory(&spy_WndClassEx, sizeof(WNDCLASSEX));
-	spy_WndClassEx.cbSize = sizeof(WNDCLASSEX);
+    ZeroMemory(&spy_WndClassEx, sizeof(WNDCLASSEX));
+    spy_WndClassEx.cbSize = sizeof(WNDCLASSEX);
 
-	if (!hwnd)
-		return;
+    if (!hwnd)
+        return;
 
-	BOOL success = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
+    BOOL success = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
 
-	//try to use the standard methods to get the window procedure
-	//and class information. If that fails, then we have to inject
-	//a remote thread into the window's process and call the functions
-	//from there.
-	if (spy_WndProc == 0 || !success || spy_fPassword)
-	{
-		if (ProcessArchMatches(hwnd))
-		{
-			GetRemoteWindowInfo(hwnd, success ? NULL : &spy_WndClassEx, spy_WndProc ? NULL : &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
-		}
-		else
-		{
-			SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(spy_szPassword), (LPARAM)spy_szPassword);
-		}
-	}
+    //try to use the standard methods to get the window procedure
+    //and class information. If that fails, then we have to inject
+    //a remote thread into the window's process and call the functions
+    //from there.
+    if (spy_WndProc == 0 || !success || spy_fPassword)
+    {
+        if (ProcessArchMatches(hwnd))
+        {
+            GetRemoteWindowInfo(hwnd, success ? NULL : &spy_WndClassEx, spy_WndProc ? NULL : &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
+        }
+        else
+        {
+            SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(spy_szPassword), (LPARAM)spy_szPassword);
+        }
+    }
 }
 
 void UpdateTabs(BOOL fForceClassUpdate)
@@ -133,65 +133,65 @@ void UpdateTabs(BOOL fForceClassUpdate)
 //
 void DisplayWindowInfo(HWND hwnd)
 {
-	spy_hCurWnd = hwnd;
+    spy_hCurWnd = hwnd;
 
-	spy_szClassName[0] = '\0';
-	spy_WndProc = NULL;
-	spy_fPassword = FALSE;
+    spy_szClassName[0] = '\0';
+    spy_WndProc = NULL;
+    spy_fPassword = FALSE;
 
-	UpdateMainWindowText();
+    UpdateMainWindowText();
 
-	if (hwnd)
-	{
-		if (!GetClassName(hwnd, spy_szClassName, 70))
-			*spy_szClassName = 0;
+    if (hwnd)
+    {
+        if (!GetClassName(hwnd, spy_szClassName, 70))
+            *spy_szClassName = 0;
 
-		spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
+        spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
 
-		// If a password-edit control, then we can
-		// inject our thread to get the password text!
-		if (lstrcmpi(spy_szClassName, _T("Edit")) == 0)
-		{
-			// If a password control
-			DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+        // If a password-edit control, then we can
+        // inject our thread to get the password text!
+        if (lstrcmpi(spy_szClassName, _T("Edit")) == 0)
+        {
+            // If a password control
+            DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
-			if (dwStyle & ES_PASSWORD)
-				spy_fPassword = TRUE;
-			else
-				spy_fPassword = FALSE;
-		}
-		else
-			spy_fPassword = FALSE;
-	}
+            if (dwStyle & ES_PASSWORD)
+                spy_fPassword = TRUE;
+            else
+                spy_fPassword = FALSE;
+        }
+        else
+            spy_fPassword = FALSE;
+    }
 
-	UpdateTabs(spy_fPassword);
+    UpdateTabs(spy_fPassword);
 }
 
 void UpdateMainWindowText()
 {
-	HWND hwnd = spy_hCurWnd;
+    HWND hwnd = spy_hCurWnd;
 
-	if (hwnd && g_opts.fShowInCaption)
-	{
-		TCHAR szClass[70] = { 0 };
-		TCHAR ach[100] = { 0 };
+    if (hwnd && g_opts.fShowInCaption)
+    {
+        TCHAR szClass[70] = { 0 };
+        TCHAR ach[100] = { 0 };
 
-		if (IsWindow(hwnd))
-		{
-			GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
-		}
-		else
-		{
-			 _tcscpy_s(szClass, ARRAYSIZE(szClass), szInvalidWindow);
-		}
+        if (IsWindow(hwnd))
+        {
+            GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
+        }
+        else
+        {
+             _tcscpy_s(szClass, ARRAYSIZE(szClass), szInvalidWindow);
+        }
 
-		_stprintf_s(ach, ARRAYSIZE(ach), _T("%s [%08x, %s]"), szAppName, (UINT)(UINT_PTR)hwnd, szClass);
-		SetWindowText(g_hwndMain, ach);
-	}
-	else
-	{
-		SetWindowText(g_hwndMain, szAppName);
-	}
+        _stprintf_s(ach, ARRAYSIZE(ach), _T("%s [%08x, %s]"), szAppName, (UINT)(UINT_PTR)hwnd, szClass);
+        SetWindowText(g_hwndMain, ach);
+    }
+    else
+    {
+        SetWindowText(g_hwndMain, szAppName);
+    }
 }
 
 //
@@ -199,82 +199,82 @@ void UpdateMainWindowText()
 //
 UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 {
-	HWND hwndMain = GetParent(hwndTool);
+    HWND hwndMain = GetParent(hwndTool);
 
-	static BOOL fFirstDrag = TRUE;
-	static HWND hwndLastTarget;
-	static BOOL fOldShowHidden;
-	static BOOL fWasMinimized;
-	static UINT uLastLayout;
-	BOOL fCanceled = FALSE;
+    static BOOL fFirstDrag = TRUE;
+    static HWND hwndLastTarget;
+    static BOOL fOldShowHidden;
+    static BOOL fWasMinimized;
+    static UINT uLastLayout;
+    BOOL fCanceled = FALSE;
 
-	switch (uCode)
-	{
-	case WFN_SELCHANGED:
+    switch (uCode)
+    {
+    case WFN_SELCHANGED:
 
-		DisplayWindowInfo(hwnd);
-		return 0;
+        DisplayWindowInfo(hwnd);
+        return 0;
 
-	case WFN_BEGIN:
+    case WFN_BEGIN:
 
-		hwndLastTarget = spy_hCurWnd;
+        hwndLastTarget = spy_hCurWnd;
 
-		fWasMinimized = g_opts.fMinimizeWinSpy;
-		if (fWasMinimized)
-		{
-			uLastLayout = GetWindowLayout(hwndMain);
-			SetWindowLayout(hwndMain, WINSPY_MINIMIZED);
-			InvalidateRect(hwndMain, 0, 0);
-			UpdateWindow(hwndMain);
-		}
+        fWasMinimized = g_opts.fMinimizeWinSpy;
+        if (fWasMinimized)
+        {
+            uLastLayout = GetWindowLayout(hwndMain);
+            SetWindowLayout(hwndMain, WINSPY_MINIMIZED);
+            InvalidateRect(hwndMain, 0, 0);
+            UpdateWindow(hwndMain);
+        }
 
-		fOldShowHidden = g_opts.fShowHidden;
-		break;
+        fOldShowHidden = g_opts.fShowHidden;
+        break;
 
-	case WFN_CANCELLED:
+    case WFN_CANCELLED:
 
-		fCanceled = TRUE;
-		// Restore the current window + Fall through!
-		spy_hCurWnd = hwndLastTarget;
+        fCanceled = TRUE;
+        // Restore the current window + Fall through!
+        spy_hCurWnd = hwndLastTarget;
 
-	case WFN_END:
+    case WFN_END:
 
-		ShowWindow(hwndMain, SW_SHOW);
+        ShowWindow(hwndMain, SW_SHOW);
 
-		if (fWasMinimized)
-			SetWindowLayout(hwndMain, uLastLayout);
-		
-		if (!fCanceled && fFirstDrag)
-		{
-			fFirstDrag = FALSE;
-			SetWindowLayout(hwndMain, WINSPY_LASTMAX);
-		}
+        if (fWasMinimized)
+            SetWindowLayout(hwndMain, uLastLayout);
 
-		DisplayWindowInfo(spy_hCurWnd);
+        if (!fCanceled && fFirstDrag)
+        {
+            fFirstDrag = FALSE;
+            SetWindowLayout(hwndMain, WINSPY_LASTMAX);
+        }
 
-		g_opts.fShowHidden = fOldShowHidden;
-		break;
+        DisplayWindowInfo(spy_hCurWnd);
 
-	case WFN_CTRL_UP:
-		ToggleWindowLayout(hwndMain);
-		break;
+        g_opts.fShowHidden = fOldShowHidden;
+        break;
 
-	case WFN_CTRL_DOWN:
-		ToggleWindowLayout(hwndMain);
-		break;
+    case WFN_CTRL_UP:
+        ToggleWindowLayout(hwndMain);
+        break;
 
-	case WFN_SHIFT_UP:
-		SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_SHOWONLY);
-		g_opts.fShowHidden = fOldShowHidden;
-		break;
+    case WFN_CTRL_DOWN:
+        ToggleWindowLayout(hwndMain);
+        break;
 
-	case WFN_SHIFT_DOWN:
-		SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_HIDEONLY);
-		g_opts.fShowHidden = TRUE;
-		break;
+    case WFN_SHIFT_UP:
+        SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_SHOWONLY);
+        g_opts.fShowHidden = fOldShowHidden;
+        break;
 
-	}
-	return 0;
+    case WFN_SHIFT_DOWN:
+        SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_HIDEONLY);
+        g_opts.fShowHidden = TRUE;
+        break;
+
+    }
+    return 0;
 }
 
 //
@@ -282,14 +282,14 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 //
 void CheckSysMenu(HWND hwnd, UINT uItemId, BOOL fChecked)
 {
-	HMENU hSysMenu;
+    HMENU hSysMenu;
 
-	hSysMenu = GetSystemMenu(hwnd, FALSE);
+    hSysMenu = GetSystemMenu(hwnd, FALSE);
 
-	if (fChecked)
-		CheckMenuItem(hSysMenu, uItemId, MF_CHECKED | MF_BYCOMMAND);
-	else
-		CheckMenuItem(hSysMenu, uItemId, MF_UNCHECKED | MF_BYCOMMAND);
+    if (fChecked)
+        CheckMenuItem(hSysMenu, uItemId, MF_CHECKED | MF_BYCOMMAND);
+    else
+        CheckMenuItem(hSysMenu, uItemId, MF_UNCHECKED | MF_BYCOMMAND);
 }
 
 //
@@ -297,14 +297,14 @@ void CheckSysMenu(HWND hwnd, UINT uItemId, BOOL fChecked)
 //
 BOOL IsSysMenuChecked(HWND hwnd, UINT uItemId)
 {
-	HMENU hSysMenu;
-	DWORD dwState;
+    HMENU hSysMenu;
+    DWORD dwState;
 
-	hSysMenu = GetSystemMenu(hwnd, FALSE);
+    hSysMenu = GetSystemMenu(hwnd, FALSE);
 
-	dwState = GetMenuState(hSysMenu, uItemId, MF_BYCOMMAND);
+    dwState = GetMenuState(hSysMenu, uItemId, MF_BYCOMMAND);
 
-	return (dwState & MF_CHECKED) ? TRUE : FALSE;
+    return (dwState & MF_CHECKED) ? TRUE : FALSE;
 }
 
 //
@@ -312,16 +312,16 @@ BOOL IsSysMenuChecked(HWND hwnd, UINT uItemId)
 //
 BOOL ToggleSysMenuCheck(HWND hwnd, UINT uItemId)
 {
-	if (IsSysMenuChecked(hwnd, uItemId))
-	{
-		CheckSysMenu(hwnd, uItemId, FALSE);
-		return FALSE;
-	}
-	else
-	{
-		CheckSysMenu(hwnd, uItemId, TRUE);
-		return TRUE;
-	}
+    if (IsSysMenuChecked(hwnd, uItemId))
+    {
+        CheckSysMenu(hwnd, uItemId, FALSE);
+        return FALSE;
+    }
+    else
+    {
+        CheckSysMenu(hwnd, uItemId, TRUE);
+        return TRUE;
+    }
 }
 
 //
@@ -330,10 +330,10 @@ BOOL ToggleSysMenuCheck(HWND hwnd, UINT uItemId)
 //
 void SetSysMenuIconFromLayout(HWND hwnd, UINT layout)
 {
-	if (layout == WINSPY_MINIMIZED)
-		CheckSysMenu(hwnd, SC_MAXIMIZE, FALSE);
-	else
-		CheckSysMenu(hwnd, SC_MAXIMIZE, TRUE);
+    if (layout == WINSPY_MINIMIZED)
+        CheckSysMenu(hwnd, SC_MAXIMIZE, FALSE);
+    else
+        CheckSysMenu(hwnd, SC_MAXIMIZE, TRUE);
 }
 
 //
@@ -341,18 +341,18 @@ void SetSysMenuIconFromLayout(HWND hwnd, UINT layout)
 //
 HWND CreateSizeGrip(HWND hwndDlg)
 {
-	HWND hwndSizeGrip;
+    HWND hwndSizeGrip;
 
-	// Create a sizing grip for the lower-right corner
-	hwndSizeGrip = CreateWindow(
-		_T("Scrollbar"),
-		_T(""),
-		WS_VISIBLE | WS_CHILD | SBS_SIZEGRIP |
-		SBS_SIZEBOXBOTTOMRIGHTALIGN | WS_CLIPSIBLINGS,
-		0, 0, 20, 20,
-		hwndDlg, 0, hInst, 0);
+    // Create a sizing grip for the lower-right corner
+    hwndSizeGrip = CreateWindow(
+        _T("Scrollbar"),
+        _T(""),
+        WS_VISIBLE | WS_CHILD | SBS_SIZEGRIP |
+        SBS_SIZEBOXBOTTOMRIGHTALIGN | WS_CLIPSIBLINGS,
+        0, 0, 20, 20,
+        hwndDlg, 0, hInst, 0);
 
-	return hwndSizeGrip;
+    return hwndSizeGrip;
 }
 
 //
@@ -360,81 +360,81 @@ HWND CreateSizeGrip(HWND hwndDlg)
 //
 HWND CreateTooltip(HWND hwndDlg)
 {
-	HWND hwndTT;
-	TOOLINFO ti;
-	int i;
-	BOOL fRet;
+    HWND hwndTT;
+    TOOLINFO ti;
+    int i;
+    BOOL fRet;
 
-	struct CtrlTipsTag
-	{
-		int  uDlgId;   // -1 for main window, 0 through n for tab dialogs
-		UINT  uCtrlId;
-		TCHAR szText[50];
+    struct CtrlTipsTag
+    {
+        int  uDlgId;   // -1 for main window, 0 through n for tab dialogs
+        UINT  uCtrlId;
+        TCHAR szText[50];
 
-	} CtrlTips[] =
-	{
-		-1, IDC_DRAGGER,    _T("Window Finder Tool"),
-		-1, IDC_PIN_TOOLBAR,_T("Keep On-Screen (F4)"),
-		-1, IDC_MINIMIZE,   _T("Minimize On Use"),
-		-1, IDC_HIDDEN,     _T("Display Hidden Windows"),
-		-1, IDC_CAPTURE,    _T("Capture Current Window (Alt+C)"),
-		-1, IDC_AUTOUPDATE, _T("Update data every second"),
-		-1, IDC_EXPAND,     _T("Expand / Collapse (F3)"),
-		-1, IDC_REFRESH,    _T("Refresh Window List (F6)"),
-		-1, IDC_LOCATE,     _T("Locate Current Window"),
-		-1, IDC_FLASH,      _T("Highlight Selected Window"),
+    } CtrlTips[] =
+    {
+        -1, IDC_DRAGGER,    _T("Window Finder Tool"),
+        -1, IDC_PIN_TOOLBAR,_T("Keep On-Screen (F4)"),
+        -1, IDC_MINIMIZE,   _T("Minimize On Use"),
+        -1, IDC_HIDDEN,     _T("Display Hidden Windows"),
+        -1, IDC_CAPTURE,    _T("Capture Current Window (Alt+C)"),
+        -1, IDC_AUTOUPDATE, _T("Update data every second"),
+        -1, IDC_EXPAND,     _T("Expand / Collapse (F3)"),
+        -1, IDC_REFRESH,    _T("Refresh Window List (F6)"),
+        -1, IDC_LOCATE,     _T("Locate Current Window"),
+        -1, IDC_FLASH,      _T("Highlight Selected Window"),
 
-		GENERAL_TAB, IDC_HANDLE_MENU,  _T("Window Commands"),
-		GENERAL_TAB, IDC_SETCAPTION,   _T("Set Window Caption"),
-		GENERAL_TAB, IDC_EDITSIZE,     _T("Adjust Window Position"),
-		STYLE_TAB,   IDC_EDITSTYLE,    _T("Edit Styles"),
-		STYLE_TAB,   IDC_EDITSTYLEEX,  _T("Edit Extended Styles"),
-		PROCESS_TAB, IDC_PROCESS_MENU, _T("Process Commands"),
-		WINDOW_TAB,  IDC_PARENT,       _T("Parent Window"),
-		WINDOW_TAB,  IDC_OWNER,        _T("Owner Window"),
-	};
+        GENERAL_TAB, IDC_HANDLE_MENU,  _T("Window Commands"),
+        GENERAL_TAB, IDC_SETCAPTION,   _T("Set Window Caption"),
+        GENERAL_TAB, IDC_EDITSIZE,     _T("Adjust Window Position"),
+        STYLE_TAB,   IDC_EDITSTYLE,    _T("Edit Styles"),
+        STYLE_TAB,   IDC_EDITSTYLEEX,  _T("Edit Extended Styles"),
+        PROCESS_TAB, IDC_PROCESS_MENU, _T("Process Commands"),
+        WINDOW_TAB,  IDC_PARENT,       _T("Parent Window"),
+        WINDOW_TAB,  IDC_OWNER,        _T("Owner Window"),
+    };
 
-	// Create tooltip for main window
-	hwndTT = CreateWindowEx(WS_EX_TOPMOST,
-		TOOLTIPS_CLASS,
-		NULL,
-		WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		hwndDlg,
-		NULL,
-		hInst,
-		NULL
-	);
+    // Create tooltip for main window
+    hwndTT = CreateWindowEx(WS_EX_TOPMOST,
+        TOOLTIPS_CLASS,
+        NULL,
+        WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
+        CW_USEDEFAULT,
+        CW_USEDEFAULT,
+        CW_USEDEFAULT,
+        CW_USEDEFAULT,
+        hwndDlg,
+        NULL,
+        hInst,
+        NULL
+    );
 
-	//
-	//  Add tooltips to every control (above)
-	//
-	for (i = 0; i < ARRAYSIZE(CtrlTips); i++)
-	{
-		HWND hwnd;
+    //
+    //  Add tooltips to every control (above)
+    //
+    for (i = 0; i < ARRAYSIZE(CtrlTips); i++)
+    {
+        HWND hwnd;
 
-		if (CtrlTips[i].uDlgId == -1)
-			hwnd = hwndDlg;
-		else
-			hwnd = WinSpyTab[CtrlTips[i].uDlgId].hwnd;
+        if (CtrlTips[i].uDlgId == -1)
+            hwnd = hwndDlg;
+        else
+            hwnd = WinSpyTab[CtrlTips[i].uDlgId].hwnd;
 
-		ti.cbSize = sizeof(ti);
-		ti.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
-		ti.hwnd = hwnd;
-		ti.uId = (UINT_PTR)GetDlgItem(hwnd, CtrlTips[i].uCtrlId);
-		ti.hinst = hInst;
-		ti.lpszText = CtrlTips[i].szText;
-		ti.lParam = 0;
+        ti.cbSize = sizeof(ti);
+        ti.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
+        ti.hwnd = hwnd;
+        ti.uId = (UINT_PTR)GetDlgItem(hwnd, CtrlTips[i].uCtrlId);
+        ti.hinst = hInst;
+        ti.lpszText = CtrlTips[i].szText;
+        ti.lParam = 0;
 
-		fRet = (BOOL)SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM)&ti);
-	}
+        fRet = (BOOL)SendMessage(hwndTT, TTM_ADDTOOL, 0, (LPARAM)&ti);
+    }
 
-	SendMessage(hwndTT, TTM_ACTIVATE, g_opts.fEnableToolTips, 0);
+    SendMessage(hwndTT, TTM_ACTIVATE, g_opts.fEnableToolTips, 0);
 
-	return hwndTT;
+    return hwndTT;
 }
 
 //
@@ -443,39 +443,39 @@ HWND CreateTooltip(HWND hwndDlg)
 //
 HWND CreatePinToolbar(HWND hwndDlg)
 {
-	RECT    rect;
-	HWND    hwndTB;
+    RECT    rect;
+    HWND    hwndTB;
 
-	// Create the toolbar to hold pin bitmap
-	hwndTB = CreateToolbarEx(
-		hwndDlg,
-		TOOLBAR_PIN_STYLES,             //,
-		IDC_PIN_TOOLBAR,                //toolbar ID (don't need)
-		2,                              //number of button images
-		hInst,                          //where the bitmap is
-		IDB_PIN_BITMAP,                 //bitmap resource name
-		tbbPin,                         //TBBUTTON structure
-		ARRAYSIZE(tbbPin),
-		15, 14, 15, 14,                 //0,0,//16,18, 16, 18,
-		sizeof(TBBUTTON));
+    // Create the toolbar to hold pin bitmap
+    hwndTB = CreateToolbarEx(
+        hwndDlg,
+        TOOLBAR_PIN_STYLES,             //,
+        IDC_PIN_TOOLBAR,                //toolbar ID (don't need)
+        2,                              //number of button images
+        hInst,                          //where the bitmap is
+        IDB_PIN_BITMAP,                 //bitmap resource name
+        tbbPin,                         //TBBUTTON structure
+        ARRAYSIZE(tbbPin),
+        15, 14, 15, 14,                 //0,0,//16,18, 16, 18,
+        sizeof(TBBUTTON));
 
 
-	// Find out how big the button is, so we can resize the
-	// toolbar to fit perfectly
-	SendMessage(hwndTB, TB_GETITEMRECT, 0, (LPARAM)&rect);
+    // Find out how big the button is, so we can resize the
+    // toolbar to fit perfectly
+    SendMessage(hwndTB, TB_GETITEMRECT, 0, (LPARAM)&rect);
 
-	SetWindowPos(hwndTB, HWND_TOP, 0, 0,
-		GetRectWidth(&rect),
-		GetRectHeight(&rect), SWP_NOMOVE);
+    SetWindowPos(hwndTB, HWND_TOP, 0, 0,
+        GetRectWidth(&rect),
+        GetRectHeight(&rect), SWP_NOMOVE);
 
-	// Setup the bitmap image
-	SendMessage(hwndTB, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
-		(LPARAM)MAKELPARAM(g_opts.fPinWindow, 0));
+    // Setup the bitmap image
+    SendMessage(hwndTB, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
+        (LPARAM)MAKELPARAM(g_opts.fPinWindow, 0));
 
-	// Checked / Unchecked
-	SendMessage(hwndTB, TB_CHECKBUTTON, IDM_WINSPY_PIN, MAKELONG(g_opts.fPinWindow, 0));
+    // Checked / Unchecked
+    SendMessage(hwndTB, TB_CHECKBUTTON, IDM_WINSPY_PIN, MAKELONG(g_opts.fPinWindow, 0));
 
-	return hwndTB;
+    return hwndTB;
 }
 
 //
@@ -483,131 +483,131 @@ HWND CreatePinToolbar(HWND hwndDlg)
 //
 BOOL WinSpy_InitDlg(HWND hwnd)
 {
-	HBITMAP hBmp1, hBmp2;
-	HMENU   hSysMenu;
-	int     i;
-	HICON   hIcon;
-	TCITEM  tcitem;
+    HBITMAP hBmp1, hBmp2;
+    HMENU   hSysMenu;
+    int     i;
+    HICON   hIcon;
+    TCITEM  tcitem;
 
-	g_hwndMain = hwnd;
+    g_hwndMain = hwnd;
 
-	// Initialize the finder tool
-	MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), WndFindProc);
+    // Initialize the finder tool
+    MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), WndFindProc);
 
-	// Make the More>> button into a bitmap
-	MakeDlgBitmapButton(hwnd, IDC_EXPAND, IDI_MORE);
+    // Make the More>> button into a bitmap
+    MakeDlgBitmapButton(hwnd, IDC_EXPAND, IDI_MORE);
 
-	hwndSizer = CreateSizeGrip(hwnd);
-	hwndPin = CreatePinToolbar(hwnd);
+    hwndSizer = CreateSizeGrip(hwnd);
+    hwndPin = CreatePinToolbar(hwnd);
 
-	// Load image lists etc
-	WindowTree_Initialize(GetDlgItem(hwnd, IDC_TREE1));
+    // Load image lists etc
+    WindowTree_Initialize(GetDlgItem(hwnd, IDC_TREE1));
 
-	// Create each dialog-tab pane,
-	for (i = 0; i < NUMTABCONTROLITEMS; i++)
-	{
-		ZeroMemory(&tcitem, sizeof(tcitem));
+    // Create each dialog-tab pane,
+    for (i = 0; i < NUMTABCONTROLITEMS; i++)
+    {
+        ZeroMemory(&tcitem, sizeof(tcitem));
 
-		tcitem.mask = TCIF_TEXT;
-		tcitem.pszText = (LPTSTR)WinSpyTab[i].szText;
+        tcitem.mask = TCIF_TEXT;
+        tcitem.pszText = (LPTSTR)WinSpyTab[i].szText;
 
-		// Create the dialog pane
-		WinSpyTab[i].hwnd = CreateDialog(hInst,
-			MAKEINTRESOURCE(WinSpyTab[i].id), hwnd, WinSpyTab[i].dlgproc);
+        // Create the dialog pane
+        WinSpyTab[i].hwnd = CreateDialog(hInst,
+            MAKEINTRESOURCE(WinSpyTab[i].id), hwnd, WinSpyTab[i].dlgproc);
 
-		// Create the corresponding tab
-		SendDlgItemMessage(hwnd, IDC_TAB1, TCM_INSERTITEM, i, (LPARAM)&tcitem);
+        // Create the corresponding tab
+        SendDlgItemMessage(hwnd, IDC_TAB1, TCM_INSERTITEM, i, (LPARAM)&tcitem);
 
-		SetWindowText(WinSpyTab[i].hwnd, WinSpyTab[i].szText);
+        SetWindowText(WinSpyTab[i].hwnd, WinSpyTab[i].szText);
 
-		// Make this dialog XP-theme aware!
-		EnableDialogTheme(WinSpyTab[i].hwnd);
-	}
+        // Make this dialog XP-theme aware!
+        EnableDialogTheme(WinSpyTab[i].hwnd);
+    }
 
-	InitStockStyleLists();
+    InitStockStyleLists();
 
-	//
-	CheckDlgButton(hwnd, IDC_MINIMIZE, g_opts.fMinimizeWinSpy);
-	CheckDlgButton(hwnd, IDC_HIDDEN, g_opts.fShowHidden);
+    //
+    CheckDlgButton(hwnd, IDC_MINIMIZE, g_opts.fMinimizeWinSpy);
+    CheckDlgButton(hwnd, IDC_HIDDEN, g_opts.fShowHidden);
 
-	// Position our contents, work out how big the various
-	// layouts are (depending on current system settings for border
-	// width, titlebar height etc).
-	WinSpyDlg_SizeContents(hwnd);
+    // Position our contents, work out how big the various
+    // layouts are (depending on current system settings for border
+    // width, titlebar height etc).
+    WinSpyDlg_SizeContents(hwnd);
 
-	// Make sure we test for this FIRST, before we do ANY SetWindowPos'.
-	// Otherwise, we will get a WM_WINDOWPOSCHANGED, and set fAlwaysOnTop to 0!
-	if (g_opts.fAlwaysOnTop)
-	{
-		SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_ZONLY);
-	}
+    // Make sure we test for this FIRST, before we do ANY SetWindowPos'.
+    // Otherwise, we will get a WM_WINDOWPOSCHANGED, and set fAlwaysOnTop to 0!
+    if (g_opts.fAlwaysOnTop)
+    {
+        SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_ZONLY);
+    }
 
-	// See what the registry settings are, and setup accordingly
-	if (g_opts.fSaveWinPos && g_opts.ptPinPos.x != CW_USEDEFAULT && g_opts.ptPinPos.y != CW_USEDEFAULT)
-	{
-		SetWindowLayout(hwnd, WINSPY_MINIMIZED);
-	}
-	else
-	{
-		RECT rect;
-		GetWindowRect(hwnd, &rect);
-		g_opts.ptPinPos.x = rect.left;
-		g_opts.ptPinPos.y = rect.top;
-	}
+    // See what the registry settings are, and setup accordingly
+    if (g_opts.fSaveWinPos && g_opts.ptPinPos.x != CW_USEDEFAULT && g_opts.ptPinPos.y != CW_USEDEFAULT)
+    {
+        SetWindowLayout(hwnd, WINSPY_MINIMIZED);
+    }
+    else
+    {
+        RECT rect;
+        GetWindowRect(hwnd, &rect);
+        g_opts.ptPinPos.x = rect.left;
+        g_opts.ptPinPos.y = rect.top;
+    }
 
-	// display the general tab
-	SetWindowPos(WinSpyTab[0].hwnd, 0, 0, 0, 0, 0, SWP_SHOWONLY);
+    // display the general tab
+    SetWindowPos(WinSpyTab[0].hwnd, 0, 0, 0, 0, 0, SWP_SHOWONLY);
 
-	//
-	//  Customize this window's system menu by adding our own
-	//  commands.
-	//
-	hSysMenu = GetSystemMenu(hwnd, FALSE);
+    //
+    //  Customize this window's system menu by adding our own
+    //  commands.
+    //
+    hSysMenu = GetSystemMenu(hwnd, FALSE);
 
 
-	// add items *before* the close item
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT, _T("&About"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_HELP, _T("&Help\tF1"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING |
-		(g_opts.fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
-		_T("Always On &Top\tShift+Y"));
-	InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
+    // add items *before* the close item
+    InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT, _T("&About"));
+    InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
+    InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_HELP, _T("&Help\tF1"));
+    InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
+    InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING |
+        (g_opts.fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
+        _T("Always On &Top\tShift+Y"));
+    InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 
-	/*  AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
-		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT,   _T("&About"));
-		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
-		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_HELP,    _T("&Help\tF1"));
-		AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
-		AppendMenu(hSysMenu, MF_ENABLED | MF_STRING |
-			(fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
-			_T("Always On &Top\tShift+Y"));*/
+    /*  AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
+        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT,   _T("&About"));
+        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
+        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_HELP,    _T("&Help\tF1"));
+        AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
+        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING |
+            (fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
+            _T("Always On &Top\tShift+Y"));*/
 
-			// Change the Maximize item to a Toggle Layout item
-	ModifyMenu(hSysMenu, SC_MAXIMIZE, MF_ENABLED | MF_STRING, SC_MAXIMIZE,
-		_T("&Toggle Layout\tF3"));
+            // Change the Maximize item to a Toggle Layout item
+    ModifyMenu(hSysMenu, SC_MAXIMIZE, MF_ENABLED | MF_STRING, SC_MAXIMIZE,
+        _T("&Toggle Layout\tF3"));
 
-	// Change the bitmaps for the Maximize item
-	hBmp1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_CHECK1));
-	hBmp2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_CHECK2));
-	SetMenuItemBitmaps(hSysMenu, SC_MAXIMIZE, MF_BYCOMMAND, hBmp1, hBmp2);
+    // Change the bitmaps for the Maximize item
+    hBmp1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_CHECK1));
+    hBmp2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_CHECK2));
+    SetMenuItemBitmaps(hSysMenu, SC_MAXIMIZE, MF_BYCOMMAND, hBmp1, hBmp2);
 
-	// Set the dialog's Small Icon
-	hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, 0);
-	SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+    // Set the dialog's Small Icon
+    hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, 0);
+    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 
-	// Set the dialog's Large Icon
-	hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 32, 32, 0);
-	SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+    // Set the dialog's Large Icon
+    hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 32, 32, 0);
+    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 
-	// Create tooltips after all other windows
-	hwndToolTip = CreateTooltip(hwnd);
+    // Create tooltips after all other windows
+    hwndToolTip = CreateTooltip(hwnd);
 
-	ForceVisibleDisplay(hwnd);
+    ForceVisibleDisplay(hwnd);
 
-	// Set focus to first item
-	return TRUE;
+    // Set focus to first item
+    return TRUE;
 }
 
 //
@@ -615,40 +615,40 @@ BOOL WinSpy_InitDlg(HWND hwnd)
 //
 UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 {
-	switch (hdr->code)
-	{
-		// TabView selection has changed, so show appropriate tab-pane
-	case TCN_SELCHANGE:
+    switch (hdr->code)
+    {
+        // TabView selection has changed, so show appropriate tab-pane
+    case TCN_SELCHANGE:
 
-		ShowWindow(WinSpyTab[nCurrentTab].hwnd, SW_HIDE);
+        ShowWindow(WinSpyTab[nCurrentTab].hwnd, SW_HIDE);
 
-		nCurrentTab = TabCtrl_GetCurSel(hdr->hwndFrom);
+        nCurrentTab = TabCtrl_GetCurSel(hdr->hwndFrom);
 
-		SetWindowPos(WinSpyTab[nCurrentTab].hwnd, HWND_TOP, 0, 0, 0, 0, SWP_SHOWONLY);
+        SetWindowPos(WinSpyTab[nCurrentTab].hwnd, HWND_TOP, 0, 0, 0, 0, SWP_SHOWONLY);
 
-		UpdateTabs(FALSE);
+        UpdateTabs(FALSE);
 
-		return TRUE;
+        return TRUE;
 
-		// TreeView has been right-clicked, so show the popup menu
-	case NM_RCLICK:
+        // TreeView has been right-clicked, so show the popup menu
+    case NM_RCLICK:
 
         WindowTree_OnRightClick(hdr);
 
         return TRUE;
 
-		// TreeView selection has changed, so update the main window properties
-	case TVN_SELCHANGED:
+        // TreeView selection has changed, so update the main window properties
+    case TVN_SELCHANGED:
 
-		if (IsWindowVisible(GetDlgItem(hwnd, IDC_TREE1)))
-		{
+        if (IsWindowVisible(GetDlgItem(hwnd, IDC_TREE1)))
+        {
             WindowTree_OnSelectionChanged(hdr);
-		}
+        }
 
-		return TRUE;
-	}
+        return TRUE;
+    }
 
-	return 0;
+    return 0;
 }
 
 //
@@ -656,38 +656,38 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 //
 BOOL WinSpyDlg_SysColorChange(HWND hwnd)
 {
-	int i;
+    int i;
 
-	// forward this to all the dialogs - they can look after
-	// their own controls
-	for (i = 0; i < NUMTABCONTROLITEMS; i++)
-		PostMessage(WinSpyTab[i].hwnd, WM_SYSCOLORCHANGE, 0, 0);
+    // forward this to all the dialogs - they can look after
+    // their own controls
+    for (i = 0; i < NUMTABCONTROLITEMS; i++)
+        PostMessage(WinSpyTab[i].hwnd, WM_SYSCOLORCHANGE, 0, 0);
 
-	// Set the treeview colors
-	TreeView_SetBkColor(GetDlgItem(hwnd, IDC_TREE1), GetSysColor(COLOR_WINDOW));
+    // Set the treeview colors
+    TreeView_SetBkColor(GetDlgItem(hwnd, IDC_TREE1), GetSysColor(COLOR_WINDOW));
 
-	// Recreate toolbar, so it uses new color scheme
-	DestroyWindow(hwndPin);
+    // Recreate toolbar, so it uses new color scheme
+    DestroyWindow(hwndPin);
 
-	hwndPin = CreatePinToolbar(hwnd);
+    hwndPin = CreatePinToolbar(hwnd);
 
-	// Send a WM_SIZE so that the pin toolbar gets repositioned
-	SetWindowPos(hwnd, 0, 0, 0, 0, 0,
-		SWP_NOMOVE | SWP_NOSIZE |
-		SWP_NOZORDER | SWP_NOACTIVATE |
-		SWP_FRAMECHANGED);
+    // Send a WM_SIZE so that the pin toolbar gets repositioned
+    SetWindowPos(hwnd, 0, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE |
+        SWP_NOZORDER | SWP_NOACTIVATE |
+        SWP_FRAMECHANGED);
 
-	return TRUE;
+    return TRUE;
 }
 
 #ifdef _DEBUG
 void DumpRect(HWND hwnd)
 {
-	RECT  rect;
-	TCHAR ach[80];
-	GetWindowRect(hwnd, &rect);
-	_stprintf_s(ach, ARRAYSIZE(ach), _T("%d %d %d %d\n"), rect.left, rect.top, rect.right, rect.bottom);
-	OutputDebugString(ach);
+    RECT  rect;
+    TCHAR ach[80];
+    GetWindowRect(hwnd, &rect);
+    _stprintf_s(ach, ARRAYSIZE(ach), _T("%d %d %d %d\n"), rect.left, rect.top, rect.right, rect.bottom);
+    OutputDebugString(ach);
 
 }
 #endif
@@ -697,70 +697,70 @@ void DumpRect(HWND hwnd)
 //
 INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	WINDOWPLACEMENT placement;
+    WINDOWPLACEMENT placement;
 
-	switch (msg)
-	{
-	case WM_INITDIALOG:
-		return WinSpy_InitDlg(hwnd);
+    switch (msg)
+    {
+    case WM_INITDIALOG:
+        return WinSpy_InitDlg(hwnd);
 
-	case WM_CLOSE:
-		ExitWinSpy(hwnd, 0);
-		return TRUE;
+    case WM_CLOSE:
+        ExitWinSpy(hwnd, 0);
+        return TRUE;
 
-	case WM_DESTROY:
-		WindowTree_Destroy();
-		return TRUE;
+    case WM_DESTROY:
+        WindowTree_Destroy();
+        return TRUE;
 
-	case WM_SYSCOLORCHANGE:
-		return WinSpyDlg_SysColorChange(hwnd);
+    case WM_SYSCOLORCHANGE:
+        return WinSpyDlg_SysColorChange(hwnd);
 
-	case WM_SYSCOMMAND:
-		return WinSpyDlg_SysMenuHandler(hwnd, wParam, lParam);
+    case WM_SYSCOMMAND:
+        return WinSpyDlg_SysMenuHandler(hwnd, wParam, lParam);
 
-	case WM_COMMAND:
-		return WinSpyDlg_CommandHandler(hwnd, wParam, lParam);
+    case WM_COMMAND:
+        return WinSpyDlg_CommandHandler(hwnd, wParam, lParam);
 
-	case WM_TIMER:
-		return WinSpyDlg_TimerHandler(wParam);
+    case WM_TIMER:
+        return WinSpyDlg_TimerHandler(wParam);
 
-	case WM_SIZE:
-		return WinSpyDlg_Size(hwnd, wParam, lParam);
+    case WM_SIZE:
+        return WinSpyDlg_Size(hwnd, wParam, lParam);
 
-	case WM_SIZING:
-		return WinSpyDlg_Sizing((UINT)wParam, (RECT *)lParam);
+    case WM_SIZING:
+        return WinSpyDlg_Sizing((UINT)wParam, (RECT *)lParam);
 
-	case WM_NCHITTEST:
-		return WinSpyDlg_NCHitTest(hwnd, wParam, lParam);
+    case WM_NCHITTEST:
+        return WinSpyDlg_NCHitTest(hwnd, wParam, lParam);
 
-	case WM_ENTERSIZEMOVE:
-		return WinSpyDlg_EnterSizeMove(hwnd);
+    case WM_ENTERSIZEMOVE:
+        return WinSpyDlg_EnterSizeMove(hwnd);
 
-	case WM_EXITSIZEMOVE:
-		return WinSpyDlg_ExitSizeMove(hwnd);
+    case WM_EXITSIZEMOVE:
+        return WinSpyDlg_ExitSizeMove(hwnd);
 
-	case WM_WINDOWPOSCHANGED:
-		return WinSpyDlg_WindowPosChanged(hwnd, (WINDOWPOS *)lParam);
+    case WM_WINDOWPOSCHANGED:
+        return WinSpyDlg_WindowPosChanged(hwnd, (WINDOWPOS *)lParam);
 
-	case WM_NOTIFY:
-		return WinSpyDlg_NotifyHandler(hwnd, (NMHDR *)lParam);
+    case WM_NOTIFY:
+        return WinSpyDlg_NotifyHandler(hwnd, (NMHDR *)lParam);
 
-	case WM_DRAWITEM:
-		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
-		return TRUE;
+    case WM_DRAWITEM:
+        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
+        return TRUE;
 
-		// Update our layout based on new settings
-	case WM_SETTINGCHANGE:
-		placement.length = sizeof(WINDOWPLACEMENT);
-		GetWindowPlacement(hwnd, &placement);
+        // Update our layout based on new settings
+    case WM_SETTINGCHANGE:
+        placement.length = sizeof(WINDOWPLACEMENT);
+        GetWindowPlacement(hwnd, &placement);
 
-		WinSpyDlg_SizeContents(hwnd);
+        WinSpyDlg_SizeContents(hwnd);
 
-		SetWindowPlacement(hwnd, &placement);
-		return TRUE;
-	}
+        SetWindowPlacement(hwnd, &placement);
+        return TRUE;
+    }
 
-	return FALSE;
+    return FALSE;
 }
 
 //
@@ -775,89 +775,123 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 //
 void RegisterDialogClass(TCHAR szNewName[])
 {
-	WNDCLASSEX wc;
+    WNDCLASSEX wc;
 
-	// Get the class structure for the system dialog class
-	wc.cbSize = sizeof(wc);
-	GetClassInfoEx(0, WC_DIALOG, &wc);
+    // Get the class structure for the system dialog class
+    wc.cbSize = sizeof(wc);
+    GetClassInfoEx(0, WC_DIALOG, &wc);
 
-	// Make sure our new class does not conflict
-	wc.style &= ~CS_GLOBALCLASS;
+    // Make sure our new class does not conflict
+    wc.style &= ~CS_GLOBALCLASS;
 
-	// Register an identical dialog class, but with a new name!
-	wc.lpszClassName = szNewName;
+    // Register an identical dialog class, but with a new name!
+    wc.lpszClassName = szNewName;
 
-	RegisterClassEx(&wc);
+    RegisterClassEx(&wc);
 }
+
+PCSTR HelpBlurb =
+    "Command Line Options:\n"
+    "\n"
+    "/pm\tRun in per-monitor DPI aware mode.\n"
+    "/sa\tRun in system-aware DPI mode.\n"
+    "\n";
+
+BOOL ProcessCommandLine(PCSTR pcszCmdLine)
+{
+    BOOL fIsValid = TRUE;
+
+    if (strcmp(pcszCmdLine, "/pm") == 0)
+    {
+        MarkProcessAsPerMonitorDpiAware();
+    }
+    else if (strcmp(pcszCmdLine, "/sa") == 0)
+    {
+        MarkProcessAsSystemDpiAware();
+    }
+    else if (pcszCmdLine[0])
+    {
+        MessageBoxA(NULL, HelpBlurb, "WinSpy", MB_OK);
+        fIsValid = FALSE;
+    }
+
+    return fIsValid;
+}
+
 //
 //  This is where the fun begins
 //
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
-	UNREFERENCED_PARAMETER(nShowCmd);
-	HWND    hwndMain;
-	HACCEL  hAccelTable;
-	MSG     msg;
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(nShowCmd);
+    HWND    hwndMain;
+    HACCEL  hAccelTable;
+    MSG     msg;
 
-	INITCOMMONCONTROLSEX ice;
-	hInst = hInstance;
+    if (!ProcessCommandLine(lpCmdLine))
+    {
+        return 0;
+    }
 
-	ice.dwSize = sizeof ice;
-	ice.dwICC = ICC_BAR_CLASSES | ICC_TREEVIEW_CLASSES |
-		ICC_LISTVIEW_CLASSES | ICC_TAB_CLASSES;
+    INITCOMMONCONTROLSEX ice;
+    hInst = hInstance;
 
-	EnableDebugPrivilege();
+    ice.dwSize = sizeof ice;
+    ice.dwICC = ICC_BAR_CLASSES | ICC_TREEVIEW_CLASSES |
+        ICC_LISTVIEW_CLASSES | ICC_TAB_CLASSES;
 
-	InitCommonControls();//Ex(&ice);
+    EnableDebugPrivilege();
 
-	RegisterDialogClass(_T("WinSpy"));
-	RegisterDialogClass(_T("WinSpyPane"));
+    InitCommonControls();//Ex(&ice);
 
-	LoadSettings();
+    RegisterDialogClass(_T("WinSpy"));
+    RegisterDialogClass(_T("WinSpyPane"));
 
-	//DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN), 0, DialogProc);
+    LoadSettings();
 
-	hwndMain = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_MAIN), 0, DialogProc);
+    //DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN), 0, DialogProc);
 
-	//Initialise the keyboard accelerators
-	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
+    hwndMain = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_MAIN), 0, DialogProc);
 
-	//
-	// UPDATED (fix for Matrox CenterPOPUP feature :)
-	//
-	//  If we use ShowWindow, then my Matrox card automatically centers WinSpy
-	//  on the current monitor (even if we restored WinSpy to its position last
-	//  time we ran). Therefore we use SetWindowPos to display the dialog, as
-	//  Matrox don't seem to hook this in their display driver.
-	//
-	SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+    //Initialise the keyboard accelerators
+    hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
-		// Get the accelerator keys before IsDlgMsg gobbles them up!
-		if (!TranslateAccelerator(hwndMain, hAccelTable, &msg))
-		{
-			// Let IsDialogMessage process TAB etc
-			if (!IsDialogMessage(hwndMain, &msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-		}
-	}
+    //
+    // UPDATED (fix for Matrox CenterPOPUP feature :)
+    //
+    //  If we use ShowWindow, then my Matrox card automatically centers WinSpy
+    //  on the current monitor (even if we restored WinSpy to its position last
+    //  time we ran). Therefore we use SetWindowPos to display the dialog, as
+    //  Matrox don't seem to hook this in their display driver.
+    //
+    SetWindowPos(hwndMain, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
-	SaveSettings();
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        // Get the accelerator keys before IsDlgMsg gobbles them up!
+        if (!TranslateAccelerator(hwndMain, hAccelTable, &msg))
+        {
+            // Let IsDialogMessage process TAB etc
+            if (!IsDialogMessage(hwndMain, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+    }
 
-	return 0;
+    SaveSettings();
+
+    return 0;
 }
 
 void ExitWinSpy(HWND hwnd, UINT uCode)
 {
-	if (IsDlgButtonChecked(hwnd, IDC_AUTOUPDATE))
-		KillTimer(hwnd, 0);
+    if (IsDlgButtonChecked(hwnd, IDC_AUTOUPDATE))
+        KillTimer(hwnd, 0);
 
-	DestroyWindow(hwnd);
-	PostQuitMessage(uCode);
+    DestroyWindow(hwnd);
+    PostQuitMessage(uCode);
 }

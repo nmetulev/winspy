@@ -12,10 +12,38 @@
 //
 //  Called from WM_MEASUREITEM
 //
-BOOL FunkyList_MeasureItem(MEASUREITEMSTRUCT *mis)
+BOOL FunkyList_MeasureItem(HWND hwnd, MEASUREITEMSTRUCT *mis)
 {
-	mis->itemHeight -= 2;
-	return TRUE;
+    // For a LBS_OWNERDRAWFIXED listbox, WM_MEASUREITEM is sent just once
+    // from the WM_CREATE handler of the listbox window.  At that point in
+    // time the owning dialog's font has not yet been set on the listbox, and
+    // the default itemHeight in the MEASUREITEMSTRUCT will have been derived
+    // from the default DC font (what you get on a DC that doesn't have any
+    // explicitly selected font).  The default DC metrics are fixed and are
+    // really only suitable when running at 100% DPI.  If running at any DPI
+    // awareness level other than unaware, and at a DPI scale above 100% then
+    // that default height will cause the bottom of text to be clipped.
+    //
+    // To gracefully handle running at high DPI we need to explicitly measure
+    // the height of the text here.  We can query the font to be used from
+    // the parent of the listbox (i.e. the owning dialog).
+
+    HWND hwndDialog = GetParent(hwnd);
+    HFONT hfont = (HFONT)SendMessageA(hwndDialog, WM_GETFONT, 0, 0);
+
+    HDC hdc = GetDC(hwnd);
+    HFONT hfontOld = (HFONT)SelectObject(hdc, hfont);
+    TEXTMETRIC tm;
+
+    if (GetTextMetrics(hdc, &tm))
+    {
+        mis->itemHeight = tm.tmHeight;
+    }
+
+    SelectObject(hdc, hfontOld);
+    ReleaseDC(hwnd, hdc);
+
+    return TRUE;
 }
 
 //

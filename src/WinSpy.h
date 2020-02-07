@@ -160,7 +160,7 @@ typedef struct
 //
 //  Useful functions!
 //
-BOOL FunkyList_MeasureItem(MEASUREITEMSTRUCT *mis);
+BOOL FunkyList_MeasureItem(HWND hwnd, MEASUREITEMSTRUCT *mis);
 BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis);
 
 //
@@ -358,6 +358,15 @@ void WindowTree_OnRightClick(NMHDR *pnm);
 void WindowTree_OnSelectionChanged(NMHDR *pnm);
 void WindowTree_Locate(HWND hwnd);
 HWND WindowTree_GetSelectedWindow();
+
+
+//
+// DPI related helpers.
+//
+
+int DPIScale(HWND hwnd, int value);
+void MarkProcessAsPerMonitorDpiAware();
+void MarkProcessAsSystemDpiAware();
 
 #ifdef __cplusplus
 }

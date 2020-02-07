@@ -108,7 +108,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 		return TRUE;
 
 	case WM_MEASUREITEM:
-		SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem((MEASUREITEMSTRUCT *)lParam));
+        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem(hwnd, (MEASUREITEMSTRUCT *)lParam));
 		return TRUE;
 
 	case WM_DRAWITEM:

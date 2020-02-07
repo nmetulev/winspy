@@ -35,6 +35,7 @@ typedef BOOL (WINAPI * PFN_AreDpiAwarenessContextsEqual)(DPI_AWARENESS_CONTEXT, 
 typedef BOOL (WINAPI * PFN_GetProcessDpiAwareness)(HANDLE, int *);
 typedef DPI_AWARENESS_CONTEXT (WINAPI * PFN_GetDpiAwarenessContextForProcess)(HANDLE);
 typedef UINT (WINAPI * PFN_GetSystemDpiForProcess)(HANDLE);
+typedef BOOL (WINAPI * PFN_SetProcessDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
 
 static PFN_GetDpiForWindow s_pfnGetDpiForWindow = NULL;
 static PFN_GetWindowDpiAwarenessContext s_pfnGetWindowDpiAwarenessContext = NULL;
@@ -42,6 +43,7 @@ static PFN_AreDpiAwarenessContextsEqual s_pfnAreDpiAwarenessContextsEqual = NULL
 static PFN_GetProcessDpiAwareness s_pfnGetProcessDpiAwareness = NULL;
 static PFN_GetDpiAwarenessContextForProcess s_pfnGetDpiAwarenessContextForProcess = NULL;
 static PFN_GetSystemDpiForProcess s_pfnGetSystemDpiForProcess = NULL;
+static PFN_SetProcessDpiAwarenessContext s_pfnSetProcessDpiAwarenessContext = NULL;
 
 static BOOL s_fCheckedForAPIs = FALSE;
 
@@ -57,6 +59,7 @@ void InitializeDpiApis()
         s_pfnGetProcessDpiAwareness = (PFN_GetProcessDpiAwareness)GetProcAddress(hmod, "GetProcessDpiAwareness");
         s_pfnGetDpiAwarenessContextForProcess = (PFN_GetDpiAwarenessContextForProcess)GetProcAddress(hmod, "GetDpiAwarenessContextForProcess");
         s_pfnGetSystemDpiForProcess = (PFN_GetSystemDpiForProcess)GetProcAddress(hmod, "GetSystemDpiForProcess");
+        s_pfnSetProcessDpiAwarenessContext = (PFN_SetProcessDpiAwarenessContext)GetProcAddress(hmod, "SetProcessDpiAwarenessContext");
 
         s_fCheckedForAPIs = TRUE;
     }
@@ -251,5 +254,57 @@ void SetDpiInfo(HWND hwnd)
     }
 
     SetDlgItemTextA(hwndDlg, IDC_WINDOW_DPI_AWARENESS, pszValue);
+}
+
+void MarkProcessAsPerMonitorDpiAware()
+{
+    InitializeDpiApis();
+
+    if (s_pfnSetProcessDpiAwarenessContext)
+    {
+        s_pfnSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    }
+}
+
+void MarkProcessAsSystemDpiAware()
+{
+    InitializeDpiApis();
+
+    if (s_pfnSetProcessDpiAwarenessContext)
+    {
+        s_pfnSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+    }
+}
+
+UINT g_SystemDPI = 0;
+
+int DPIScale(HWND hwnd, int value)
+{
+    // If the system supports it (Windows 10+) then we use GetDpiForWindow
+    // to determine the DPI associated with the window.  Otherwise, we will
+    // query the 'system' DPI that the winspy process is running under via
+    // GetDeviceCaps+LOGPIXELSX on a screen DC.
+
+    if (g_SystemDPI == 0)
+    {
+        InitializeDpiApis();
+
+        HDC hdc = GetDC(NULL);
+        g_SystemDPI = GetDeviceCaps(hdc, LOGPIXELSX);
+        DeleteDC(hdc);
+    }
+
+    int dpi = 0;
+
+    if (s_pfnGetDpiForWindow)
+    {
+        dpi = s_pfnGetDpiForWindow(hwnd);
+    }
+    else
+    {
+        dpi = g_SystemDPI;
+    }
+
+    return MulDiv(value, dpi, 96);
 }
 
