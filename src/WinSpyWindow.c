@@ -668,10 +668,11 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 		{
 			HWND  hwndExpand = GetDlgItem(hwnd, IDC_EXPAND);
 			DWORD dwStyle = GetWindowLong(hwndExpand, GWL_STYLE);
+            int   cxIcon = DPIScale(hwnd, 16);
 
 			if (layout == WINSPY_NORMAL)
 			{
-				hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_MORE), IMAGE_ICON, 16, 16, 0);
+				hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_MORE), IMAGE_ICON, cxIcon, cxIcon, 0);
 				hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 
 				DestroyIcon(hOld);
@@ -681,7 +682,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 			}
 			else
 			{
-				hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_LESS), IMAGE_ICON, 16, 16, 0);
+				hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_LESS), IMAGE_ICON, cxIcon, cxIcon, 0);
 				hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 
 				DestroyIcon(hOld);

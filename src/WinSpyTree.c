@@ -634,6 +634,9 @@ void WindowTree_Initialize(HWND hwndTree)
 {
     g_hwndTree = hwndTree;
 
+    // This tells the treeview to scale the IMAGELIST up for DPI.
+    SendMessage(hwndTree, CCM_DPISCALE, 1, 0);
+
     HBITMAP hBitmap;
     TCITEM  tcitem;
     HWND    hwndTab;

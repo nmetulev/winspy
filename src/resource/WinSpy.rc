@@ -260,7 +260,7 @@ CLASS "WinSpy"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         IDB_DRAGTOOL1,IDC_DRAGGER,"Static",SS_BITMAP | SS_NOTIFY,7,5,21,17
-    LTEXT           "Drag the Finder Tool over a window to select it, then release the mouse",IDC_STATIC,36,6,121,18
+    LTEXT           "Drag the Finder Tool over a window to select it, then release the mouse",IDC_STATIC,36,6,120,18
     CONTROL         "&Hidden Windows",IDC_HIDDEN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,3,70,10
     CONTROL         "Minimi&ze WinSpy++",IDC_MINIMIZE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,14,77,10
     CONTROL         "Tab1",IDC_TAB1,"SysTabControl32",TCS_RAGGEDRIGHT | WS_TABSTOP,7,31,242,191

@@ -50,7 +50,6 @@ HRESULT _CloseThemeData(HTHEME hTheme)
 #define DT_HIDEPREFIX       0x100000
 #endif
 
-#define X_ICON_BORDER   3   // 3 pixels
 
 //
 //  Subclass procedure for an owner-drawn button.
@@ -148,7 +147,8 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 	POINT pt;
 
 	int ix, iy;         // Icon offset
-	int bx, by;         // border sizes
+    int bx;             // border sizes
+    int cxIconBorder;
 	int sxIcon, syIcon; // Icon size
 	int xoff, yoff;     //
 
@@ -191,8 +191,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		hIcon = (HICON)SendMessage(dis->hwndItem, BM_GETIMAGE, IMAGE_ICON, 0);
 
 		// Find icon dimensions
-		sxIcon = 16;
-		syIcon = 16;
+        sxIcon = syIcon = DPIScale(dis->hwndItem, 16);
 
 		CopyRect(&rect, &dis->rcItem);
 		GetCursorPos(&pt);
@@ -202,8 +201,8 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 			dis->itemState |= ODS_HOTLIGHT;
 
 		// border dimensions
-		bx = 2;
-		by = 2;
+        bx = DPIScale(dis->hwndItem, 2);
+        cxIconBorder = DPIScale(dis->hwndItem, 3);
 
 		// icon offsets
 		if (nTextLen == 0)
@@ -214,9 +213,9 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		else
 		{
 			if (fRightAlign)
-				ix = rect.right - bx - X_ICON_BORDER - sxIcon;
-			else
-				ix = rect.left + bx + X_ICON_BORDER;
+                ix = rect.right - bx - cxIconBorder - sxIcon;
+            else
+                ix = rect.left + bx + cxIconBorder;
 		}
 
 		// center image vertically
@@ -281,13 +280,13 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 		// Adjust position of window text
 		if (fRightAlign)
 		{
-			rect.left += bx + X_ICON_BORDER;
-			rect.right -= sxIcon + bx + X_ICON_BORDER;
-		}
-		else
-		{
-			rect.right -= bx + X_ICON_BORDER;
-			rect.left += sxIcon + bx + X_ICON_BORDER;
+            rect.left += bx + cxIconBorder;
+            rect.right -= sxIcon + bx + cxIconBorder;
+        }
+        else
+        {
+            rect.right -= bx + cxIconBorder;
+            rect.left += sxIcon + bx + cxIconBorder;
 		}
 
 		// Draw the text
@@ -312,9 +311,11 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
 						rect.left += sxIcon + bx + 2;
 				}
 
-				InflateRect(&rect, -3, -3);
+                int cx = 2 + DPIScale(dis->hwndItem, 1);
 
-				DrawFocusRect(dis->hDC, &rect);
+                InflateRect(&rect, -cx, -cx);
+
+                DrawFocusRect(dis->hDC, &rect);
 			}
 		}
 
@@ -335,9 +336,9 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 {
 	WNDPROC oldproc;
 	DWORD   dwStyle;
+    int     cxIcon = DPIScale(hwnd, 16);
 
-	HICON hIcon = (HICON)LoadImage(hInst,
-		MAKEINTRESOURCE(uIconId), IMAGE_ICON, 16, 16, 0);
+    HICON hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(uIconId), IMAGE_ICON, cxIcon, cxIcon, 0);
 
 	// Add on BS_ICON and BS_OWNERDRAW styles
 	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
