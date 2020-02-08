@@ -568,23 +568,13 @@ BOOL WinSpy_InitDlg(HWND hwnd)
     // add items *before* the close item
     InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT, _T("&About"));
     InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
-    InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING, IDM_WINSPY_HELP, _T("&Help\tF1"));
     InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
     InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_ENABLED | MF_STRING |
         (g_opts.fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
         _T("Always On &Top\tShift+Y"));
     InsertMenu(hSysMenu, SC_CLOSE, MF_BYCOMMAND | MF_SEPARATOR, (UINT_PTR)-1, _T(""));
 
-    /*  AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
-        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_ABOUT,   _T("&About"));
-        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_OPTIONS, _T("&Options...\tAlt+Enter"));
-        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING, IDM_WINSPY_HELP,    _T("&Help\tF1"));
-        AppendMenu(hSysMenu, MF_SEPARATOR,           -1,                 _T(""));
-        AppendMenu(hSysMenu, MF_ENABLED | MF_STRING |
-            (fAlwaysOnTop ? MF_CHECKED : 0), IDM_WINSPY_ONTOP,
-            _T("Always On &Top\tShift+Y"));*/
-
-            // Change the Maximize item to a Toggle Layout item
+    // Change the Maximize item to a Toggle Layout item
     ModifyMenu(hSysMenu, SC_MAXIMIZE, MF_ENABLED | MF_STRING, SC_MAXIMIZE,
         _T("&Toggle Layout\tF3"));
 

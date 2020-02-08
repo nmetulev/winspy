@@ -14,27 +14,6 @@
 #include "FindTool.h"
 #include "CaptureWindow.h"
 
-void ShowHelp(HWND hwndMain, UINT uCommand, DWORD dwData)
-{
-    TCHAR szPath[MAX_PATH];
-    TCHAR *ptr;
-
-    // Assume help file is in same directory as the
-    // main executable. So, just replace WinSpy.exe with WinSpy.hlp
-    // to find the name!
-
-    GetModuleFileName(0, szPath, ARRAYSIZE(szPath));
-
-    ptr = szPath + _tcslen(szPath) - 1;
-
-    while (ptr > szPath && *ptr != _T('\\'))
-        ptr--;
-
-    _tcscpy_s(ptr, ARRAYSIZE(szPath) - (ptr - szPath), _T("\\WinSpy.hlp"));
-
-    WinHelp(hwndMain, szPath, uCommand, dwData);
-}
-
 void SetPinState(BOOL fPinned)
 {
     g_opts.fPinWindow = fPinned;
@@ -110,10 +89,6 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_WINSPY_REFRESH:
         DisplayWindowInfo(spy_hCurWnd);
-        return TRUE;
-
-    case IDM_WINSPY_HELP:
-        ShowHelp(hwnd, HELP_CONTENTS, 0);
         return TRUE;
 
     case IDM_WINSPY_OPTIONS:
@@ -279,10 +254,6 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     switch (wParam)
     {
-    case IDM_WINSPY_HELP:
-        ShowHelp(hwnd, HELP_CONTENTS, 0);
-        return TRUE;
-
     case IDM_WINSPY_ABOUT:
 
         GetModuleFileName(0, szCurExe, MAX_PATH);
