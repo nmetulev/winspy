@@ -27,39 +27,39 @@ typedef BOOL(WINAPI * QueryFullProcessImageNameProc)(HANDLE hProcess, DWORD dwFl
 
 BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
-	HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-	PROCESSENTRY32 pe = { sizeof(pe) };
-	BOOL fFound = FALSE;
+    HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    PROCESSENTRY32 pe = { sizeof(pe) };
+    BOOL fFound = FALSE;
 
-	szPath[0] = '\0';
-	szName[0] = '\0';
+    szPath[0] = '\0';
+    szName[0] = '\0';
 
-	if (Process32First(h, &pe))
-	{
-		do
-		{
-			if (pe.th32ProcessID == dwProcessId)
-			{
-				if (szName)
-				{
-					lstrcpyn(szName, pe.szExeFile, nNameSize);
-				}
+    if (Process32First(h, &pe))
+    {
+        do
+        {
+            if (pe.th32ProcessID == dwProcessId)
+            {
+                if (szName)
+                {
+                    lstrcpyn(szName, pe.szExeFile, nNameSize);
+                }
 
-				if (szPath)
-				{
-					//OpenProcess(
-					lstrcpyn(szPath, pe.szExeFile, nPathSize);
-				}
+                if (szPath)
+                {
+                    //OpenProcess(
+                    lstrcpyn(szPath, pe.szExeFile, nPathSize);
+                }
 
-				fFound = TRUE;
-				break;
-			}
-		} while (Process32Next(h, &pe));
-	}
+                fFound = TRUE;
+                break;
+            }
+        } while (Process32Next(h, &pe));
+    }
 
-	CloseHandle(h);
+    CloseHandle(h);
 
-	return fFound;
+    return fFound;
 }
 
 
@@ -75,116 +75,116 @@ BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TC
 //
 BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
-	HMODULE hPSAPI;
-	HANDLE hProcess;
+    HMODULE hPSAPI;
+    HANDLE hProcess;
 
-	HMODULE hModule;
-	DWORD   dwNumModules;
+    HMODULE hModule;
+    DWORD   dwNumModules;
 
-	EnumProcessModulesProc  fnEnumProcessModules;
-	GetModuleBaseNameProc   fnGetModuleBaseName;
-	GetModuleFileNameExProc fnGetModuleFileNameEx;
+    EnumProcessModulesProc  fnEnumProcessModules;
+    GetModuleBaseNameProc   fnGetModuleBaseName;
+    GetModuleFileNameExProc fnGetModuleFileNameEx;
 
-	// Attempt to load Process Helper library
-	hPSAPI = LoadLibrary(_T("psapi.dll"));
+    // Attempt to load Process Helper library
+    hPSAPI = LoadLibrary(_T("psapi.dll"));
 
-	if (!hPSAPI)
-	{
-		szName[0] = '\0';
-		return FALSE;
-	}
+    if (!hPSAPI)
+    {
+        szName[0] = '\0';
+        return FALSE;
+    }
 
-	// OK, we have access to the PSAPI functions, so open the process
-	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwProcessId);
-	if (!hProcess)
-	{
-		FreeLibrary(hPSAPI);
-		return FALSE;
-	}
+    // OK, we have access to the PSAPI functions, so open the process
+    hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwProcessId);
+    if (!hProcess)
+    {
+        FreeLibrary(hPSAPI);
+        return FALSE;
+    }
 
 
-	fnEnumProcessModules = (EnumProcessModulesProc)GetProcAddress(hPSAPI, "EnumProcessModules");
+    fnEnumProcessModules = (EnumProcessModulesProc)GetProcAddress(hPSAPI, "EnumProcessModules");
 
 #ifdef UNICODE
-	fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameW");
-	fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExW");
+    fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameW");
+    fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExW");
 #else
-	fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameA");
-	fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExA");
+    fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameA");
+    fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExA");
 #endif
 
-	if (!fnEnumProcessModules || !fnGetModuleBaseName)
-	{
-		CloseHandle(hProcess);
-		FreeLibrary(hPSAPI);
-		return FALSE;
-	}
+    if (!fnEnumProcessModules || !fnGetModuleBaseName)
+    {
+        CloseHandle(hProcess);
+        FreeLibrary(hPSAPI);
+        return FALSE;
+    }
 
-	// Find the first module
-	if (fnEnumProcessModules(hProcess, &hModule, sizeof(hModule), &dwNumModules))
-	{
-		// Now get the module name
-		if (szName)
-			fnGetModuleBaseName(hProcess, hModule, szName, nNameSize);
+    // Find the first module
+    if (fnEnumProcessModules(hProcess, &hModule, sizeof(hModule), &dwNumModules))
+    {
+        // Now get the module name
+        if (szName)
+            fnGetModuleBaseName(hProcess, hModule, szName, nNameSize);
 
-		// get module filename
-		if (szPath)
-			fnGetModuleFileNameEx(hProcess, hModule, szPath, nPathSize);
-	}
-	else
-	{
-		CloseHandle(hProcess);
-		FreeLibrary(hPSAPI);
-		return FALSE;
-	}
+        // get module filename
+        if (szPath)
+            fnGetModuleFileNameEx(hProcess, hModule, szPath, nPathSize);
+    }
+    else
+    {
+        CloseHandle(hProcess);
+        FreeLibrary(hPSAPI);
+        return FALSE;
+    }
 
-	CloseHandle(hProcess);
-	FreeLibrary(hPSAPI);
+    CloseHandle(hProcess);
+    FreeLibrary(hPSAPI);
 
-	return TRUE;
+    return TRUE;
 }
 
 BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
 {
-	static QueryFullProcessImageNameProc fnQueryFullProcessImageName = NULL;
-	HANDLE hProcess;
-	DWORD dwSize;
-	TCHAR *pName;
-	BOOL bSucceeded;
+    static QueryFullProcessImageNameProc fnQueryFullProcessImageName = NULL;
+    HANDLE hProcess;
+    DWORD dwSize;
+    TCHAR *pName;
+    BOOL bSucceeded;
 
-	if (!fnQueryFullProcessImageName)
-	{
+    if (!fnQueryFullProcessImageName)
+    {
 #ifdef UNICODE
-		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameW");
+        fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameW");
 #else
-		fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameA");
+        fnQueryFullProcessImageName = (QueryFullProcessImageNameProc)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "QueryFullProcessImageNameA");
 #endif
 
-		if (!fnQueryFullProcessImageName)
-			return GetProcessNameByPid_BelowVista(dwProcessId, szName, nNameSize, szPath, nPathSize);
-	}
+        if (!fnQueryFullProcessImageName)
+            return GetProcessNameByPid_BelowVista(dwProcessId, szName, nNameSize, szPath, nPathSize);
+    }
 
-	bSucceeded = FALSE;
+    bSucceeded = FALSE;
 
-	hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, dwProcessId);
-	if (hProcess)
-	{
-		dwSize = nPathSize;
+    hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, dwProcessId);
+    if (hProcess)
+    {
+        dwSize = nPathSize;
 
-		if (fnQueryFullProcessImageName(hProcess, 0, szPath, &dwSize))
-		{
-			pName = _tcsrchr(szPath, '\\');
-			if (pName)
-			{
-				_tcsncpy_s(szName, nNameSize, pName + 1, _TRUNCATE);
-				bSucceeded = TRUE;
-			}
-		}
+        if (fnQueryFullProcessImageName(hProcess, 0, szPath, &dwSize))
+        {
+            pName = _tcsrchr(szPath, '\\');
+            if (pName)
+            {
+                _tcsncpy_s(szName, nNameSize, pName + 1, _TRUNCATE);
+                bSucceeded = TRUE;
+            }
+        }
 
-		CloseHandle(hProcess);
-	}
+        CloseHandle(hProcess);
+    }
 
-	return bSucceeded;
+    return bSucceeded;
 }
 
 

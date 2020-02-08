@@ -16,67 +16,67 @@
 //remove flicker from tab control when it is resized
 static LRESULT CALLBACK NoFlickerTabProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	RECT rect;
-	HDC hdc;
-	int n;
-	int width;
+    RECT rect;
+    HDC hdc;
+    int n;
+    int width;
 
-	//int bx, by;
+    //int bx, by;
 
-	WNDPROC OldTabProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    WNDPROC OldTabProc = (WNDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-	switch (msg)
-	{
-	case WM_NCDESTROY:
-		//do any de-init here.
-		break;
+    switch (msg)
+    {
+    case WM_NCDESTROY:
+        //do any de-init here.
+        break;
 
-	case WM_ERASEBKGND:
-		hdc = (HDC)wParam;
+    case WM_ERASEBKGND:
+        hdc = (HDC)wParam;
 
-		GetWindowRect(hwnd, &rect);
-		OffsetRect(&rect, -rect.left, -rect.top);
-		rect.top++;
-		width = rect.right;
+        GetWindowRect(hwnd, &rect);
+        OffsetRect(&rect, -rect.left, -rect.top);
+        rect.top++;
+        width = rect.right;
 
-		//find work area of tab control
-		TabCtrl_AdjustRect(hwnd, FALSE, (LPARAM)&rect);
+        //find work area of tab control
+        TabCtrl_AdjustRect(hwnd, FALSE, (LPARAM)&rect);
 
-		//bx = GetSystemMetrics(SM_CXEDGE);
-		//by = GetSystemMetrics(SM_CYEDGE);
+        //bx = GetSystemMetrics(SM_CXEDGE);
+        //by = GetSystemMetrics(SM_CYEDGE);
 
-		//only redraw the area in-between the work area and
-		//the 3d-look border around the edge.
-		InflateRect(&rect, 1, 1);
-		FrameRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
+        //only redraw the area in-between the work area and
+        //the 3d-look border around the edge.
+        InflateRect(&rect, 1, 1);
+        FrameRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
 
-		InflateRect(&rect, 1, 1);
-		FrameRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
+        InflateRect(&rect, 1, 1);
+        FrameRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
 
-		// Get coords of last TAB.
-		n = TabCtrl_GetItemCount(hwnd);
-		TabCtrl_GetItemRect(hwnd, n - 1, &rect);
+        // Get coords of last TAB.
+        n = TabCtrl_GetItemCount(hwnd);
+        TabCtrl_GetItemRect(hwnd, n - 1, &rect);
 
-		// Now fill the long horz rectangle to the right of the tab.
-		rect.left = rect.right + 2;
-		rect.right = width;
-		rect.top = 0;
-		FillRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
+        // Now fill the long horz rectangle to the right of the tab.
+        rect.left = rect.right + 2;
+        rect.right = width;
+        rect.top = 0;
+        FillRect(hdc, &rect, GetSysColorBrush(COLOR_BTNFACE));
 
-		//prevent erasure of window
-		return 1;
-	}
+        //prevent erasure of window
+        return 1;
+    }
 
-	return CallWindowProc(OldTabProc, hwnd, msg, wParam, lParam);
+    return CallWindowProc(OldTabProc, hwnd, msg, wParam, lParam);
 }
 
 BOOL RemoveTabCtrlFlicker(HWND hwndTab)
 {
-	//Subclass the tab control
-	WNDPROC oldproc = (WNDPROC)SetWindowLongPtr(hwndTab, GWLP_WNDPROC, (LONG_PTR)NoFlickerTabProc);
+    //Subclass the tab control
+    WNDPROC oldproc = (WNDPROC)SetWindowLongPtr(hwndTab, GWLP_WNDPROC, (LONG_PTR)NoFlickerTabProc);
 
-	//Store the old window procedure
-	SetWindowLongPtr(hwndTab, GWLP_USERDATA, (LONG_PTR)oldproc);
+    //Store the old window procedure
+    SetWindowLongPtr(hwndTab, GWLP_USERDATA, (LONG_PTR)oldproc);
 
-	return TRUE;
+    return TRUE;
 }

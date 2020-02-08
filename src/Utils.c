@@ -18,31 +18,31 @@ int atoi(const char *string);
 //
 BOOL EnablePrivilege(TCHAR *szPrivName, BOOL fEnable)
 {
-	TOKEN_PRIVILEGES tp;
-	LUID    luid;
-	HANDLE  hToken;
+    TOKEN_PRIVILEGES tp;
+    LUID    luid;
+    HANDLE  hToken;
 
-	if (!LookupPrivilegeValue(NULL, szPrivName, &luid))
-		return FALSE;
+    if (!LookupPrivilegeValue(NULL, szPrivName, &luid))
+        return FALSE;
 
-	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
-		return FALSE;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
+        return FALSE;
 
-	tp.PrivilegeCount = 1;
-	tp.Privileges[0].Luid = luid;
-	tp.Privileges[0].Attributes = fEnable ? SE_PRIVILEGE_ENABLED : 0;
+    tp.PrivilegeCount = 1;
+    tp.Privileges[0].Luid = luid;
+    tp.Privileges[0].Attributes = fEnable ? SE_PRIVILEGE_ENABLED : 0;
 
-	AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
+    AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL);
 
-	CloseHandle(hToken);
+    CloseHandle(hToken);
 
-	return (GetLastError() == ERROR_SUCCESS);
+    return (GetLastError() == ERROR_SUCCESS);
 }
 
 
 BOOL EnableDebugPrivilege()
 {
-	return EnablePrivilege(SE_DEBUG_NAME, TRUE);
+    return EnablePrivilege(SE_DEBUG_NAME, TRUE);
 }
 
 
@@ -51,46 +51,46 @@ BOOL EnableDebugPrivilege()
 //
 UINT AddStyle(HWND hwnd, UINT style)
 {
-	UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
-	SetWindowLong(hwnd, GWL_STYLE, oldstyle | style);
-	return oldstyle;
+    UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
+    SetWindowLong(hwnd, GWL_STYLE, oldstyle | style);
+    return oldstyle;
 }
 
 UINT AddDlgItemStyle(HWND hwnd, UINT nCtrlId, UINT style)
 {
-	return AddStyle(GetDlgItem(hwnd, nCtrlId), style);
+    return AddStyle(GetDlgItem(hwnd, nCtrlId), style);
 }
 
 UINT DelStyle(HWND hwnd, UINT style)
 {
-	UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
-	SetWindowLong(hwnd, GWL_STYLE, oldstyle & ~style);
-	return oldstyle;
+    UINT oldstyle = GetWindowLong(hwnd, GWL_STYLE);
+    SetWindowLong(hwnd, GWL_STYLE, oldstyle & ~style);
+    return oldstyle;
 }
 
 UINT DelDlgItemStyle(HWND hwnd, UINT nCtrlId, UINT style)
 {
-	return DelStyle(GetDlgItem(hwnd, nCtrlId), style);
+    return DelStyle(GetDlgItem(hwnd, nCtrlId), style);
 }
 
 BOOL EnableDlgItem(HWND hwnd, UINT nCtrlId, BOOL fEnabled)
 {
-	return EnableWindow(GetDlgItem(hwnd, nCtrlId), fEnabled);
+    return EnableWindow(GetDlgItem(hwnd, nCtrlId), fEnabled);
 }
 
 BOOL ShowDlgItem(HWND hwnd, UINT nCtrlId, DWORD dwShowCmd)
 {
-	return ShowWindow(GetDlgItem(hwnd, nCtrlId), dwShowCmd);
+    return ShowWindow(GetDlgItem(hwnd, nCtrlId), dwShowCmd);
 }
 
 int WINAPI GetRectHeight(RECT *rect)
 {
-	return rect->bottom - rect->top;
+    return rect->bottom - rect->top;
 }
 
 int WINAPI GetRectWidth(RECT *rect)
 {
-	return rect->right - rect->left;
+    return rect->right - rect->left;
 }
 
 
@@ -101,9 +101,9 @@ int WINAPI GetRectWidth(RECT *rect)
 DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
 {
 #ifdef _WIN64
-	return _ttoi64(szHexStr);
+    return _ttoi64(szHexStr);
 #else
-	return _ttoi(szHexStr);
+    return _ttoi(szHexStr);
 #endif
 }
 
@@ -113,59 +113,59 @@ DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
 //
 DWORD_PTR _tstrtoib16(PCTSTR pszHexStr)
 {
-	DWORD_PTR num = 0;
-	const TCHAR *pch = pszHexStr;
+    DWORD_PTR num = 0;
+    const TCHAR *pch = pszHexStr;
 
-	// Skip any leading whitespace
-	while (*pch == ' ')
-		pch++;
+    // Skip any leading whitespace
+    while (*pch == ' ')
+        pch++;
 
-	// Skip a "0x" prefix if present.
-	if (*pch == '0' && *(pch + 1) == 'x')
-		pch += 2;
+    // Skip a "0x" prefix if present.
+    if (*pch == '0' && *(pch + 1) == 'x')
+        pch += 2;
 
-	while (isxdigit(*pch))
-	{
-		static_assert(_T('9') < _T('A') && _T('A') < _T('a'), "Incorrect character code values assumption");
+    while (isxdigit(*pch))
+    {
+        static_assert(_T('9') < _T('A') && _T('A') < _T('a'), "Incorrect character code values assumption");
 
-		UINT ch = *pch;
-		UINT x = ch <= _T('9') ?
-			ch - _T('0') :
-			10 + (ch < _T('a') ?
-				ch - _T('A') :
-				ch - _T('a'));
+        UINT ch = *pch;
+        UINT x = ch <= _T('9') ?
+            ch - _T('0') :
+            10 + (ch < _T('a') ?
+                ch - _T('A') :
+                ch - _T('a'));
 
-		num = (num << 4) | (x & 0x0f);
-		pch++;
-	}
+        num = (num << 4) | (x & 0x0f);
+        pch++;
+    }
 
-	return num;
+    return num;
 }
 
 DWORD_PTR GetNumericValue(HWND hwnd, int base)
 {
-	TCHAR szAddressText[128];
+    TCHAR szAddressText[128];
 
-	GetWindowText(hwnd, szAddressText, ARRAYSIZE(szAddressText));
+    GetWindowText(hwnd, szAddressText, ARRAYSIZE(szAddressText));
 
-	switch (base)
-	{
-	case 1:
-	case 16:            //base is currently hex
-		return _tstrtoib16(szAddressText);
+    switch (base)
+    {
+    case 1:
+    case 16:            //base is currently hex
+        return _tstrtoib16(szAddressText);
 
-	case 0:
-	case 10:            //base is currently decimal
-		return _tstrtoib10(szAddressText);
+    case 0:
+    case 10:            //base is currently decimal
+        return _tstrtoib10(szAddressText);
 
-	default:
-		return 0;
-	}
+    default:
+        return 0;
+    }
 }
 
 DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base)
 {
-	return GetNumericValue(GetDlgItem(hwnd, ctrlid), base);
+    return GetNumericValue(GetDlgItem(hwnd, ctrlid), base);
 }
 
 //
@@ -186,35 +186,35 @@ typedef HRESULT(WINAPI * ETDTProc) (HWND, DWORD);
 //
 BOOL EnableDialogTheme(HWND hwnd)
 {
-	HMODULE hUXTheme;
-	ETDTProc fnEnableThemeDialogTexture;
+    HMODULE hUXTheme;
+    ETDTProc fnEnableThemeDialogTexture;
 
-	hUXTheme = LoadLibrary(_T("uxtheme.dll"));
+    hUXTheme = LoadLibrary(_T("uxtheme.dll"));
 
-	if (hUXTheme)
-	{
-		fnEnableThemeDialogTexture =
-			(ETDTProc)GetProcAddress(hUXTheme, "EnableThemeDialogTexture");
+    if (hUXTheme)
+    {
+        fnEnableThemeDialogTexture =
+            (ETDTProc)GetProcAddress(hUXTheme, "EnableThemeDialogTexture");
 
-		if (fnEnableThemeDialogTexture)
-		{
-			fnEnableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
+        if (fnEnableThemeDialogTexture)
+        {
+            fnEnableThemeDialogTexture(hwnd, ETDT_ENABLETAB);
 
-			FreeLibrary(hUXTheme);
-			return TRUE;
-		}
-		else
-		{
-			// Failed to locate API!
-			FreeLibrary(hUXTheme);
-			return FALSE;
-		}
-	}
-	else
-	{
-		// Not running under XP? Just fail gracefully
-		return FALSE;
-	}
+            FreeLibrary(hUXTheme);
+            return TRUE;
+        }
+        else
+        {
+            // Failed to locate API!
+            FreeLibrary(hUXTheme);
+            return FALSE;
+        }
+    }
+    else
+    {
+        // Not running under XP? Just fail gracefully
+        return FALSE;
+    }
 }
 
 //
@@ -226,37 +226,37 @@ BOOL EnableDialogTheme(HWND hwnd)
 //
 TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULONG nLength)
 {
-	UINT  len;
-	PVOID  ver;
-	DWORD  *codepage;
-	TCHAR  fmt[0x40];
-	PVOID  ptr = 0;
-	BOOL   result = FALSE;
+    UINT  len;
+    PVOID  ver;
+    DWORD  *codepage;
+    TCHAR  fmt[0x40];
+    PVOID  ptr = 0;
+    BOOL   result = FALSE;
 
-	szBuffer[0] = '\0';
+    szBuffer[0] = '\0';
 
-	len = GetFileVersionInfoSize(szFileName, 0);
+    len = GetFileVersionInfoSize(szFileName, 0);
 
-	if (len == 0 || (ver = malloc(len)) == 0)
-		return NULL;
+    if (len == 0 || (ver = malloc(len)) == 0)
+        return NULL;
 
-	if (GetFileVersionInfo(szFileName, 0, len, ver))
-	{
-		if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), (LPVOID *)&codepage, &len))
-		{
-			_stprintf_s(fmt, ARRAYSIZE(fmt), TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
-				(*codepage) >> 16, szValue);
+    if (GetFileVersionInfo(szFileName, 0, len, ver))
+    {
+        if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), (LPVOID *)&codepage, &len))
+        {
+            _stprintf_s(fmt, ARRAYSIZE(fmt), TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
+                (*codepage) >> 16, szValue);
 
-			if (VerQueryValue(ver, fmt, &ptr, &len))
-			{
-				lstrcpyn(szBuffer, (TCHAR*)ptr, min(nLength, len));
-				result = TRUE;
-			}
-		}
-	}
+            if (VerQueryValue(ver, fmt, &ptr, &len))
+            {
+                lstrcpyn(szBuffer, (TCHAR*)ptr, min(nLength, len));
+                result = TRUE;
+            }
+        }
+    }
 
-	free(ver);
-	return result ? szBuffer : NULL;
+    free(ver);
+    return result ? szBuffer : NULL;
 }
 
 
@@ -265,60 +265,60 @@ TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULON
 //
 BOOL ProcessArchMatches(HWND hwnd)
 {
-	static FARPROC fnIsWow64Process = NULL;
-	static BOOL bIsWow64ProcessAbsents = FALSE;
-	DWORD dwProcessId;
-	HANDLE hProcess;
-	BOOL bIsWow64Process;
-	BOOL bSuccess;
+    static FARPROC fnIsWow64Process = NULL;
+    static BOOL bIsWow64ProcessAbsents = FALSE;
+    DWORD dwProcessId;
+    HANDLE hProcess;
+    BOOL bIsWow64Process;
+    BOOL bSuccess;
 
-	if (GetProcessorArchitecture() == PROCESSOR_ARCHITECTURE_INTEL)
-		return TRUE;
+    if (GetProcessorArchitecture() == PROCESSOR_ARCHITECTURE_INTEL)
+        return TRUE;
 
-	if (!fnIsWow64Process)
-	{
-		if (bIsWow64ProcessAbsents)
-		{
+    if (!fnIsWow64Process)
+    {
+        if (bIsWow64ProcessAbsents)
+        {
 #ifdef _WIN64
-			return FALSE;
+            return FALSE;
 #else // ifndef _WIN64
-			return TRUE;
+            return TRUE;
 #endif // _WIN64
-		}
+        }
 
-		fnIsWow64Process = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-		if (!fnIsWow64Process)
-		{
-			bIsWow64ProcessAbsents = TRUE;
+        fnIsWow64Process = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+        if (!fnIsWow64Process)
+        {
+            bIsWow64ProcessAbsents = TRUE;
 
 #ifdef _WIN64
-			return FALSE;
+            return FALSE;
 #else // ifndef _WIN64
-			return TRUE;
+            return TRUE;
 #endif // _WIN64
-		}
-	}
+        }
+    }
 
-	GetWindowThreadProcessId(hwnd, &dwProcessId);
+    GetWindowThreadProcessId(hwnd, &dwProcessId);
 
-	hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
-	if (!hProcess)
-		return FALSE; // assume no match, to be on the safe side
+    hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, dwProcessId);
+    if (!hProcess)
+        return FALSE; // assume no match, to be on the safe side
 
-	bSuccess = ((BOOL(WINAPI *)(HANDLE, PBOOL))fnIsWow64Process)(hProcess, &bIsWow64Process);
+    bSuccess = ((BOOL(WINAPI *)(HANDLE, PBOOL))fnIsWow64Process)(hProcess, &bIsWow64Process);
 
-	CloseHandle(hProcess);
+    CloseHandle(hProcess);
 
-	if (bSuccess)
-	{
+    if (bSuccess)
+    {
 #ifdef _WIN64
-		return !bIsWow64Process;
+        return !bIsWow64Process;
 #else // ifndef _WIN64
-		return bIsWow64Process;
+        return bIsWow64Process;
 #endif // _WIN64
-	}
-	else
-		return FALSE; // assume no match, to be on the safe side
+    }
+    else
+        return FALSE; // assume no match, to be on the safe side
 }
 
 
@@ -328,28 +328,28 @@ BOOL ProcessArchMatches(HWND hwnd)
 WORD GetProcessorArchitecture()
 {
 #ifdef _WIN64
-	return PROCESSOR_ARCHITECTURE_AMD64;
+    return PROCESSOR_ARCHITECTURE_AMD64;
 #else // ifndef _WIN64
-	static WORD wProcessorArchitecture = PROCESSOR_ARCHITECTURE_UNKNOWN;
+    static WORD wProcessorArchitecture = PROCESSOR_ARCHITECTURE_UNKNOWN;
 
-	if (wProcessorArchitecture == PROCESSOR_ARCHITECTURE_UNKNOWN)
-	{
-		FARPROC fnGetNativeSystemInfo = NULL;
-		SYSTEM_INFO siSystemInfo;
+    if (wProcessorArchitecture == PROCESSOR_ARCHITECTURE_UNKNOWN)
+    {
+        FARPROC fnGetNativeSystemInfo = NULL;
+        SYSTEM_INFO siSystemInfo;
 
-		fnGetNativeSystemInfo = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetNativeSystemInfo");
+        fnGetNativeSystemInfo = GetProcAddress(GetModuleHandle(TEXT("kernel32")), "GetNativeSystemInfo");
 
-		if (fnGetNativeSystemInfo)
-		{
-			((VOID(WINAPI *)(LPSYSTEM_INFO))fnGetNativeSystemInfo)(&siSystemInfo);
+        if (fnGetNativeSystemInfo)
+        {
+            ((VOID(WINAPI *)(LPSYSTEM_INFO))fnGetNativeSystemInfo)(&siSystemInfo);
 
-			wProcessorArchitecture = siSystemInfo.wProcessorArchitecture;
-		}
-		else
-			wProcessorArchitecture = PROCESSOR_ARCHITECTURE_INTEL;
-	}
+            wProcessorArchitecture = siSystemInfo.wProcessorArchitecture;
+        }
+        else
+            wProcessorArchitecture = PROCESSOR_ARCHITECTURE_INTEL;
+    }
 
-	return wProcessorArchitecture;
+    return wProcessorArchitecture;
 #endif // _WIN64
 }
 
@@ -360,13 +360,13 @@ WORD GetProcessorArchitecture()
 //
 HWND GetRealParent(HWND hWnd)
 {
-	HWND hParent;
+    HWND hParent;
 
-	hParent = GetAncestor(hWnd, GA_PARENT);
-	if (!hParent || hParent == GetDesktopWindow())
-		return NULL;
+    hParent = GetAncestor(hWnd, GA_PARENT);
+    if (!hParent || hParent == GetDesktopWindow())
+        return NULL;
 
-	return hParent;
+    return hParent;
 }
 
 
@@ -375,42 +375,42 @@ HWND GetRealParent(HWND hWnd)
 //
 BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
 {
-	HGLOBAL hText;
-	TCHAR *pszText;
-	size_t nTextSize;
+    HGLOBAL hText;
+    TCHAR *pszText;
+    size_t nTextSize;
 
-	nTextSize = _tcslen(psz);
+    nTextSize = _tcslen(psz);
 
-	hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize + 1) * sizeof(TCHAR));
-	if (!hText)
-		return FALSE;
+    hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize + 1) * sizeof(TCHAR));
+    if (!hText)
+        return FALSE;
 
-	pszText = (TCHAR *)GlobalLock(hText);
-	StringCchCopy(pszText, nTextSize + 1, psz);
-	GlobalUnlock(hText);
+    pszText = (TCHAR *)GlobalLock(hText);
+    StringCchCopy(pszText, nTextSize + 1, psz);
+    GlobalUnlock(hText);
 
-	if (OpenClipboard(hWnd))
-	{
-		if (EmptyClipboard())
-		{
-			if (SetClipboardData(
+    if (OpenClipboard(hWnd))
+    {
+        if (EmptyClipboard())
+        {
+            if (SetClipboardData(
 #ifdef UNICODE
-				CF_UNICODETEXT,
+                CF_UNICODETEXT,
 #else
-				CF_TEXT,
+                CF_TEXT,
 #endif
-				hText))
-			{
-				CloseClipboard();
-				return TRUE;
-			}
-		}
+                hText))
+            {
+                CloseClipboard();
+                return TRUE;
+            }
+        }
 
-		CloseClipboard();
-	}
+        CloseClipboard();
+    }
 
-	GlobalFree(hText);
-	return FALSE;
+    GlobalFree(hText);
+    return FALSE;
 }
 
 HBITMAP ExpandNineGridImage(SIZE outputSize, HBITMAP hbmSrc, RECT edges)

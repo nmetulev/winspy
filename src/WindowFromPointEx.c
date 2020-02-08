@@ -18,10 +18,10 @@
 
 typedef struct
 {
-	POINT pt;
-	HWND  hwndBest;
-	BOOL  fAllowHidden;
-	DWORD dwArea;
+    POINT pt;
+    HWND  hwndBest;
+    BOOL  fAllowHidden;
+    DWORD dwArea;
 } ChildSearchData;
 
 //
@@ -29,29 +29,29 @@ typedef struct
 //
 static BOOL CALLBACK FindBestChildProc(HWND hwnd, LPARAM lParam)
 {
-	ChildSearchData *pData = (ChildSearchData *)lParam;
-	RECT rect;
+    ChildSearchData *pData = (ChildSearchData *)lParam;
+    RECT rect;
 
-	GetWindowRect(hwnd, &rect);
+    GetWindowRect(hwnd, &rect);
 
-	// Is the mouse inside this child window?
-	if (PtInRect(&rect, pData->pt))
-	{
-		// work out area of child window.
-		// Width and height of any screen rectangle are guaranteed to be <32K each,
-		// so their product is definitely much smaller than MAXINT
-		DWORD a = GetRectWidth(&rect) * GetRectHeight(&rect);
+    // Is the mouse inside this child window?
+    if (PtInRect(&rect, pData->pt))
+    {
+        // work out area of child window.
+        // Width and height of any screen rectangle are guaranteed to be <32K each,
+        // so their product is definitely much smaller than MAXINT
+        DWORD a = GetRectWidth(&rect) * GetRectHeight(&rect);
 
-		// if this child window is smaller than the
-		// current "best", then choose this one
-		if (a < pData->dwArea && (pData->fAllowHidden || IsWindowVisible(hwnd)))
-		{
-			pData->dwArea = a;
-			pData->hwndBest = hwnd;
-		}
-	}
+        // if this child window is smaller than the
+        // current "best", then choose this one
+        if (a < pData->dwArea && (pData->fAllowHidden || IsWindowVisible(hwnd)))
+        {
+            pData->dwArea = a;
+            pData->hwndBest = hwnd;
+        }
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 //
@@ -87,39 +87,39 @@ static BOOL CALLBACK FindBestChildProc(HWND hwnd, LPARAM lParam)
 //
 static HWND FindBestChild(HWND hwndFound, POINT pt, BOOL fAllowHidden)
 {
-	HWND  hwnd;
-	DWORD dwStyle;
+    HWND  hwnd;
+    DWORD dwStyle;
 
-	ChildSearchData data;
-	data.fAllowHidden = fAllowHidden;
-	data.dwArea = MAXUINT;
-	data.hwndBest = 0;
-	data.pt = pt;
+    ChildSearchData data;
+    data.fAllowHidden = fAllowHidden;
+    data.dwArea = MAXUINT;
+    data.hwndBest = 0;
+    data.pt = pt;
 
-	hwnd = GetParent(hwndFound);
+    hwnd = GetParent(hwndFound);
 
-	dwStyle = GetWindowLong(hwndFound, GWL_STYLE);
+    dwStyle = GetWindowLong(hwndFound, GWL_STYLE);
 
-	// The original window might already be a top-level window,
-	// so we don't want to start at *its* parent
-	if (hwnd == 0 || (dwStyle & WS_POPUP))
-		hwnd = hwndFound;
+    // The original window might already be a top-level window,
+    // so we don't want to start at *its* parent
+    if (hwnd == 0 || (dwStyle & WS_POPUP))
+        hwnd = hwndFound;
 
-	// Enumerate EVERY child window.
-	//
-	//  Note to reader:
-	//
-	//  You can get some real interesting effects if you set
-	//  hwnd = GetDesktopWindow()
-	//  fAllowHidden = TRUE
-	//  ...experiment!!
-	//
-	EnumChildWindows(hwnd, FindBestChildProc, (LPARAM)&data);
+    // Enumerate EVERY child window.
+    //
+    //  Note to reader:
+    //
+    //  You can get some real interesting effects if you set
+    //  hwnd = GetDesktopWindow()
+    //  fAllowHidden = TRUE
+    //  ...experiment!!
+    //
+    EnumChildWindows(hwnd, FindBestChildProc, (LPARAM)&data);
 
-	if (data.hwndBest == 0)
-		data.hwndBest = hwnd;
+    if (data.hwndBest == 0)
+        data.hwndBest = hwnd;
 
-	return data.hwndBest;
+    return data.hwndBest;
 }
 
 //
@@ -127,28 +127,28 @@ static HWND FindBestChild(HWND hwndFound, POINT pt, BOOL fAllowHidden)
 //
 HWND WindowFromPointEx(POINT pt, BOOL fAllowHidden)
 {
-	HWND hWndPoint;
+    HWND hWndPoint;
 
-	//
-	// First of all find the parent window under the mouse
-	// We are working in SCREEN coordinates
-	//
-	hWndPoint = WindowFromPoint(pt);
+    //
+    // First of all find the parent window under the mouse
+    // We are working in SCREEN coordinates
+    //
+    hWndPoint = WindowFromPoint(pt);
 
-	if (hWndPoint == 0)
-		return 0;
+    if (hWndPoint == 0)
+        return 0;
 
-	// WindowFromPoint is not too accurate. There is quite likely
-	// another window under the mouse.
-	hWndPoint = FindBestChild(hWndPoint, pt, fAllowHidden);
+    // WindowFromPoint is not too accurate. There is quite likely
+    // another window under the mouse.
+    hWndPoint = FindBestChild(hWndPoint, pt, fAllowHidden);
 
-	//if we don't allow hidden windows, then return the parent
-	if (!fAllowHidden)
-	{
-		while (hWndPoint && !IsWindowVisible(hWndPoint))
-			hWndPoint = GetRealParent(hWndPoint);
-	}
+    //if we don't allow hidden windows, then return the parent
+    if (!fAllowHidden)
+    {
+        while (hWndPoint && !IsWindowVisible(hWndPoint))
+            hWndPoint = GetRealParent(hWndPoint);
+    }
 
-	return hWndPoint;
+    return hWndPoint;
 }
 

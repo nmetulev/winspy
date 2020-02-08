@@ -577,9 +577,9 @@ void FillGlobalWindowTree(HWND hwndTree)
 {
     HWND hwndDesktop = GetDesktopWindow();
 
-    // hwndDesktop = FindWindowEx(HWND_MESSAGE, NULL, NULL, NULL);                       
-    // hwndDesktop = GetRealParent(hwndDesktop);                   
-    
+    // hwndDesktop = FindWindowEx(HWND_MESSAGE, NULL, NULL, NULL);
+    // hwndDesktop = GetRealParent(hwndDesktop);
+
     if (g_opts.fShowDesktopRoot)
     {
         TVINSERTSTRUCT tv;

@@ -49,133 +49,133 @@ static BOOL fFindMultiMon = TRUE;
 //  Get the dimensions of the work area that the specified WinRect resides in
 void GetWorkArea(RECT *prcWinRect, RECT *prcWorkArea)
 {
-	HMONITOR    hMonitor;
-	HMODULE     hUser32;
-	MONITORINFO mi;
+    HMONITOR    hMonitor;
+    HMODULE     hUser32;
+    MONITORINFO mi;
 
-	hUser32 = GetModuleHandle(_T("USER32.DLL"));
+    hUser32 = GetModuleHandle(_T("USER32.DLL"));
 
-	// if we havn't already tried,
-	if (fFindMultiMon == TRUE)
-	{
-		pMonitorFromRect = (MFR_PROC)GetProcAddress(hUser32, "MonitorFromRect");
+    // if we havn't already tried,
+    if (fFindMultiMon == TRUE)
+    {
+        pMonitorFromRect = (MFR_PROC)GetProcAddress(hUser32, "MonitorFromRect");
 #ifdef UNICODE
-		pGetMonitorInfo = (GMI_PROC)GetProcAddress(hUser32, "GetMonitorInfoW");
+        pGetMonitorInfo = (GMI_PROC)GetProcAddress(hUser32, "GetMonitorInfoW");
 #else
-		pGetMonitorInfo = (GMI_PROC)GetProcAddress(hUser32, "GetMonitorInfoA");
+        pGetMonitorInfo = (GMI_PROC)GetProcAddress(hUser32, "GetMonitorInfoA");
 #endif
 
-		fFindMultiMon = FALSE;
-	}
+        fFindMultiMon = FALSE;
+    }
 
-	if (pMonitorFromRect && pGetMonitorInfo)
-	{
-		mi.cbSize = sizeof(mi);
+    if (pMonitorFromRect && pGetMonitorInfo)
+    {
+        mi.cbSize = sizeof(mi);
 
-		hMonitor = pMonitorFromRect(prcWinRect, MONITOR_DEFAULTTONEAREST);
+        hMonitor = pMonitorFromRect(prcWinRect, MONITOR_DEFAULTTONEAREST);
 
-		pGetMonitorInfo(hMonitor, &mi);
-		CopyRect(prcWorkArea, &mi.rcWork);
-	}
-	else
-	{
-		SystemParametersInfo(SPI_GETWORKAREA, 0, prcWorkArea, FALSE);
-	}
+        pGetMonitorInfo(hMonitor, &mi);
+        CopyRect(prcWorkArea, &mi.rcWork);
+    }
+    else
+    {
+        SystemParametersInfo(SPI_GETWORKAREA, 0, prcWorkArea, FALSE);
+    }
 }
 
 void ForceVisibleDisplay(HWND hwnd)
 {
-	RECT        rect;
-	HMODULE     hUser32;
+    RECT        rect;
+    HMODULE     hUser32;
 
-	GetWindowRect(hwnd, &rect);
+    GetWindowRect(hwnd, &rect);
 
-	hUser32 = GetModuleHandle(_T("USER32.DLL"));
+    hUser32 = GetModuleHandle(_T("USER32.DLL"));
 
-	pMonitorFromRect = (MFR_PROC)GetProcAddress(hUser32, "MonitorFromRect");
+    pMonitorFromRect = (MFR_PROC)GetProcAddress(hUser32, "MonitorFromRect");
 
-	if (pMonitorFromRect != 0)
-	{
-		if (NULL == pMonitorFromRect(&rect, MONITOR_DEFAULTTONULL))
-		{
-			// force window onto primary display if it is not visible
-			rect.left %= GetSystemMetrics(SM_CXSCREEN);
-			rect.top %= GetSystemMetrics(SM_CYSCREEN);
+    if (pMonitorFromRect != 0)
+    {
+        if (NULL == pMonitorFromRect(&rect, MONITOR_DEFAULTTONULL))
+        {
+            // force window onto primary display if it is not visible
+            rect.left %= GetSystemMetrics(SM_CXSCREEN);
+            rect.top %= GetSystemMetrics(SM_CYSCREEN);
 
-			SetWindowPos(hwnd, 0, rect.left, rect.top, 0, 0, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
-		}
-	}
+            SetWindowPos(hwnd, 0, rect.left, rect.top, 0, 0, SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOSIZE);
+        }
+    }
 }
 
 void GetPinnedPosition(HWND hwnd, POINT *pt)
 {
-	RECT rect;
-	RECT rcDisplay;
+    RECT rect;
+    RECT rcDisplay;
 
-	//
-	GetWindowRect(hwnd, &rect);
+    //
+    GetWindowRect(hwnd, &rect);
 
-	// get
-	GetWorkArea(&rect, &rcDisplay);
+    // get
+    GetWorkArea(&rect, &rcDisplay);
 
-	UINT uPinnedCorner = PINNED_NONE;
+    UINT uPinnedCorner = PINNED_NONE;
 
-	if (rect.left + szLastExp.cx >= rcDisplay.right)
-		uPinnedCorner |= PINNED_RIGHT;
-	else
-		uPinnedCorner |= PINNED_LEFT;
+    if (rect.left + szLastExp.cx >= rcDisplay.right)
+        uPinnedCorner |= PINNED_RIGHT;
+    else
+        uPinnedCorner |= PINNED_LEFT;
 
-	if (rect.top + szLastExp.cy >= rcDisplay.bottom)
-		uPinnedCorner |= PINNED_BOTTOM;
-	else
-		uPinnedCorner |= PINNED_TOP;
+    if (rect.top + szLastExp.cy >= rcDisplay.bottom)
+        uPinnedCorner |= PINNED_BOTTOM;
+    else
+        uPinnedCorner |= PINNED_TOP;
 
-	if (g_opts.fPinWindow == FALSE)
-		uPinnedCorner = PINNED_TOPLEFT;
+    if (g_opts.fPinWindow == FALSE)
+        uPinnedCorner = PINNED_TOPLEFT;
 
-	switch (uPinnedCorner)
-	{
-	case PINNED_TOPLEFT:
-		pt->x = rect.left;
-		pt->y = rect.top;
-		break;
+    switch (uPinnedCorner)
+    {
+    case PINNED_TOPLEFT:
+        pt->x = rect.left;
+        pt->y = rect.top;
+        break;
 
-	case PINNED_TOPRIGHT:
-		pt->x = rect.right;
-		pt->y = rect.top;
-		break;
+    case PINNED_TOPRIGHT:
+        pt->x = rect.right;
+        pt->y = rect.top;
+        break;
 
-	case PINNED_BOTTOMRIGHT:
-		pt->x = rect.right;
-		pt->y = rect.bottom;
-		break;
+    case PINNED_BOTTOMRIGHT:
+        pt->x = rect.right;
+        pt->y = rect.bottom;
+        break;
 
-	case PINNED_BOTTOMLEFT:
-		pt->x = rect.left;
-		pt->y = rect.bottom;
-		break;
+    case PINNED_BOTTOMLEFT:
+        pt->x = rect.left;
+        pt->y = rect.bottom;
+        break;
 
-	}
+    }
 
-	//
-	// Sanity check!!!
-	//
-	// If the window is in an expanded state, and it is
-	// moved so that its lower-right edge extends off the screen,
-	// then when it is minimized, it will disappear (i.e. position
-	// itself off-screen!). This check stops that
-	//
-	if (pt->x - szLastExp.cx < rcDisplay.left || pt->x >= rcDisplay.right)
-	{
-		pt->x = rect.left;
-		uPinnedCorner &= ~PINNED_RIGHT;
-	}
+    //
+    // Sanity check!!!
+    //
+    // If the window is in an expanded state, and it is
+    // moved so that its lower-right edge extends off the screen,
+    // then when it is minimized, it will disappear (i.e. position
+    // itself off-screen!). This check stops that
+    //
+    if (pt->x - szLastExp.cx < rcDisplay.left || pt->x >= rcDisplay.right)
+    {
+        pt->x = rect.left;
+        uPinnedCorner &= ~PINNED_RIGHT;
+    }
 
-	if (pt->y - szLastExp.cy < rcDisplay.top || pt->y >= rcDisplay.bottom)
-	{
-		pt->y = rect.top;
-		uPinnedCorner &= ~PINNED_BOTTOM;
-	}
+    if (pt->y - szLastExp.cy < rcDisplay.top || pt->y >= rcDisplay.bottom)
+    {
+        pt->y = rect.top;
+        uPinnedCorner &= ~PINNED_BOTTOM;
+    }
 
     g_opts.uPinnedCorner = uPinnedCorner;
 }
@@ -185,14 +185,14 @@ void GetPinnedPosition(HWND hwnd, POINT *pt)
 //
 BOOL IsWindowMinimized(HWND hwnd)
 {
-	WINDOWPLACEMENT wp;
+    WINDOWPLACEMENT wp;
 
-	ZeroMemory(&wp, sizeof(wp));
-	wp.length = sizeof(wp);
+    ZeroMemory(&wp, sizeof(wp));
+    wp.length = sizeof(wp);
 
-	GetWindowPlacement(hwnd, &wp);
+    GetWindowPlacement(hwnd, &wp);
 
-	return (wp.showCmd & SW_SHOWMINIMIZED) ? TRUE : FALSE;
+    return (wp.showCmd & SW_SHOWMINIMIZED) ? TRUE : FALSE;
 }
 
 //
@@ -203,31 +203,31 @@ BOOL IsWindowMinimized(HWND hwnd)
 //
 void CalcDlgWindowSize(HWND hwnd, SIZE *szDlgUnits, SIZE *szClient, SIZE *szWindow)
 {
-	RECT rect;
-	DWORD dwStyle;
-	DWORD dwStyleEx;
+    RECT rect;
+    DWORD dwStyle;
+    DWORD dwStyleEx;
 
-	// work out the size in pixels of our main window, by converting
-	// from dialog units
-	SetRect(&rect, 0, 0, szDlgUnits->cx, szDlgUnits->cy);
-	MapDialogRect(hwnd, &rect);
+    // work out the size in pixels of our main window, by converting
+    // from dialog units
+    SetRect(&rect, 0, 0, szDlgUnits->cx, szDlgUnits->cy);
+    MapDialogRect(hwnd, &rect);
 
-	if (szClient)
-	{
-		szClient->cx = GetRectWidth(&rect);
-		szClient->cy = GetRectHeight(&rect);
-	}
+    if (szClient)
+    {
+        szClient->cx = GetRectWidth(&rect);
+        szClient->cy = GetRectHeight(&rect);
+    }
 
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-	dwStyleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
+    dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+    dwStyleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
 
-	AdjustWindowRectEx(&rect, dwStyle, FALSE, dwStyleEx);
+    AdjustWindowRectEx(&rect, dwStyle, FALSE, dwStyleEx);
 
-	if (szWindow)
-	{
-		szWindow->cx = GetRectWidth(&rect);
-		szWindow->cy = GetRectHeight(&rect);
-	}
+    if (szWindow)
+    {
+        szWindow->cx = GetRectWidth(&rect);
+        szWindow->cy = GetRectHeight(&rect);
+    }
 }
 
 //
@@ -236,145 +236,145 @@ void CalcDlgWindowSize(HWND hwnd, SIZE *szDlgUnits, SIZE *szClient, SIZE *szWind
 //
 void WinSpyDlg_SizeContents(HWND hwnd)
 {
-	int x, y, cx, cy;
-	int i;
-	RECT rect, rect1;
-	HWND hwndTab;
-	HWND hwndCtrl;
+    int x, y, cx, cy;
+    int i;
+    RECT rect, rect1;
+    HWND hwndTab;
+    HWND hwndCtrl;
 
-	int nPaneWidth;     // width of each dialog-pane
-	int nPaneHeight;    // height of each dialog-pane
-	int nActualPaneWidth; // what the tab-control is set to.
+    int nPaneWidth;     // width of each dialog-pane
+    int nPaneHeight;    // height of each dialog-pane
+    int nActualPaneWidth; // what the tab-control is set to.
 
-	int nTabWidth;
-	int nTabHeight;
+    int nTabWidth;
+    int nTabHeight;
 
-	int nDesiredTabWidth;
+    int nDesiredTabWidth;
 
-	// HARD-CODED sizes for each window layout.
-	// These are DIALOG UNITS, so it's not too bad.
-	duMinimized.cx = 254;
-	duMinimized.cy = 25;
+    // HARD-CODED sizes for each window layout.
+    // These are DIALOG UNITS, so it's not too bad.
+    duMinimized.cx = 254;
+    duMinimized.cy = 25;
 
-	duNormal.cx = duMinimized.cx;
-	duNormal.cy = 251;
+    duNormal.cx = duMinimized.cx;
+    duNormal.cy = 251;
 
-	duExpanded.cx = 500; 
-	duExpanded.cy = duNormal.cy;
+    duExpanded.cx = 500;
+    duExpanded.cy = duNormal.cy;
 
-	// work out the size (in pixels) of each window layout
-	CalcDlgWindowSize(hwnd, &duMinimized, 0, &szMinimized);
-	CalcDlgWindowSize(hwnd, &duNormal, 0, &szNormal);
-	CalcDlgWindowSize(hwnd, &duExpanded, 0, &szExpanded);
+    // work out the size (in pixels) of each window layout
+    CalcDlgWindowSize(hwnd, &duMinimized, 0, &szMinimized);
+    CalcDlgWindowSize(hwnd, &duNormal, 0, &szNormal);
+    CalcDlgWindowSize(hwnd, &duExpanded, 0, &szExpanded);
 
-	// resize to NORMAL layout (temporarily)
-	SetWindowPos(hwnd, 0, 0, 0, szNormal.cx, szNormal.cy, SWP_SIZEONLY | SWP_NOREDRAW);
+    // resize to NORMAL layout (temporarily)
+    SetWindowPos(hwnd, 0, 0, 0, szNormal.cx, szNormal.cy, SWP_SIZEONLY | SWP_NOREDRAW);
 
-	// Locate main Property sheet control
-	hwndTab = GetDlgItem(hwnd, IDC_TAB1);
+    // Locate main Property sheet control
+    hwndTab = GetDlgItem(hwnd, IDC_TAB1);
 
-	// Get SCREEN coords of tab control
-	GetWindowRect(hwndTab, &rect);
+    // Get SCREEN coords of tab control
+    GetWindowRect(hwndTab, &rect);
 
-	// Get SCREEN coords of dialog's CLIENT area
-	if (IsIconic(hwnd))
-	{
-		// If the window is minimized, calc the client rect manually
+    // Get SCREEN coords of dialog's CLIENT area
+    if (IsIconic(hwnd))
+    {
+        // If the window is minimized, calc the client rect manually
 
-		rect1.left = 0;
-		rect1.top = 0;
-		rect1.right = szNormal.cx - 2 * GetSystemMetrics(SM_CXFRAME);
-		rect1.bottom = szNormal.cy - 2 * GetSystemMetrics(SM_CYFRAME) - GetSystemMetrics(SM_CYCAPTION);
-	}
-	else
-		GetClientRect(hwnd, &rect1);
+        rect1.left = 0;
+        rect1.top = 0;
+        rect1.right = szNormal.cx - 2 * GetSystemMetrics(SM_CXFRAME);
+        rect1.bottom = szNormal.cy - 2 * GetSystemMetrics(SM_CYFRAME) - GetSystemMetrics(SM_CYCAPTION);
+    }
+    else
+        GetClientRect(hwnd, &rect1);
 
-	MapWindowPoints(hwnd, 0, (POINT *)&rect1, 2);
+    MapWindowPoints(hwnd, 0, (POINT *)&rect1, 2);
 
-	// Now we know what the border is between TAB and left-side
-	nLeftBorder = rect.left - rect1.left;
-	nBottomBorder = rect1.bottom - rect.bottom;
+    // Now we know what the border is between TAB and left-side
+    nLeftBorder = rect.left - rect1.left;
+    nBottomBorder = rect1.bottom - rect.bottom;
 
-	nDesiredTabWidth = (rect1.right - rect1.left) - nLeftBorder * 2;
+    nDesiredTabWidth = (rect1.right - rect1.left) - nLeftBorder * 2;
 
-	//
-	// Find out the size of the biggest dialog-tab-pane
-	//
-	SetRect(&rect, 0, 0, 0, 0);
+    //
+    // Find out the size of the biggest dialog-tab-pane
+    //
+    SetRect(&rect, 0, 0, 0, 0);
 
-	for (i = 0; i < NUMTABCONTROLITEMS; i++)
-	{
-		// Get tab-pane relative to parent (main) window
-		GetClientRect(WinSpyTab[i].hwnd, &rect1);
-		MapWindowPoints(WinSpyTab[i].hwnd, hwnd, (POINT *)&rect1, 2);
+    for (i = 0; i < NUMTABCONTROLITEMS; i++)
+    {
+        // Get tab-pane relative to parent (main) window
+        GetClientRect(WinSpyTab[i].hwnd, &rect1);
+        MapWindowPoints(WinSpyTab[i].hwnd, hwnd, (POINT *)&rect1, 2);
 
-		// find biggest
-		UnionRect(&rect, &rect, &rect1);
-	}
+        // find biggest
+        UnionRect(&rect, &rect, &rect1);
+    }
 
-	nPaneWidth = GetRectWidth(&rect);
-	nPaneHeight = GetRectHeight(&rect);
+    nPaneWidth = GetRectWidth(&rect);
+    nPaneHeight = GetRectHeight(&rect);
 
-	// Resize the tab control based on this biggest rect
-	SendMessage(hwndTab, TCM_ADJUSTRECT, TRUE, (LPARAM)&rect);
+    // Resize the tab control based on this biggest rect
+    SendMessage(hwndTab, TCM_ADJUSTRECT, TRUE, (LPARAM)&rect);
 
-	nTabWidth = GetRectWidth(&rect);
-	nTabHeight = GetRectHeight(&rect);
+    nTabWidth = GetRectWidth(&rect);
+    nTabHeight = GetRectHeight(&rect);
 
-	// Resize the tab control now we know how big it needs to be
-	SetWindowPos(hwndTab, hwnd, 0, 0, nDesiredTabWidth, nTabHeight, SWP_SIZEONLY);
+    // Resize the tab control now we know how big it needs to be
+    SetWindowPos(hwndTab, hwnd, 0, 0, nDesiredTabWidth, nTabHeight, SWP_SIZEONLY);
 
-	//
-	// Tab control is now in place.
-	// Now find out exactly where to position every
-	// tab-pane. (We know how big they are, but we need
-	// to find where to move them to).
-	//
-	GetWindowRect(hwndTab, &rect);
-	ScreenToClient(hwnd, (POINT *)&rect.left);
-	ScreenToClient(hwnd, (POINT *)&rect.right);
+    //
+    // Tab control is now in place.
+    // Now find out exactly where to position every
+    // tab-pane. (We know how big they are, but we need
+    // to find where to move them to).
+    //
+    GetWindowRect(hwndTab, &rect);
+    ScreenToClient(hwnd, (POINT *)&rect.left);
+    ScreenToClient(hwnd, (POINT *)&rect.right);
 
-	SendMessage(hwndTab, TCM_ADJUSTRECT, FALSE, (LPARAM)&rect);
+    SendMessage(hwndTab, TCM_ADJUSTRECT, FALSE, (LPARAM)&rect);
 
-	x = rect.left;
-	y = rect.top;
-	cx = nPaneWidth;
-	cy = nPaneHeight;
+    x = rect.left;
+    y = rect.top;
+    cx = nPaneWidth;
+    cy = nPaneHeight;
 
-	nActualPaneWidth = GetRectWidth(&rect);
+    nActualPaneWidth = GetRectWidth(&rect);
 
-	// Center each dialog-tab in the tab control
-	x += (nActualPaneWidth - nPaneWidth) / 2;
+    // Center each dialog-tab in the tab control
+    x += (nActualPaneWidth - nPaneWidth) / 2;
 
-	// position each dialog in the right place
-	for (i = 0; i < NUMTABCONTROLITEMS; i++)
-	{
-		SetWindowPos(WinSpyTab[i].hwnd, hwndTab, x, y, cx, cy, SWP_NOACTIVATE);
-	}
+    // position each dialog in the right place
+    for (i = 0; i < NUMTABCONTROLITEMS; i++)
+    {
+        SetWindowPos(WinSpyTab[i].hwnd, hwndTab, x, y, cx, cy, SWP_NOACTIVATE);
+    }
 
 
-	SetWindowPos(hwnd, 0, 0, 0, szMinimized.cx, szMinimized.cy, SWP_NOMOVE | SWP_NOZORDER);
+    SetWindowPos(hwnd, 0, 0, 0, szMinimized.cx, szMinimized.cy, SWP_NOMOVE | SWP_NOZORDER);
 
-	// Even though we are initially minimized, we want to
-	// automatically expand to normal view the first time a
-	// window is selected.
-	szCurrent = szMinimized;
-	szLastMax = szNormal;
-	szLastExp = szExpanded;
+    // Even though we are initially minimized, we want to
+    // automatically expand to normal view the first time a
+    // window is selected.
+    szCurrent = szMinimized;
+    szLastMax = szNormal;
+    szLastExp = szExpanded;
 
-	SetWindowPos(hwndTab, //GetDlgItem(hwnd, IDC_MINIMIZE)
-		HWND_BOTTOM, 0, 0, 0, 0, SWP_ZONLY);
+    SetWindowPos(hwndTab, //GetDlgItem(hwnd, IDC_MINIMIZE)
+        HWND_BOTTOM, 0, 0, 0, 0, SWP_ZONLY);
 
-	// Finally, move the little expand / shrink button
-	// so it is right-aligned with the edge of the tab.
-	hwndCtrl = GetDlgItem(hwnd, IDC_EXPAND);
-	GetWindowRect(hwndCtrl, &rect);
-	MapWindowPoints(0, hwnd, (POINT *)&rect, 2);
+    // Finally, move the little expand / shrink button
+    // so it is right-aligned with the edge of the tab.
+    hwndCtrl = GetDlgItem(hwnd, IDC_EXPAND);
+    GetWindowRect(hwndCtrl, &rect);
+    MapWindowPoints(0, hwnd, (POINT *)&rect, 2);
 
-	x = nDesiredTabWidth + nLeftBorder - GetRectWidth(&rect);
-	y = rect.top;
+    x = nDesiredTabWidth + nLeftBorder - GetRectWidth(&rect);
+    y = rect.top;
 
-	SetWindowPos(hwndCtrl, 0, x, y, 0, 0, SWP_MOVEONLY);
+    SetWindowPos(hwndCtrl, 0, x, y, 0, 0, SWP_MOVEONLY);
 }
 
 //
@@ -382,25 +382,25 @@ void WinSpyDlg_SizeContents(HWND hwnd)
 //
 UINT GetWindowLayout(HWND hwnd)
 {
-	RECT rect;
-	BOOL xMaxed, yMaxed;
+    RECT rect;
+    BOOL xMaxed, yMaxed;
 
-	GetWindowRect(hwnd, &rect);
+    GetWindowRect(hwnd, &rect);
 
-	yMaxed = GetRectHeight(&rect) > szMinimized.cy;
-	xMaxed = GetRectWidth(&rect) >= szExpanded.cx;
+    yMaxed = GetRectHeight(&rect) > szMinimized.cy;
+    xMaxed = GetRectWidth(&rect) >= szExpanded.cx;
 
-	if (yMaxed == FALSE)
-	{
-		return WINSPY_MINIMIZED;
-	}
-	else
-	{
-		if (xMaxed)
-			return WINSPY_EXPANDED;
-		else
-			return WINSPY_NORMAL;
-	}
+    if (yMaxed == FALSE)
+    {
+        return WINSPY_MINIMIZED;
+    }
+    else
+    {
+        if (xMaxed)
+            return WINSPY_EXPANDED;
+        else
+            return WINSPY_NORMAL;
+    }
 }
 
 //
@@ -408,16 +408,16 @@ UINT GetWindowLayout(HWND hwnd)
 //
 void ToggleWindowLayout(HWND hwnd)
 {
-	UINT layout = GetWindowLayout(hwnd);
+    UINT layout = GetWindowLayout(hwnd);
 
-	if (layout == WINSPY_MINIMIZED)
-	{
-		SetWindowLayout(hwnd, WINSPY_LASTMAX);
-	}
-	else
-	{
-		SetWindowLayout(hwnd, WINSPY_MINIMIZED);
-	}
+    if (layout == WINSPY_MINIMIZED)
+    {
+        SetWindowLayout(hwnd, WINSPY_LASTMAX);
+    }
+    else
+    {
+        SetWindowLayout(hwnd, WINSPY_MINIMIZED);
+    }
 }
 
 //
@@ -427,118 +427,118 @@ void ToggleWindowLayout(HWND hwnd)
 //
 void SetWindowLayout(HWND hwnd, UINT uLayout)
 {
-	DWORD dwSWPflags = SWP_NOZORDER | SWP_NOACTIVATE;
+    DWORD dwSWPflags = SWP_NOZORDER | SWP_NOACTIVATE;
 
-	SIZE   *psz;
-	POINT  ptPos;
+    SIZE   *psz;
+    POINT  ptPos;
     POINT  ptPinPos = g_opts.ptPinPos;
 
-	// Decide which layout we are going to use
-	switch (uLayout)
-	{
-	case WINSPY_MINIMIZED:
-		psz = &szMinimized;
-		break;
+    // Decide which layout we are going to use
+    switch (uLayout)
+    {
+    case WINSPY_MINIMIZED:
+        psz = &szMinimized;
+        break;
 
-	case WINSPY_NORMAL:
-		psz = &szNormal;
-		break;
+    case WINSPY_NORMAL:
+        psz = &szNormal;
+        break;
 
-	case WINSPY_EXPANDED:
-		psz = &szLastExp;
-		break;
+    case WINSPY_EXPANDED:
+        psz = &szLastExp;
+        break;
 
-	default:
-	case WINSPY_LASTMAX:
-		psz = &szLastMax;
-	}
+    default:
+    case WINSPY_LASTMAX:
+        psz = &szLastMax;
+    }
 
-	// Now work out where the top-left corner needs to
-	// be, taking into account where the pinned-corner is
-	switch (g_opts.uPinnedCorner)
-	{
-	default:
-	case PINNED_TOPLEFT:
-		ptPos = ptPinPos;
-		break;
+    // Now work out where the top-left corner needs to
+    // be, taking into account where the pinned-corner is
+    switch (g_opts.uPinnedCorner)
+    {
+    default:
+    case PINNED_TOPLEFT:
+        ptPos = ptPinPos;
+        break;
 
-	case PINNED_TOPRIGHT:
-		ptPos.x = ptPinPos.x - psz->cx;
-		ptPos.y = ptPinPos.y;
-		break;
+    case PINNED_TOPRIGHT:
+        ptPos.x = ptPinPos.x - psz->cx;
+        ptPos.y = ptPinPos.y;
+        break;
 
-	case PINNED_BOTTOMRIGHT:
-		ptPos.x = ptPinPos.x - psz->cx;
-		ptPos.y = ptPinPos.y - psz->cy;
-		break;
+    case PINNED_BOTTOMRIGHT:
+        ptPos.x = ptPinPos.x - psz->cx;
+        ptPos.y = ptPinPos.y - psz->cy;
+        break;
 
-	case PINNED_BOTTOMLEFT:
-		ptPos.x = ptPinPos.x;
-		ptPos.y = ptPinPos.y - psz->cy;
-		break;
+    case PINNED_BOTTOMLEFT:
+        ptPos.x = ptPinPos.x;
+        ptPos.y = ptPinPos.y - psz->cy;
+        break;
 
-	}
+    }
 
-	// Switch into the new layout!
-	SetWindowPos(hwnd, 0, ptPos.x, ptPos.y, psz->cx, psz->cy, dwSWPflags);
+    // Switch into the new layout!
+    SetWindowPos(hwnd, 0, ptPos.x, ptPos.y, psz->cx, psz->cy, dwSWPflags);
 }
 
 
 UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-	int  cx, cy;
-	HWND hwndCtrl;
-	RECT rect;
-	RECT rect2;
+    int  cx, cy;
+    HWND hwndCtrl;
+    RECT rect;
+    RECT rect2;
 
-	if (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
-	{
-		cx = LOWORD(lParam);
-		cy = HIWORD(lParam);
+    if (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED)
+    {
+        cx = LOWORD(lParam);
+        cy = HIWORD(lParam);
 
-		// Resize the right-hand tab control so that
-		// it fills the window
-		hwndCtrl = GetDlgItem(hwnd, IDC_TAB2);
-		GetWindowRect(hwndCtrl, &rect);
-		ScreenToClient(hwnd, (POINT *)&rect.left);
-		ScreenToClient(hwnd, (POINT *)&rect.right);
+        // Resize the right-hand tab control so that
+        // it fills the window
+        hwndCtrl = GetDlgItem(hwnd, IDC_TAB2);
+        GetWindowRect(hwndCtrl, &rect);
+        ScreenToClient(hwnd, (POINT *)&rect.left);
+        ScreenToClient(hwnd, (POINT *)&rect.right);
 
-		MoveWindow(hwndCtrl, rect.left, rect.top, cx - rect.left - nLeftBorder, cy - rect.top - nBottomBorder, TRUE);
+        MoveWindow(hwndCtrl, rect.left, rect.top, cx - rect.left - nLeftBorder, cy - rect.top - nBottomBorder, TRUE);
 
-		GetWindowRect(hwndCtrl, &rect);
-		ScreenToClient(hwnd, (POINT *)&rect.left);
-		ScreenToClient(hwnd, (POINT *)&rect.right);
-		rect.top++;
+        GetWindowRect(hwndCtrl, &rect);
+        ScreenToClient(hwnd, (POINT *)&rect.left);
+        ScreenToClient(hwnd, (POINT *)&rect.right);
+        rect.top++;
 
-		// Work out the coords of the tab contents
-		SendMessage(hwndCtrl, TCM_ADJUSTRECT, FALSE, (LPARAM)&rect);
+        // Work out the coords of the tab contents
+        SendMessage(hwndCtrl, TCM_ADJUSTRECT, FALSE, (LPARAM)&rect);
 
-		// Resize the tree control so that it fills the tab control.
-		hwndCtrl = GetDlgItem(hwnd, IDC_TREE1);
-		InflateRect(&rect, 1, 1);
-		MoveWindow(hwndCtrl, rect.left, rect.top, GetRectWidth(&rect), GetRectHeight(&rect), TRUE);
+        // Resize the tree control so that it fills the tab control.
+        hwndCtrl = GetDlgItem(hwnd, IDC_TREE1);
+        InflateRect(&rect, 1, 1);
+        MoveWindow(hwndCtrl, rect.left, rect.top, GetRectWidth(&rect), GetRectHeight(&rect), TRUE);
 
-		// Position the size-grip
-		{
-			int width = GetSystemMetrics(SM_CXVSCROLL);
-			int height = GetSystemMetrics(SM_CYHSCROLL);
+        // Position the size-grip
+        {
+            int width = GetSystemMetrics(SM_CXVSCROLL);
+            int height = GetSystemMetrics(SM_CYHSCROLL);
 
-			GetClientRect(hwnd, &rect);
+            GetClientRect(hwnd, &rect);
 
-			MoveWindow(hwndSizer, rect.right - width, rect.bottom - height, width, height, TRUE);
+            MoveWindow(hwndSizer, rect.right - width, rect.bottom - height, width, height, TRUE);
 
-		}
+        }
 
-		GetWindowRect(hwndPin, &rect2);
-		OffsetRect(&rect2, -rect2.left, -rect2.top);
+        GetWindowRect(hwndPin, &rect2);
+        OffsetRect(&rect2, -rect2.left, -rect2.top);
 
-		// Position the pin toolbar
-		//SetWindowPos(hwndPin,
-		//  HWND_TOP, rect.right-rect2.right, 1, rect2.right, rect2.bottom, 0);
-		MoveWindow(hwndPin, rect.right - rect2.right, 1, rect2.right, rect2.bottom, TRUE);
-	}
+        // Position the pin toolbar
+        //SetWindowPos(hwndPin,
+        //  HWND_TOP, rect.right-rect2.right, 1, rect2.right, rect2.bottom, 0);
+        MoveWindow(hwndPin, rect.right - rect2.right, 1, rect2.right, rect2.bottom, TRUE);
+    }
 
-	return 0;
+    return 0;
 }
 
 
@@ -550,171 +550,171 @@ UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam)
 //
 typedef struct
 {
-	UINT uCtrlId;
-	BOOL fEnabled;
+    UINT uCtrlId;
+    BOOL fEnabled;
 } CtrlEnable;
 
 void EnableLayoutCtrls(HWND hwnd, UINT layout)
 {
-	int i;
-	const int nNumCtrls = 9;
+    int i;
+    const int nNumCtrls = 9;
 
-	CtrlEnable ctrl0[] =
-	{
-		IDC_TAB1,       FALSE,
-		IDC_AUTOUPDATE, FALSE,
-		IDC_CAPTURE,    FALSE,
-		IDC_EXPAND,     FALSE,
-		IDC_TAB2,       FALSE,
-		IDC_TREE1,      FALSE,
-		IDC_REFRESH,    FALSE,
-		IDC_LOCATE,     FALSE,
-		IDC_FLASH,      FALSE,
-	};
+    CtrlEnable ctrl0[] =
+    {
+        IDC_TAB1,       FALSE,
+        IDC_AUTOUPDATE, FALSE,
+        IDC_CAPTURE,    FALSE,
+        IDC_EXPAND,     FALSE,
+        IDC_TAB2,       FALSE,
+        IDC_TREE1,      FALSE,
+        IDC_REFRESH,    FALSE,
+        IDC_LOCATE,     FALSE,
+        IDC_FLASH,      FALSE,
+    };
 
-	CtrlEnable ctrl1[] =
-	{
-		IDC_TAB1,       TRUE,
-		IDC_AUTOUPDATE, TRUE,
-		IDC_CAPTURE,    TRUE,
-		IDC_EXPAND,     TRUE,
-		IDC_TAB2,       FALSE,
-		IDC_TREE1,      FALSE,
-		IDC_REFRESH,    FALSE,
-		IDC_LOCATE,     FALSE,
-		IDC_FLASH,      FALSE,
-	};
+    CtrlEnable ctrl1[] =
+    {
+        IDC_TAB1,       TRUE,
+        IDC_AUTOUPDATE, TRUE,
+        IDC_CAPTURE,    TRUE,
+        IDC_EXPAND,     TRUE,
+        IDC_TAB2,       FALSE,
+        IDC_TREE1,      FALSE,
+        IDC_REFRESH,    FALSE,
+        IDC_LOCATE,     FALSE,
+        IDC_FLASH,      FALSE,
+    };
 
-	CtrlEnable ctrl2[] =
-	{
-		IDC_TAB1,       TRUE,
-		IDC_AUTOUPDATE, TRUE,
-		IDC_CAPTURE,    TRUE,
-		IDC_EXPAND,     TRUE,
-		IDC_TAB2,       TRUE,
-		IDC_TREE1,      TRUE,
-		IDC_REFRESH,    TRUE,
-		IDC_LOCATE,     TRUE,
-		IDC_FLASH,      TRUE,
-	};
+    CtrlEnable ctrl2[] =
+    {
+        IDC_TAB1,       TRUE,
+        IDC_AUTOUPDATE, TRUE,
+        IDC_CAPTURE,    TRUE,
+        IDC_EXPAND,     TRUE,
+        IDC_TAB2,       TRUE,
+        IDC_TREE1,      TRUE,
+        IDC_REFRESH,    TRUE,
+        IDC_LOCATE,     TRUE,
+        IDC_FLASH,      TRUE,
+    };
 
-	switch (layout)
-	{
-	case WINSPY_MINIMIZED:
+    switch (layout)
+    {
+    case WINSPY_MINIMIZED:
 
-		for (i = 0; i < NUMTABCONTROLITEMS; i++)
-			EnableWindow(WinSpyTab[i].hwnd, FALSE);
+        for (i = 0; i < NUMTABCONTROLITEMS; i++)
+            EnableWindow(WinSpyTab[i].hwnd, FALSE);
 
-		for (i = 0; i < nNumCtrls; i++)
-			EnableDlgItem(hwnd, ctrl0[i].uCtrlId, ctrl0[i].fEnabled);
+        for (i = 0; i < nNumCtrls; i++)
+            EnableDlgItem(hwnd, ctrl0[i].uCtrlId, ctrl0[i].fEnabled);
 
-		break;
+        break;
 
-	case WINSPY_NORMAL:
+    case WINSPY_NORMAL:
 
-		for (i = 0; i < NUMTABCONTROLITEMS; i++)
-			EnableWindow(WinSpyTab[i].hwnd, TRUE);
+        for (i = 0; i < NUMTABCONTROLITEMS; i++)
+            EnableWindow(WinSpyTab[i].hwnd, TRUE);
 
-		for (i = 0; i < nNumCtrls; i++)
-			EnableDlgItem(hwnd, ctrl1[i].uCtrlId, ctrl1[i].fEnabled);
+        for (i = 0; i < nNumCtrls; i++)
+            EnableDlgItem(hwnd, ctrl1[i].uCtrlId, ctrl1[i].fEnabled);
 
-		break;
+        break;
 
-	case WINSPY_EXPANDED:
+    case WINSPY_EXPANDED:
 
-		for (i = 0; i < NUMTABCONTROLITEMS; i++)
-			EnableWindow(WinSpyTab[i].hwnd, TRUE);
+        for (i = 0; i < NUMTABCONTROLITEMS; i++)
+            EnableWindow(WinSpyTab[i].hwnd, TRUE);
 
-		for (i = 0; i < nNumCtrls; i++)
-			EnableDlgItem(hwnd, ctrl2[i].uCtrlId, ctrl2[i].fEnabled);
+        for (i = 0; i < nNumCtrls; i++)
+            EnableDlgItem(hwnd, ctrl2[i].uCtrlId, ctrl2[i].fEnabled);
 
-		break;
+        break;
 
-	}
+    }
 
 }
 
 UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 {
-	UINT layout;
-	HICON hIcon, hOld;
+    UINT layout;
+    HICON hIcon, hOld;
 
-	static UINT oldlayout = WINSPY_LAYOUT_NO;
+    static UINT oldlayout = WINSPY_LAYOUT_NO;
 
-	if (wp == 0)
-		return 0;
+    if (wp == 0)
+        return 0;
 
-	layout = GetWindowLayout(hwnd);
+    layout = GetWindowLayout(hwnd);
 
-	// Detect if our size has changed
-	if (!(wp->flags & SWP_NOSIZE))
-	{
-		if (layout == WINSPY_EXPANDED)
-		{
-			szLastExp.cx = wp->cx;
-			szLastExp.cy = wp->cy;
-		}
+    // Detect if our size has changed
+    if (!(wp->flags & SWP_NOSIZE))
+    {
+        if (layout == WINSPY_EXPANDED)
+        {
+            szLastExp.cx = wp->cx;
+            szLastExp.cy = wp->cy;
+        }
 
-		szCurrent.cx = wp->cx;
-		szCurrent.cy = wp->cy;
+        szCurrent.cx = wp->cx;
+        szCurrent.cy = wp->cy;
 
-		if (layout != WINSPY_MINIMIZED)
-		{
-			szLastMax = szCurrent;
-		}
+        if (layout != WINSPY_MINIMIZED)
+        {
+            szLastMax = szCurrent;
+        }
 
-		// Has the layout changed as a result?
-		if (oldlayout != layout)
-		{
-			HWND  hwndExpand = GetDlgItem(hwnd, IDC_EXPAND);
-			DWORD dwStyle = GetWindowLong(hwndExpand, GWL_STYLE);
+        // Has the layout changed as a result?
+        if (oldlayout != layout)
+        {
+            HWND  hwndExpand = GetDlgItem(hwnd, IDC_EXPAND);
+            DWORD dwStyle = GetWindowLong(hwndExpand, GWL_STYLE);
             int   cxIcon = DPIScale(hwnd, 16);
 
-			if (layout == WINSPY_NORMAL)
-			{
-				hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_MORE), IMAGE_ICON, cxIcon, cxIcon, 0);
-				hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
+            if (layout == WINSPY_NORMAL)
+            {
+                hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_MORE), IMAGE_ICON, cxIcon, cxIcon, 0);
+                hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 
-				DestroyIcon(hOld);
+                DestroyIcon(hOld);
 
-				SetWindowLong(hwndExpand, GWL_STYLE, dwStyle | BS_RIGHT);
-				SetWindowText(hwndExpand, _T("&More"));
-			}
-			else
-			{
-				hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_LESS), IMAGE_ICON, cxIcon, cxIcon, 0);
-				hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
+                SetWindowLong(hwndExpand, GWL_STYLE, dwStyle | BS_RIGHT);
+                SetWindowText(hwndExpand, _T("&More"));
+            }
+            else
+            {
+                hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_LESS), IMAGE_ICON, cxIcon, cxIcon, 0);
+                hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 
-				DestroyIcon(hOld);
+                DestroyIcon(hOld);
 
-				SetWindowLong(hwndExpand, GWL_STYLE, dwStyle & ~BS_RIGHT);
-				SetWindowText(hwndExpand, _T("L&ess"));
-			}
+                SetWindowLong(hwndExpand, GWL_STYLE, dwStyle & ~BS_RIGHT);
+                SetWindowText(hwndExpand, _T("L&ess"));
+            }
 
-			SetSysMenuIconFromLayout(hwnd, layout);
+            SetSysMenuIconFromLayout(hwnd, layout);
 
-			EnableLayoutCtrls(hwnd, layout);
-		}
+            EnableLayoutCtrls(hwnd, layout);
+        }
 
-		oldlayout = layout;
-	}
+        oldlayout = layout;
+    }
 
-	// Has our Z-order changed?
-	if (wp && !(wp->flags & SWP_NOZORDER))
-	{
-		DWORD dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+    // Has our Z-order changed?
+    if (wp && !(wp->flags & SWP_NOZORDER))
+    {
+        DWORD dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
 
-		// Set the global flag (just so we can remember it in the registry)
-		if (dwStyle & WS_EX_TOPMOST)
-			g_opts.fAlwaysOnTop = TRUE;
-		else
-			g_opts.fAlwaysOnTop = FALSE;
+        // Set the global flag (just so we can remember it in the registry)
+        if (dwStyle & WS_EX_TOPMOST)
+            g_opts.fAlwaysOnTop = TRUE;
+        else
+            g_opts.fAlwaysOnTop = FALSE;
 
-		CheckSysMenu(hwnd, IDM_WINSPY_ONTOP, g_opts.fAlwaysOnTop);
-	}
+        CheckSysMenu(hwnd, IDM_WINSPY_ONTOP, g_opts.fAlwaysOnTop);
+    }
 
 
-	return 0;
+    return 0;
 }
 
 
@@ -723,172 +723,172 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 
 UINT WinSpyDlg_Sizing(UINT nSide, RECT *prc)
 {
-	int minx;
-	int miny;
-	int maxy;
-	int nWidthNew;
-	int nHeightNew;
+    int minx;
+    int miny;
+    int maxy;
+    int nWidthNew;
+    int nHeightNew;
 
-	minx = szMinimized.cx;
-	miny = szMinimized.cy;
-	maxy = szNormal.cy;
+    minx = szMinimized.cx;
+    miny = szMinimized.cy;
+    maxy = szNormal.cy;
 
-	nWidthNew = prc->right - prc->left;
-	nHeightNew = prc->bottom - prc->top;
+    nWidthNew = prc->right - prc->left;
+    nHeightNew = prc->bottom - prc->top;
 
-	if (fxMaxed == FALSE)
-	{
-		if (nWidthNew <= minx)
-			nWidthNew = minx;
+    if (fxMaxed == FALSE)
+    {
+        if (nWidthNew <= minx)
+            nWidthNew = minx;
 
-		if (nWidthNew > minx && nWidthNew < szExpanded.cx)
-			nWidthNew = szExpanded.cx;
-	}
-	else
-	{
-		if (nWidthNew < szExpanded.cx)
-			nWidthNew = minx;
+        if (nWidthNew > minx && nWidthNew < szExpanded.cx)
+            nWidthNew = szExpanded.cx;
+    }
+    else
+    {
+        if (nWidthNew < szExpanded.cx)
+            nWidthNew = minx;
 
-	}
+    }
 
-	if (fyMaxed == FALSE)
-	{
-		if (nHeightNew > miny)
-		{
-			nHeightNew = maxy;
-		}
+    if (fyMaxed == FALSE)
+    {
+        if (nHeightNew > miny)
+        {
+            nHeightNew = maxy;
+        }
 
-		if (nHeightNew <= miny)
-		{
-			nHeightNew = miny;
-			nWidthNew = minx;
-		}
-	}
-	else
-	{
-		if (nHeightNew < maxy)
-		{
-			nHeightNew = miny;
-			nWidthNew = minx;
-		}
-		else
-			nHeightNew = maxy;
-	}
+        if (nHeightNew <= miny)
+        {
+            nHeightNew = miny;
+            nWidthNew = minx;
+        }
+    }
+    else
+    {
+        if (nHeightNew < maxy)
+        {
+            nHeightNew = miny;
+            nWidthNew = minx;
+        }
+        else
+            nHeightNew = maxy;
+    }
 
-	// Adjust the rectangle's dimensions
-	switch (nSide)
-	{
-	case WMSZ_LEFT:
-		prc->left = prc->right - nWidthNew;
-		break;
+    // Adjust the rectangle's dimensions
+    switch (nSide)
+    {
+    case WMSZ_LEFT:
+        prc->left = prc->right - nWidthNew;
+        break;
 
-	case WMSZ_TOP:
-		prc->top = prc->bottom - nHeightNew;
-		//>
-		prc->right = prc->left + nWidthNew;
-		break;
+    case WMSZ_TOP:
+        prc->top = prc->bottom - nHeightNew;
+        //>
+        prc->right = prc->left + nWidthNew;
+        break;
 
-	case WMSZ_RIGHT:
-		prc->right = prc->left + nWidthNew;
-		break;
+    case WMSZ_RIGHT:
+        prc->right = prc->left + nWidthNew;
+        break;
 
-	case WMSZ_BOTTOM:
-		prc->bottom = prc->top + nHeightNew;
-		//>
-		prc->right = prc->left + nWidthNew;
-		break;
+    case WMSZ_BOTTOM:
+        prc->bottom = prc->top + nHeightNew;
+        //>
+        prc->right = prc->left + nWidthNew;
+        break;
 
-	case WMSZ_BOTTOMLEFT:
-		prc->bottom = prc->top + nHeightNew;
-		prc->left = prc->right - nWidthNew;
-		break;
+    case WMSZ_BOTTOMLEFT:
+        prc->bottom = prc->top + nHeightNew;
+        prc->left = prc->right - nWidthNew;
+        break;
 
-	case WMSZ_BOTTOMRIGHT:
-		prc->bottom = prc->top + nHeightNew;
-		prc->right = prc->left + nWidthNew;
-		break;
+    case WMSZ_BOTTOMRIGHT:
+        prc->bottom = prc->top + nHeightNew;
+        prc->right = prc->left + nWidthNew;
+        break;
 
-	case WMSZ_TOPLEFT:
-		prc->left = prc->right - nWidthNew;
-		prc->top = prc->bottom - nHeightNew;
-		break;
+    case WMSZ_TOPLEFT:
+        prc->left = prc->right - nWidthNew;
+        prc->top = prc->bottom - nHeightNew;
+        break;
 
-	case WMSZ_TOPRIGHT:
-		prc->top = prc->bottom - nHeightNew;
-		prc->right = prc->left + nWidthNew;
-		break;
-	}
+    case WMSZ_TOPRIGHT:
+        prc->top = prc->bottom - nHeightNew;
+        prc->right = prc->left + nWidthNew;
+        break;
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 UINT WinSpyDlg_EnterSizeMove(HWND hwnd)
 {
-	RECT rect;
-	GetWindowRect(hwnd, &rect);
+    RECT rect;
+    GetWindowRect(hwnd, &rect);
 
-	fyMaxed = (GetRectHeight(&rect) > szMinimized.cy);
-	fxMaxed = (GetRectWidth(&rect) >= szExpanded.cx);
+    fyMaxed = (GetRectHeight(&rect) > szMinimized.cy);
+    fxMaxed = (GetRectWidth(&rect) >= szExpanded.cx);
 
-	return 0;
+    return 0;
 }
 
 UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 {
-	RECT rect;
-	UINT uLayout;
+    RECT rect;
+    UINT uLayout;
 
-	static UINT uOldLayout = WINSPY_MINIMIZED;
+    static UINT uOldLayout = WINSPY_MINIMIZED;
 
 
-	GetWindowRect(hwnd, &rect);
+    GetWindowRect(hwnd, &rect);
 
-	szCurrent.cx = GetRectWidth(&rect);
-	szCurrent.cy = GetRectHeight(&rect);
+    szCurrent.cx = GetRectWidth(&rect);
+    szCurrent.cy = GetRectHeight(&rect);
 
-	fyMaxed = (szCurrent.cy > szMinimized.cy);
-	fxMaxed = (szCurrent.cx >= szExpanded.cx);
+    fyMaxed = (szCurrent.cy > szMinimized.cy);
+    fxMaxed = (szCurrent.cx >= szExpanded.cx);
 
-	if (fyMaxed == FALSE)
-	{
-		uLayout = WINSPY_MINIMIZED;
-	}
-	else
-	{
-		if (fxMaxed)
-			uLayout = WINSPY_EXPANDED;
-		else
-			uLayout = WINSPY_NORMAL;
+    if (fyMaxed == FALSE)
+    {
+        uLayout = WINSPY_MINIMIZED;
+    }
+    else
+    {
+        if (fxMaxed)
+            uLayout = WINSPY_EXPANDED;
+        else
+            uLayout = WINSPY_NORMAL;
 
-		szLastMax = szCurrent;
-	}
+        szLastMax = szCurrent;
+    }
 
-	SetSysMenuIconFromLayout(hwnd, uLayout);
+    SetSysMenuIconFromLayout(hwnd, uLayout);
 
-	if (uLayout == WINSPY_EXPANDED && uOldLayout != WINSPY_EXPANDED)
-	{
-		WindowTree_Refresh(spy_hCurWnd, FALSE);
-	}
+    if (uLayout == WINSPY_EXPANDED && uOldLayout != WINSPY_EXPANDED)
+    {
+        WindowTree_Refresh(spy_hCurWnd, FALSE);
+    }
 
-	GetPinnedPosition(hwnd, &g_opts.ptPinPos);
+    GetPinnedPosition(hwnd, &g_opts.ptPinPos);
 
-	uOldLayout = uLayout;
+    uOldLayout = uLayout;
 
-	return 0;
+    return 0;
 }
 
 UINT_PTR WinSpyDlg_NCHitTest(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-	UINT_PTR uHitTest;
+    UINT_PTR uHitTest;
 
-	uHitTest = DefWindowProc(hwnd, WM_NCHITTEST, wParam, lParam);
+    uHitTest = DefWindowProc(hwnd, WM_NCHITTEST, wParam, lParam);
 
-	// Allow full-window dragging
-	if (g_opts.fFullDragging &&    uHitTest == HTCLIENT)
-		uHitTest = HTCAPTION;
+    // Allow full-window dragging
+    if (g_opts.fFullDragging &&    uHitTest == HTCLIENT)
+        uHitTest = HTCAPTION;
 
-	SetWindowLongPtr(hwnd, DWLP_MSGRESULT, uHitTest);
-	return TRUE;
+    SetWindowLongPtr(hwnd, DWLP_MSGRESULT, uHitTest);
+    return TRUE;
 }
 
 #define X_ZOOM_BORDER 8
@@ -896,45 +896,45 @@ UINT_PTR WinSpyDlg_NCHitTest(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 BOOL WinSpy_ZoomTo(HWND hwnd, UINT uCorner)
 {
-	RECT rcDisplay;
-	RECT rect;
-	POINT ptPinPos;
+    RECT rcDisplay;
+    RECT rect;
+    POINT ptPinPos;
 
-	//SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDisplay, FALSE);
-	GetWindowRect(hwnd, &rect);
-	GetWorkArea(&rect, &rcDisplay);
+    //SystemParametersInfo(SPI_GETWORKAREA, 0, &rcDisplay, FALSE);
+    GetWindowRect(hwnd, &rect);
+    GetWorkArea(&rect, &rcDisplay);
 
-	switch (uCorner)
-	{
-	case PINNED_TOPLEFT:
-		ptPinPos.x = rcDisplay.left + X_ZOOM_BORDER;
-		ptPinPos.y = rcDisplay.top + Y_ZOOM_BORDER;
-		break;
+    switch (uCorner)
+    {
+    case PINNED_TOPLEFT:
+        ptPinPos.x = rcDisplay.left + X_ZOOM_BORDER;
+        ptPinPos.y = rcDisplay.top + Y_ZOOM_BORDER;
+        break;
 
-	case PINNED_TOPRIGHT:
-		ptPinPos.x = rcDisplay.right - X_ZOOM_BORDER;
-		ptPinPos.y = rcDisplay.top + Y_ZOOM_BORDER;
-		break;
+    case PINNED_TOPRIGHT:
+        ptPinPos.x = rcDisplay.right - X_ZOOM_BORDER;
+        ptPinPos.y = rcDisplay.top + Y_ZOOM_BORDER;
+        break;
 
-	case PINNED_BOTTOMRIGHT:
-		ptPinPos.x = rcDisplay.right - X_ZOOM_BORDER;
-		ptPinPos.y = rcDisplay.bottom - Y_ZOOM_BORDER;
-		break;
+    case PINNED_BOTTOMRIGHT:
+        ptPinPos.x = rcDisplay.right - X_ZOOM_BORDER;
+        ptPinPos.y = rcDisplay.bottom - Y_ZOOM_BORDER;
+        break;
 
-	case PINNED_BOTTOMLEFT:
-		ptPinPos.x = rcDisplay.left + X_ZOOM_BORDER;
-		ptPinPos.y = rcDisplay.bottom - Y_ZOOM_BORDER;
-		break;
+    case PINNED_BOTTOMLEFT:
+        ptPinPos.x = rcDisplay.left + X_ZOOM_BORDER;
+        ptPinPos.y = rcDisplay.bottom - Y_ZOOM_BORDER;
+        break;
 
-	default:
-		return FALSE;
-	}
+    default:
+        return FALSE;
+    }
 
-	SetPinState(TRUE);
+    SetPinState(TRUE);
 
-	g_opts.ptPinPos = ptPinPos; 
-	g_opts.uPinnedCorner = uCorner;
-	SetWindowLayout(hwnd, WINSPY_MINIMIZED);
+    g_opts.ptPinPos = ptPinPos;
+    g_opts.uPinnedCorner = uCorner;
+    SetWindowLayout(hwnd, WINSPY_MINIMIZED);
 
-	return TRUE;
+    return TRUE;
 }

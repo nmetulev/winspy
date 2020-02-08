@@ -20,226 +20,226 @@
 
 typedef struct
 {
-	HWND   hwndTarget;  // what window are we looking at??
-	BOOL   fExtended;   // Extended (TRUE) or Normal (FALSE)
+    HWND   hwndTarget;  // what window are we looking at??
+    BOOL   fExtended;   // Extended (TRUE) or Normal (FALSE)
 
-	DWORD  dwStyles;    // original styles; not currently used, but could be used to reset the dialog
+    DWORD  dwStyles;    // original styles; not currently used, but could be used to reset the dialog
 
 } StyleEditState;
 
 static StyleEditState state;
 
 void FillStyleLists(HWND hwndTarget, HWND hwndStyleList,
-	BOOL fAllStyles, DWORD dwStyles);
+    BOOL fAllStyles, DWORD dwStyles);
 void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
-	BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl);
+    BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl);
 
 //
 //  Define our callback function for the Window Finder Tool
 //
 UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 {
-	HWND hwndDlg;
-	TCHAR szText[120];
+    HWND hwndDlg;
+    TCHAR szText[120];
 
-	DWORD dwStyle;
+    DWORD dwStyle;
 
-	switch (uCode)
-	{
-	case WFN_END:
-		hwndDlg = GetParent(hwndTool);
+    switch (uCode)
+    {
+    case WFN_END:
+        hwndDlg = GetParent(hwndTool);
 
-		if (GetClassLong(state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
-		{
-			if (state.fExtended)
-				dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-			else
-				dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+        if (GetClassLong(state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
+        {
+            if (state.fExtended)
+                dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            else
+                dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
-			_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyle);
+            _stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyle);
 
-			SetDlgItemText(hwndDlg, IDC_EDIT1, szText);
-		}
-		else
-		{
-			_stprintf_s(szText, ARRAYSIZE(szText), _T("Window ") szHexFmt _T("\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  "), (UINT)(UINT_PTR)hwnd);
-			MessageBox(hwndDlg, szText, szAppName, MB_OK | MB_ICONINFORMATION);
-		}
+            SetDlgItemText(hwndDlg, IDC_EDIT1, szText);
+        }
+        else
+        {
+            _stprintf_s(szText, ARRAYSIZE(szText), _T("Window ") szHexFmt _T("\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  "), (UINT)(UINT_PTR)hwnd);
+            MessageBox(hwndDlg, szText, szAppName, MB_OK | MB_ICONINFORMATION);
+        }
 
-		break;
+        break;
 
-	}
-	return 0;
+    }
+    return 0;
 }
 
 INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-	static StyleEditState *pState;
+    static StyleEditState *pState;
 
-	HWND hwndList;
+    HWND hwndList;
 
-	DWORD dwStyles;
-	TCHAR szText[32];
+    DWORD dwStyles;
+    TCHAR szText[32];
 
-	int topindex;
-	int caretindex;
+    int topindex;
+    int caretindex;
 
-	switch (iMsg)
-	{
-	case WM_INITDIALOG:
+    switch (iMsg)
+    {
+    case WM_INITDIALOG:
 
-		// Passed through in call to DialogBoxParam
-		pState = (StyleEditState *)lParam;
+        // Passed through in call to DialogBoxParam
+        pState = (StyleEditState *)lParam;
 
-		if (pState->fExtended)
-			dwStyles = GetWindowLong(pState->hwndTarget, GWL_EXSTYLE);
-		else
-			dwStyles = GetWindowLong(pState->hwndTarget, GWL_STYLE);
+        if (pState->fExtended)
+            dwStyles = GetWindowLong(pState->hwndTarget, GWL_EXSTYLE);
+        else
+            dwStyles = GetWindowLong(pState->hwndTarget, GWL_STYLE);
 
-		_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
-		SetDlgItemText(hwnd, IDC_EDIT1, szText);
+        _stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
+        SetDlgItemText(hwnd, IDC_EDIT1, szText);
 
-		MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
+        MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
 
-		return TRUE;
+        return TRUE;
 
-	case WM_CLOSE:
-		EndDialog(hwnd, 0);
-		return TRUE;
+    case WM_CLOSE:
+        EndDialog(hwnd, 0);
+        return TRUE;
 
-	case WM_MEASUREITEM:
+    case WM_MEASUREITEM:
         SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_MeasureItem(hwnd, (MEASUREITEMSTRUCT *)lParam));
-		return TRUE;
+        return TRUE;
 
-	case WM_DRAWITEM:
-		if (wParam == IDC_LIST1)
-		{
-			SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam));
-			return TRUE;
-		}
-		else
-			return FALSE;
+    case WM_DRAWITEM:
+        if (wParam == IDC_LIST1)
+        {
+            SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam));
+            return TRUE;
+        }
+        else
+            return FALSE;
 
-	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case IDC_EDIT1:
-			switch (HIWORD(wParam))
-			{
-			case EN_CHANGE:
-				dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+    case WM_COMMAND:
+        switch (LOWORD(wParam))
+        {
+        case IDC_EDIT1:
+            switch (HIWORD(wParam))
+            {
+            case EN_CHANGE:
+                dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
-				hwndList = GetDlgItem(hwnd, IDC_LIST1);
+                hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
-				topindex = (int)SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
-				caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
+                topindex = (int)SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
+                caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 
-				if (pState->fExtended)
-					FillExStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles, FALSE);
-				else
-					FillStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles);
+                if (pState->fExtended)
+                    FillExStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles, FALSE);
+                else
+                    FillStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles);
 
-				SendMessage(hwndList, LB_SETCARETINDEX, caretindex, 0);
-				SendMessage(hwndList, LB_SETTOPINDEX, topindex, 0);
+                SendMessage(hwndList, LB_SETCARETINDEX, caretindex, 0);
+                SendMessage(hwndList, LB_SETTOPINDEX, topindex, 0);
 
-				return TRUE;
-			}
+                return TRUE;
+            }
 
-			return FALSE;
+            return FALSE;
 
-		case IDC_APPLY:
+        case IDC_APPLY:
 
-			dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+            dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
-			if (pState->fExtended)
-				SetWindowLong(pState->hwndTarget, GWL_EXSTYLE, dwStyles);
-			else
-				SetWindowLong(pState->hwndTarget, GWL_STYLE, dwStyles);
+            if (pState->fExtended)
+                SetWindowLong(pState->hwndTarget, GWL_EXSTYLE, dwStyles);
+            else
+                SetWindowLong(pState->hwndTarget, GWL_STYLE, dwStyles);
 
-			SetWindowPos(pState->hwndTarget, 0,
-				0, 0, 0, 0,
-				SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
-				SWP_NOACTIVATE | SWP_DRAWFRAME);
+            SetWindowPos(pState->hwndTarget, 0,
+                0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                SWP_NOACTIVATE | SWP_DRAWFRAME);
 
-			InvalidateRect(pState->hwndTarget, 0, TRUE);
+            InvalidateRect(pState->hwndTarget, 0, TRUE);
 
-			return TRUE;
+            return TRUE;
 
-		case IDCANCEL:
-			EndDialog(hwnd, 0);
-			return TRUE;
+        case IDCANCEL:
+            EndDialog(hwnd, 0);
+            return TRUE;
 
-		case IDC_CLEAR:
-			// I don't know why anyone would use that button
-			SetDlgItemText(hwnd, IDC_EDIT1, _T("00000000"));
-			return TRUE;
+        case IDC_CLEAR:
+            // I don't know why anyone would use that button
+            SetDlgItemText(hwnd, IDC_EDIT1, _T("00000000"));
+            return TRUE;
 
-		}
+        }
 
-		switch (HIWORD(wParam))
-		{
-		case LBN_SELCHANGE:
-			if (LOWORD(wParam) == IDC_LIST1)
-			{
-				hwndList = GetDlgItem(hwnd, IDC_LIST1);
+        switch (HIWORD(wParam))
+        {
+        case LBN_SELCHANGE:
+            if (LOWORD(wParam) == IDC_LIST1)
+            {
+                hwndList = GetDlgItem(hwnd, IDC_LIST1);
 
-				dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
+                dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
-				int caretidx = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
-				int cursel = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
+                int caretidx = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
+                int cursel = (int)SendMessage(hwndList, LB_GETSEL, caretidx, 0);
 
-				StyleLookupEx *pStyle = (StyleLookupEx *)SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
-				if (cursel)
-				{
-					// The user has just selected this item. This means this item has a style definition:
-					// the only one that does not is the "unrecognized bits" item,
-					// and that one is always selected on every repopulation of the list.
+                StyleLookupEx *pStyle = (StyleLookupEx *)SendMessage(hwndList, LB_GETITEMDATA, caretidx, 0);
+                if (cursel)
+                {
+                    // The user has just selected this item. This means this item has a style definition:
+                    // the only one that does not is the "unrecognized bits" item,
+                    // and that one is always selected on every repopulation of the list.
 
-					// If there is a dependency, set the dependency style to be present
-					dwStyles &= ~(pStyle->dependencyValue | pStyle->dependencyExtraMask);
-					dwStyles |= pStyle->dependencyValue;
-					// Now set the style itself to be present
-					dwStyles &= ~(pStyle->value | pStyle->extraMask);
-					dwStyles |= pStyle->value;
-				}
-				else
-				{
-					DWORD style;
-					if (pStyle)
-						style = pStyle->value;
-					else
-					{
-						// This is the "unrecognized bits" item
-						SendMessage(hwndList, LB_GETTEXT, caretidx, (LONG_PTR)szText);
-						style = (DWORD)_tstrtoib16(szText);
-					}
-					dwStyles &= ~style;
-				}
+                    // If there is a dependency, set the dependency style to be present
+                    dwStyles &= ~(pStyle->dependencyValue | pStyle->dependencyExtraMask);
+                    dwStyles |= pStyle->dependencyValue;
+                    // Now set the style itself to be present
+                    dwStyles &= ~(pStyle->value | pStyle->extraMask);
+                    dwStyles |= pStyle->value;
+                }
+                else
+                {
+                    DWORD style;
+                    if (pStyle)
+                        style = pStyle->value;
+                    else
+                    {
+                        // This is the "unrecognized bits" item
+                        SendMessage(hwndList, LB_GETTEXT, caretidx, (LONG_PTR)szText);
+                        style = (DWORD)_tstrtoib16(szText);
+                    }
+                    dwStyles &= ~style;
+                }
 
-				_stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
-				SetDlgItemText(hwnd, IDC_EDIT1, szText);
+                _stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
+                SetDlgItemText(hwnd, IDC_EDIT1, szText);
 
-				return TRUE;
-			}
+                return TRUE;
+            }
 
-			return FALSE;
-		}
+            return FALSE;
+        }
 
-		return FALSE;
-	}
-	return FALSE;
+        return FALSE;
+    }
+    return FALSE;
 }
 
 
 void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 {
-	state.hwndTarget = hwndTarget;
-	state.dwStyles = 0;
-	state.fExtended = fExtended;
+    state.hwndTarget = hwndTarget;
+    state.dwStyles = 0;
+    state.fExtended = fExtended;
 
-	DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
+    DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
 
-	// Update the main display
-	SetGeneralInfo(hwndTarget);
-	SetStyleInfo(hwndTarget);
+    // Update the main display
+    SetGeneralInfo(hwndTarget);
+    SetStyleInfo(hwndTarget);
 }

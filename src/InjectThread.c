@@ -34,81 +34,81 @@ typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
 //
 DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbCodeSize, LPVOID lpData, DWORD cbDataSize, DWORD cbInput)
 {
-	DWORD  dwProcessId;         //id of remote process
-	DWORD  dwThreadId;          //id of the thread in remote process
-	HANDLE hProcess;            //handle to the remote process
+    DWORD  dwProcessId;         //id of remote process
+    DWORD  dwThreadId;          //id of the thread in remote process
+    HANDLE hProcess;            //handle to the remote process
 
-	HANDLE hRemoteThread;       //handle to the injected thread
+    HANDLE hRemoteThread;       //handle to the injected thread
 
-	SIZE_T dwWritten;           // Number of bytes written to the remote process
-	SIZE_T dwRead;
-	DWORD  dwExitCode;
+    SIZE_T dwWritten;           // Number of bytes written to the remote process
+    SIZE_T dwRead;
+    DWORD  dwExitCode;
 
-	LPTHREAD_START_ROUTINE pRemoteCode;
-	void *pRemoteData;
+    LPTHREAD_START_ROUTINE pRemoteCode;
+    void *pRemoteData;
 
-	const DWORD_PTR cbCodeSizeAligned = (cbCodeSize + (sizeof(LONG_PTR) - 1)) & ~(sizeof(LONG_PTR) - 1);
+    const DWORD_PTR cbCodeSizeAligned = (cbCodeSize + (sizeof(LONG_PTR) - 1)) & ~(sizeof(LONG_PTR) - 1);
 
-	// Return FALSE in case of failure
-	dwExitCode = FALSE;
+    // Return FALSE in case of failure
+    dwExitCode = FALSE;
 
-	// Find the process ID of the process which created the specified window
-	dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
+    // Find the process ID of the process which created the specified window
+    dwThreadId = GetWindowThreadProcessId(hwnd, &dwProcessId);
 
-	// Open the remote process so we can allocate some memory in it
-	hProcess = OpenProcess(INJECT_ACCESS, FALSE, dwProcessId);
-	if (hProcess)
-	{
-		pRemoteCode = (LPTHREAD_START_ROUTINE)(intptr_t)VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-		if (pRemoteCode)
-		{
-			do
-			{
-				// Write a copy of our injection code into the remote process
-				if (!(WriteProcessMemory(hProcess, (void *)(intptr_t)pRemoteCode, (void *)(intptr_t)lpCode, cbCodeSize, &dwWritten) && dwWritten == cbCodeSize))
-					break;
+    // Open the remote process so we can allocate some memory in it
+    hProcess = OpenProcess(INJECT_ACCESS, FALSE, dwProcessId);
+    if (hProcess)
+    {
+        pRemoteCode = (LPTHREAD_START_ROUTINE)(intptr_t)VirtualAllocEx(hProcess, 0, cbCodeSizeAligned + cbDataSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+        if (pRemoteCode)
+        {
+            do
+            {
+                // Write a copy of our injection code into the remote process
+                if (!(WriteProcessMemory(hProcess, (void *)(intptr_t)pRemoteCode, (void *)(intptr_t)lpCode, cbCodeSize, &dwWritten) && dwWritten == cbCodeSize))
+                    break;
 
-				// Write a copy of the data to the remote process. This structure
-				// MUST start on a 32bit/64bit boundary
-				pRemoteData = (void *)((BYTE *)(intptr_t)pRemoteCode + cbCodeSizeAligned);
+                // Write a copy of the data to the remote process. This structure
+                // MUST start on a 32bit/64bit boundary
+                pRemoteData = (void *)((BYTE *)(intptr_t)pRemoteCode + cbCodeSizeAligned);
 
-				// Put data in the remote thread's memory block
-				if (!(WriteProcessMemory(hProcess, pRemoteData, lpData, cbInput, &dwWritten) && dwWritten == cbInput))
-					break;
+                // Put data in the remote thread's memory block
+                if (!(WriteProcessMemory(hProcess, pRemoteData, lpData, cbInput, &dwWritten) && dwWritten == cbInput))
+                    break;
 
-				// Create the remote thread!!!
-				hRemoteThread = CreateRemoteThread(hProcess, NULL, 0,
-					pRemoteCode, pRemoteData, 0, NULL);
+                // Create the remote thread!!!
+                hRemoteThread = CreateRemoteThread(hProcess, NULL, 0,
+                    pRemoteCode, pRemoteData, 0, NULL);
 
-				if (hRemoteThread)
-				{
-					// Wait for the thread to terminate
-					if (WaitForSingleObject(hRemoteThread, 7000) != WAIT_OBJECT_0)
-					{
-						// Timeout or failure
-						// Do not call VirtualFreeEx as the code may still run in the future
-						CloseHandle(hRemoteThread);
-						CloseHandle(hProcess);
+                if (hRemoteThread)
+                {
+                    // Wait for the thread to terminate
+                    if (WaitForSingleObject(hRemoteThread, 7000) != WAIT_OBJECT_0)
+                    {
+                        // Timeout or failure
+                        // Do not call VirtualFreeEx as the code may still run in the future
+                        CloseHandle(hRemoteThread);
+                        CloseHandle(hProcess);
 
-						return FALSE;
-					}
+                        return FALSE;
+                    }
 
-					// Read the user-structure back again
-					if (!(ReadProcessMemory(hProcess, (BYTE *)(intptr_t)pRemoteData + cbInput, (BYTE *)(intptr_t)lpData + cbInput, cbDataSize - cbInput, &dwRead) && dwRead == cbDataSize - cbInput))
-						break;
+                    // Read the user-structure back again
+                    if (!(ReadProcessMemory(hProcess, (BYTE *)(intptr_t)pRemoteData + cbInput, (BYTE *)(intptr_t)lpData + cbInput, cbDataSize - cbInput, &dwRead) && dwRead == cbDataSize - cbInput))
+                        break;
 
-					GetExitCodeThread(hRemoteThread, &dwExitCode);
+                    GetExitCodeThread(hRemoteThread, &dwExitCode);
 
-					CloseHandle(hRemoteThread);
-				}
-			} while (0);
+                    CloseHandle(hRemoteThread);
+                }
+            } while (0);
 
-			// Free the memory in the remote process
-			VirtualFreeEx(hProcess, (void *)(intptr_t)pRemoteCode, 0, MEM_RELEASE);
-		}
+            // Free the memory in the remote process
+            VirtualFreeEx(hProcess, (void *)(intptr_t)pRemoteCode, 0, MEM_RELEASE);
+        }
 
-		CloseHandle(hProcess);
-	}
+        CloseHandle(hProcess);
+    }
 
-	return dwExitCode;
+    return dwExitCode;
 }

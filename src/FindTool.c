@@ -86,389 +86,389 @@ static HWND hwndCurrent;
 //
 void InvertWindow(HWND hwnd, BOOL fUseScreenDC)
 {
-	RECT rect;
-	RECT rect2;
-	//RECT rectc;
-	HDC hdc;
-	int x1, y1;
+    RECT rect;
+    RECT rect2;
+    //RECT rectc;
+    HDC hdc;
+    int x1, y1;
 
-	int border = INVERT_BORDER;
+    int border = INVERT_BORDER;
 
-	if (hwnd == 0)
-		return;
+    if (hwnd == 0)
+        return;
 
-	//window rectangle (screen coords)
-	GetWindowRect(hwnd, &rect);
+    //window rectangle (screen coords)
+    GetWindowRect(hwnd, &rect);
 
-	////client rectangle (screen coords)
-	//GetClientRect(hwnd, &rectc);
-	//ClientToScreen(hwnd, (POINT *)&rectc.left);
-	//ClientToScreen(hwnd, (POINT *)&rectc.right);
-	////MapWindowPoints(hwnd, 0, (POINT *)&rectc, 2);
+    ////client rectangle (screen coords)
+    //GetClientRect(hwnd, &rectc);
+    //ClientToScreen(hwnd, (POINT *)&rectc.left);
+    //ClientToScreen(hwnd, (POINT *)&rectc.right);
+    ////MapWindowPoints(hwnd, 0, (POINT *)&rectc, 2);
 
-	x1 = rect.left;
-	y1 = rect.top;
-	OffsetRect(&rect, -x1, -y1);
-	//OffsetRect(&rectc, -x1, -y1);
+    x1 = rect.left;
+    y1 = rect.top;
+    OffsetRect(&rect, -x1, -y1);
+    //OffsetRect(&rectc, -x1, -y1);
 
-	if (rect.bottom - border * 2 < 0)
-		border = 1;
+    if (rect.bottom - border * 2 < 0)
+        border = 1;
 
-	if (rect.right - border * 2 < 0)
-		border = 1;
+    if (rect.right - border * 2 < 0)
+        border = 1;
 
-	if (fUseScreenDC)
-		hwnd = 0;
+    if (fUseScreenDC)
+        hwnd = 0;
 
-	hdc = GetWindowDC(hwnd);
+    hdc = GetWindowDC(hwnd);
 
-	if (hdc == 0)
-		return;
+    if (hdc == 0)
+        return;
 
-	//top edge
-	//border = rectc.top-rect.top;
-	SetRect(&rect2, 0, 0, rect.right, border);
-	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
-	InvertRect(hdc, &rect2);
+    //top edge
+    //border = rectc.top-rect.top;
+    SetRect(&rect2, 0, 0, rect.right, border);
+    if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
+    InvertRect(hdc, &rect2);
 
-	//left edge
-	//border = rectc.left-rect.left;
-	SetRect(&rect2, 0, border, border, rect.bottom);
-	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
-	InvertRect(hdc, &rect2);
+    //left edge
+    //border = rectc.left-rect.left;
+    SetRect(&rect2, 0, border, border, rect.bottom);
+    if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
+    InvertRect(hdc, &rect2);
 
-	//right edge
-	//border = rect.right-rectc.right;
-	SetRect(&rect2, border, rect.bottom - border, rect.right, rect.bottom);
-	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
-	InvertRect(hdc, &rect2);
+    //right edge
+    //border = rect.right-rectc.right;
+    SetRect(&rect2, border, rect.bottom - border, rect.right, rect.bottom);
+    if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
+    InvertRect(hdc, &rect2);
 
-	//bottom edge
-	//border = rect.bottom-rectc.bottom;
-	SetRect(&rect2, rect.right - border, border, rect.right, rect.bottom - border);
-	if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
-	InvertRect(hdc, &rect2);
+    //bottom edge
+    //border = rect.bottom-rectc.bottom;
+    SetRect(&rect2, rect.right - border, border, rect.right, rect.bottom - border);
+    if (fUseScreenDC) OffsetRect(&rect2, x1, y1);
+    InvertRect(hdc, &rect2);
 
-	ReleaseDC(hwnd, hdc);
+    ReleaseDC(hwnd, hdc);
 }
 
 void LoadFinderResources()
 {
-	hBitmapDrag1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL1));
-	hBitmapDrag2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL2));
+    hBitmapDrag1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL1));
+    hBitmapDrag2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL2));
 
-	hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
+    hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 }
 
 void FreeFinderResources()
 {
-	DeleteObject(hBitmapDrag1);
-	DeleteObject(hBitmapDrag2);
+    DeleteObject(hBitmapDrag1);
+    DeleteObject(hBitmapDrag2);
 
-	DestroyCursor(hCursor);
+    DestroyCursor(hCursor);
 }
 
 WNDFINDPROC GetWndFindProc(HWND hwnd)
 {
-	return (WNDFINDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    return (WNDFINDPROC)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 }
 
 UINT FireWndFindNotify(HWND hwndTool, UINT uCode, HWND hwnd)
 {
-	WNDFINDPROC wfp = GetWndFindProc(hwndTool);
+    WNDFINDPROC wfp = GetWndFindProc(hwndTool);
 
-	if (wfp != 0)
-		return wfp(hwndTool, uCode, hwnd);
-	else
-		return 0;
+    if (wfp != 0)
+        return wfp(hwndTool, uCode, hwnd);
+    else
+        return 0;
 }
 
 LRESULT EndFindToolDrag(HWND hwnd)
 {
-	HideSel(hwndCurrent);
-	ReleaseCapture();
-	SetCursor(hOldCursor);
+    HideSel(hwndCurrent);
+    ReleaseCapture();
+    SetCursor(hOldCursor);
 
-	// Remove keyboard hook. This is done even if the user presses ESC
-	UnhookWindowsHookEx(draghook);
+    // Remove keyboard hook. This is done even if the user presses ESC
+    UnhookWindowsHookEx(draghook);
 
 
-	fDragging = FALSE;
-	SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
+    fDragging = FALSE;
+    SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
 
-	return 0;
+    return 0;
 }
 
 // Keyboard hook for the Finder Tool.
 // This hook just monitors the ESCAPE key
 static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
 {
-	BOOL newStateReleased = (ULONG)lParam & (1 << 31);
-	BOOL previousStateDown = (ULONG)lParam & (1 << 30);
-	static int count;
+    BOOL newStateReleased = (ULONG)lParam & (1 << 31);
+    BOOL previousStateDown = (ULONG)lParam & (1 << 30);
+    static int count;
 
-	if (code < 0)
-		return CallNextHookEx(draghook, code, wParam, lParam);
+    if (code < 0)
+        return CallNextHookEx(draghook, code, wParam, lParam);
 
-	if (code != HC_ACTION)
-		return CallNextHookEx(draghook, code, wParam, lParam);
+    if (code != HC_ACTION)
+        return CallNextHookEx(draghook, code, wParam, lParam);
 
-	switch (wParam)
-	{
-	case VK_ESCAPE:
+    switch (wParam)
+    {
+    case VK_ESCAPE:
 
-		if (!newStateReleased)
-		{
-			//don't let the current window procedure process a VK_ESCAPE,
-			//because we want it to cancel the mouse capture
-			PostMessage(draghookhwnd, WM_CANCELMODE, 0, 0);
-			return -1;
-		}
+        if (!newStateReleased)
+        {
+            //don't let the current window procedure process a VK_ESCAPE,
+            //because we want it to cancel the mouse capture
+            PostMessage(draghookhwnd, WM_CANCELMODE, 0, 0);
+            return -1;
+        }
 
-		break;
+        break;
 
-	case VK_SHIFT:
+    case VK_SHIFT:
 
-		if (newStateReleased)
-		{
-			HideSel(hwndCurrent);
-			FireWndFindNotify(draghookhwnd, WFN_SHIFT_UP, 0);
-			ShowSel(hwndCurrent);
-		}
-		else
-		{
-			if (!previousStateDown)
-			{
-				HideSel(hwndCurrent);
-				FireWndFindNotify(draghookhwnd, WFN_SHIFT_DOWN, 0);
-				ShowSel(hwndCurrent);
-			}
-		}
+        if (newStateReleased)
+        {
+            HideSel(hwndCurrent);
+            FireWndFindNotify(draghookhwnd, WFN_SHIFT_UP, 0);
+            ShowSel(hwndCurrent);
+        }
+        else
+        {
+            if (!previousStateDown)
+            {
+                HideSel(hwndCurrent);
+                FireWndFindNotify(draghookhwnd, WFN_SHIFT_DOWN, 0);
+                ShowSel(hwndCurrent);
+            }
+        }
 
-		return -1;
+        return -1;
 
-	case VK_CONTROL:
+    case VK_CONTROL:
 
-		if (newStateReleased)
-		{
-			HideSel(hwndCurrent);
-			FireWndFindNotify(draghookhwnd, WFN_CTRL_UP, 0);
-			ShowSel(hwndCurrent);
-		}
-		else
-		{
-			if (!previousStateDown)
-			{
-				HideSel(hwndCurrent);
-				FireWndFindNotify(draghookhwnd, WFN_CTRL_DOWN, 0);
-				ShowSel(hwndCurrent);
-			}
-		}
+        if (newStateReleased)
+        {
+            HideSel(hwndCurrent);
+            FireWndFindNotify(draghookhwnd, WFN_CTRL_UP, 0);
+            ShowSel(hwndCurrent);
+        }
+        else
+        {
+            if (!previousStateDown)
+            {
+                HideSel(hwndCurrent);
+                FireWndFindNotify(draghookhwnd, WFN_CTRL_DOWN, 0);
+                ShowSel(hwndCurrent);
+            }
+        }
 
-		return -1;
-	}
+        return -1;
+    }
 
-	// Test to see if a key is pressed for first time
-	if (!(newStateReleased || previousStateDown))
-	{
-		// Find ASCII character
-		UINT ch = MapVirtualKey((UINT)wParam, 2);
+    // Test to see if a key is pressed for first time
+    if (!(newStateReleased || previousStateDown))
+    {
+        // Find ASCII character
+        UINT ch = MapVirtualKey((UINT)wParam, 2);
 
-		if (ch == _T('c') || ch == _T('C'))
-		{
-			HideSel(hwndCurrent);
-			CaptureWindow(GetParent(draghookhwnd), hwndCurrent);
-			ShowSel(hwndCurrent);
-			return -1;
-		}
-	}
+        if (ch == _T('c') || ch == _T('C'))
+        {
+            HideSel(hwndCurrent);
+            CaptureWindow(GetParent(draghookhwnd), hwndCurrent);
+            ShowSel(hwndCurrent);
+            return -1;
+        }
+    }
 
-	return CallNextHookEx(draghook, code, wParam, lParam);
+    return CallNextHookEx(draghook, code, wParam, lParam);
 }
 
 void ShowSel(HWND hwnd)
 {
-	if (fTransSel)
-	{
-		hwndTransPanel = CreateOverlayWindow(hwnd);
+    if (fTransSel)
+    {
+        hwndTransPanel = CreateOverlayWindow(hwnd);
 
-		if (hwndTransPanel == 0)
-		{
-			fTransSel = FALSE;
-			InvertWindow(hwnd, g_opts.fShowHidden);
-		}
-	}
-	else
-	{
-		InvertWindow(hwnd, g_opts.fShowHidden);
-	}
+        if (hwndTransPanel == 0)
+        {
+            fTransSel = FALSE;
+            InvertWindow(hwnd, g_opts.fShowHidden);
+        }
+    }
+    else
+    {
+        InvertWindow(hwnd, g_opts.fShowHidden);
+    }
 }
 
 void HideSel(HWND hwnd)
 {
-	if (fTransSel)
-	{
-		DestroyWindow(hwndTransPanel);
-		hwndTransPanel = 0;
-	}
-	else
-	{
-		InvertWindow(hwnd, g_opts.fShowHidden);
-	}
+    if (fTransSel)
+    {
+        DestroyWindow(hwndTransPanel);
+        hwndTransPanel = 0;
+    }
+    else
+    {
+        InvertWindow(hwnd, g_opts.fShowHidden);
+    }
 }
 
 
 LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	POINT pt;
+    POINT pt;
 
-	static POINT ptLast;
+    static POINT ptLast;
 
-	switch (msg)
-	{
-	case WM_LBUTTONDBLCLK:
-	case WM_LBUTTONDOWN:
+    switch (msg)
+    {
+    case WM_LBUTTONDBLCLK:
+    case WM_LBUTTONDOWN:
 
-		ptLast.x = (short)LOWORD(lParam);
-		ptLast.y = (short)HIWORD(lParam);
+        ptLast.x = (short)LOWORD(lParam);
+        ptLast.y = (short)HIWORD(lParam);
 
-		// Ask the callback function if we want to proceed
-		if (FireWndFindNotify(hwnd, WFN_BEGIN, 0) == -1)
-		{
-			return 0;
-		}
+        // Ask the callback function if we want to proceed
+        if (FireWndFindNotify(hwnd, WFN_BEGIN, 0) == -1)
+        {
+            return 0;
+        }
 
-		fDragging = TRUE;
+        fDragging = TRUE;
 
-		SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag2);
+        SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag2);
 
-		hwndCurrent = hwnd;
+        hwndCurrent = hwnd;
 
-		ShowSel(hwndCurrent);
+        ShowSel(hwndCurrent);
 
-		SetCapture(hwnd);
-		hOldCursor = SetCursor(hCursor);
+        SetCapture(hwnd);
+        hOldCursor = SetCursor(hCursor);
 
-		// Install keyboard hook to trap ESCAPE key
-		// I don't see how our window can get the mouse capture
-		// without also getting the keyboard focus,
-		// but attempting to install a desktop-wide hook will definitely fail,
-		// so let's install our keyboard hook for this thread only - at least that works
-		draghookhwnd = hwnd;
-		draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
+        // Install keyboard hook to trap ESCAPE key
+        // I don't see how our window can get the mouse capture
+        // without also getting the keyboard focus,
+        // but attempting to install a desktop-wide hook will definitely fail,
+        // so let's install our keyboard hook for this thread only - at least that works
+        draghookhwnd = hwnd;
+        draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
 
-		// Current window has changed
-		FireWndFindNotify(hwnd, WFN_SELCHANGED, hwndCurrent);
+        // Current window has changed
+        FireWndFindNotify(hwnd, WFN_SELCHANGED, hwndCurrent);
 
-		return 0;
+        return 0;
 
-	case WM_MOUSEMOVE:
+    case WM_MOUSEMOVE:
 
-		pt.x = (short)LOWORD(lParam);
-		pt.y = (short)HIWORD(lParam);
+        pt.x = (short)LOWORD(lParam);
+        pt.y = (short)HIWORD(lParam);
 
-		if (fDragging && !(ptLast.x == pt.x && ptLast.y == pt.y))
-		{
-			//MoveFindTool(hwnd, wParam, lParam);
+        if (fDragging && !(ptLast.x == pt.x && ptLast.y == pt.y))
+        {
+            //MoveFindTool(hwnd, wParam, lParam);
 
-			HWND hWndPoint;
+            HWND hWndPoint;
 
-			ptLast = pt;
-			ClientToScreen(hwnd, (POINT *)&pt);
+            ptLast = pt;
+            ClientToScreen(hwnd, (POINT *)&pt);
 
-			hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
+            hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
 
-			if (hWndPoint == 0)
-				return 0;
+            if (hWndPoint == 0)
+                return 0;
 
-			if (hWndPoint != hwndCurrent)
-			{
-				HideSel(hwndCurrent);
-				FireWndFindNotify(hwnd, WFN_SELCHANGED, hWndPoint);
-				ShowSel(hWndPoint);
+            if (hWndPoint != hwndCurrent)
+            {
+                HideSel(hwndCurrent);
+                FireWndFindNotify(hwnd, WFN_SELCHANGED, hWndPoint);
+                ShowSel(hWndPoint);
 
-				hwndCurrent = hWndPoint;
-			}
-		}
-		return 0;
+                hwndCurrent = hWndPoint;
+            }
+        }
+        return 0;
 
-	case WM_LBUTTONUP:
+    case WM_LBUTTONUP:
 
-		// Mouse has been released, so end the find-tool
-		if (fDragging)
-		{
-			fDragging = FALSE;
+        // Mouse has been released, so end the find-tool
+        if (fDragging)
+        {
+            fDragging = FALSE;
 
-			EndFindToolDrag(hwnd);
-			FireWndFindNotify(hwnd, WFN_END, hwndCurrent);
-		}
+            EndFindToolDrag(hwnd);
+            FireWndFindNotify(hwnd, WFN_END, hwndCurrent);
+        }
 
-		return 0;
+        return 0;
 
-		// Sent from the keyboard hook
-	case WM_CANCELMODE:
+        // Sent from the keyboard hook
+    case WM_CANCELMODE:
 
-		// User has pressed ESCAPE, so cancel the find-tool
-		if (fDragging)
-		{
-			fDragging = FALSE;
+        // User has pressed ESCAPE, so cancel the find-tool
+        if (fDragging)
+        {
+            fDragging = FALSE;
 
-			EndFindToolDrag(hwnd);
-			FireWndFindNotify(hwnd, WFN_CANCELLED, 0);
-		}
+            EndFindToolDrag(hwnd);
+            FireWndFindNotify(hwnd, WFN_CANCELLED, 0);
+        }
 
-		return 0;
+        return 0;
 
-	case WM_NCDESTROY:
+    case WM_NCDESTROY:
 
-		// When the last finder tool has been destroyed, free
-		// up all the resources
-		if (InterlockedDecrement(&lRefCount) == 0)
-		{
-			FreeFinderResources();
-		}
+        // When the last finder tool has been destroyed, free
+        // up all the resources
+        if (InterlockedDecrement(&lRefCount) == 0)
+        {
+            FreeFinderResources();
+        }
 
-		break;
-	}
+        break;
+    }
 
-	return CallWindowProc(oldstaticproc, hwnd, msg, wParam, lParam);
+    return CallWindowProc(oldstaticproc, hwnd, msg, wParam, lParam);
 }
 
 
 BOOL MakeFinderTool(HWND hwnd, WNDFINDPROC wfp)
 {
-	DWORD dwStyle;
+    DWORD dwStyle;
 
-	// If this is the first finder tool, then load
-	// the bitmap and mouse-cursor resources
-	if (InterlockedIncrement(&lRefCount) == 1)
-	{
-		LoadFinderResources();
-	}
+    // If this is the first finder tool, then load
+    // the bitmap and mouse-cursor resources
+    if (InterlockedIncrement(&lRefCount) == 1)
+    {
+        LoadFinderResources();
+    }
 
-	// Apply styles to make this a picture control
-	dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+    // Apply styles to make this a picture control
+    dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
-	// Turn OFF styles we don't want
-	dwStyle &= ~(SS_RIGHT | SS_CENTER | SS_CENTERIMAGE);
-	dwStyle &= ~(SS_ICON | SS_SIMPLE | SS_LEFTNOWORDWRAP);
+    // Turn OFF styles we don't want
+    dwStyle &= ~(SS_RIGHT | SS_CENTER | SS_CENTERIMAGE);
+    dwStyle &= ~(SS_ICON | SS_SIMPLE | SS_LEFTNOWORDWRAP);
 
-	// Turn ON styles we must have
-	dwStyle |= SS_NOTIFY;
-	dwStyle |= SS_BITMAP;
+    // Turn ON styles we must have
+    dwStyle |= SS_NOTIFY;
+    dwStyle |= SS_BITMAP;
 
-	// Now apply them.
-	SetWindowLong(hwnd, GWL_STYLE, dwStyle);
+    // Now apply them.
+    SetWindowLong(hwnd, GWL_STYLE, dwStyle);
 
-	// Set the default bitmap
-	SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
+    // Set the default bitmap
+    SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
 
-	// Set the callback for this control
-	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)wfp);
+    // Set the callback for this control
+    SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)wfp);
 
-	// Subclass the static control
-	oldstaticproc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)StaticProc);
+    // Subclass the static control
+    oldstaticproc = (WNDPROC)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)StaticProc);
 
-	return TRUE;
+    return TRUE;
 }
 

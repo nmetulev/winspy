@@ -32,290 +32,290 @@
 
 static WORD PalEntriesOnDevice(HDC hdc)
 {
-	int nColors;
+    int nColors;
 
-	// Find number of palette entries on this device
-	nColors = GetDeviceCaps(hdc, SIZEPALETTE);
+    // Find number of palette entries on this device
+    nColors = GetDeviceCaps(hdc, SIZEPALETTE);
 
-	if (nColors <= 0 || nColors > MAXWORD)
-		nColors = GetDeviceCaps(hdc, NUMCOLORS);
+    if (nColors <= 0 || nColors > MAXWORD)
+        nColors = GetDeviceCaps(hdc, NUMCOLORS);
 
-	// if nColors is still invalid, force a benign value of 1
-	if (nColors <= 0 || nColors > MAXWORD)
-		nColors = 1;
+    // if nColors is still invalid, force a benign value of 1
+    if (nColors <= 0 || nColors > MAXWORD)
+        nColors = 1;
 
-	return (WORD)nColors;
+    return (WORD)nColors;
 }
 
 static HPALETTE GetSystemPalette(HDC hdc)
 {
-	static HPALETTE hPal = 0;    // handle to a palette
-	HANDLE hLogPal;              // handle to a logical palette
-	LOGPALETTE *pLogPal;         // pointer to a logical palette
-	WORD nColors;                 // number of colors
+    static HPALETTE hPal = 0;    // handle to a palette
+    HANDLE hLogPal;              // handle to a logical palette
+    LOGPALETTE *pLogPal;         // pointer to a logical palette
+    WORD nColors;                 // number of colors
 
-	// Find out how many palette entries we want.
-	nColors = PalEntriesOnDevice(hdc);
+    // Find out how many palette entries we want.
+    nColors = PalEntriesOnDevice(hdc);
 
-	// Allocate room for the palette and lock it.
-	hLogPal = GlobalAlloc(GHND, sizeof(LOGPALETTE) + nColors * sizeof(PALETTEENTRY));
+    // Allocate room for the palette and lock it.
+    hLogPal = GlobalAlloc(GHND, sizeof(LOGPALETTE) + nColors * sizeof(PALETTEENTRY));
 
-	// if we didn't get a logical palette, return NULL
-	if (!hLogPal) return NULL;
+    // if we didn't get a logical palette, return NULL
+    if (!hLogPal) return NULL;
 
-	// get a pointer to the logical palette
-	pLogPal = (LPLOGPALETTE)GlobalLock(hLogPal);
+    // get a pointer to the logical palette
+    pLogPal = (LPLOGPALETTE)GlobalLock(hLogPal);
 
-	// set some important fields
-	pLogPal->palVersion = PALVERSION;
-	pLogPal->palNumEntries = nColors;
+    // set some important fields
+    pLogPal->palVersion = PALVERSION;
+    pLogPal->palNumEntries = nColors;
 
-	//Copy the current system palette into our logical palette */
-	GetSystemPaletteEntries(hdc, 0, nColors, (LPPALETTEENTRY)(pLogPal->palPalEntry));
+    //Copy the current system palette into our logical palette */
+    GetSystemPaletteEntries(hdc, 0, nColors, (LPPALETTEENTRY)(pLogPal->palPalEntry));
 
-	// Go ahead and create the palette.  Once it's created,
-	hPal = CreatePalette(pLogPal);
+    // Go ahead and create the palette.  Once it's created,
+    hPal = CreatePalette(pLogPal);
 
-	// clean up
-	GlobalUnlock(hLogPal);
-	GlobalFree(hLogPal);
+    // clean up
+    GlobalUnlock(hLogPal);
+    GlobalFree(hLogPal);
 
-	return hPal;
+    return hPal;
 }
 
 static WORD DIBNumColors(LPSTR lpDIB)
 {
-	WORD wBitCount;  // DIB bit count
+    WORD wBitCount;  // DIB bit count
 
-	if (IS_WIN30_DIB(lpDIB))
-	{
-		DWORD dwClrUsed;
+    if (IS_WIN30_DIB(lpDIB))
+    {
+        DWORD dwClrUsed;
 
-		dwClrUsed = ((LPBITMAPINFOHEADER)lpDIB)->biClrUsed;
-		if (dwClrUsed)
-			return (WORD)dwClrUsed;
-	}
+        dwClrUsed = ((LPBITMAPINFOHEADER)lpDIB)->biClrUsed;
+        if (dwClrUsed)
+            return (WORD)dwClrUsed;
+    }
 
-	//  Calculate the number of colors in the color table based on
-	// the number of bits per pixel for the DIB.
-	//
-	if (IS_WIN30_DIB(lpDIB))
-		wBitCount = ((LPBITMAPINFOHEADER)lpDIB)->biBitCount;
-	else
-		wBitCount = ((LPBITMAPCOREHEADER)lpDIB)->bcBitCount;
+    //  Calculate the number of colors in the color table based on
+    // the number of bits per pixel for the DIB.
+    //
+    if (IS_WIN30_DIB(lpDIB))
+        wBitCount = ((LPBITMAPINFOHEADER)lpDIB)->biBitCount;
+    else
+        wBitCount = ((LPBITMAPCOREHEADER)lpDIB)->bcBitCount;
 
-	// return number of colors based on bits per pixel
-	switch (wBitCount)
-	{
-	case 1: return 2;
-	case 4: return 16;
-	case 8: return 256;
-	default:return 0;
-	}
+    // return number of colors based on bits per pixel
+    switch (wBitCount)
+    {
+    case 1: return 2;
+    case 4: return 16;
+    case 8: return 256;
+    default:return 0;
+    }
 }
 
 static WORD PaletteSize(LPSTR lpDIB)
 {
-	/* calculate the size required by the palette */
-	if (IS_WIN30_DIB(lpDIB))
-		return (DIBNumColors(lpDIB) * sizeof(RGBQUAD));
-	else
-		return (DIBNumColors(lpDIB) * sizeof(RGBTRIPLE));
+    /* calculate the size required by the palette */
+    if (IS_WIN30_DIB(lpDIB))
+        return (DIBNumColors(lpDIB) * sizeof(RGBQUAD));
+    else
+        return (DIBNumColors(lpDIB) * sizeof(RGBTRIPLE));
 }
 
 static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
 {
-	BITMAP bm;                   // bitmap structure
-	BITMAPINFOHEADER bi;         // bitmap header
-	BITMAPINFOHEADER *lpbi;      // pointer to BITMAPINFOHEADER
-	DWORD dwLen;                 // size of memory block
-	HANDLE hDIB, h;              // handle to DIB, temp handle
-	HDC hDC;                     // handle to DC
-	WORD biBits;                 // bits per pixel
+    BITMAP bm;                   // bitmap structure
+    BITMAPINFOHEADER bi;         // bitmap header
+    BITMAPINFOHEADER *lpbi;      // pointer to BITMAPINFOHEADER
+    DWORD dwLen;                 // size of memory block
+    HANDLE hDIB, h;              // handle to DIB, temp handle
+    HDC hDC;                     // handle to DC
+    WORD biBits;                 // bits per pixel
 
-	/* check if bitmap handle is valid */
+    /* check if bitmap handle is valid */
 
-	if (!hBitmap)
-		return NULL;
+    if (!hBitmap)
+        return NULL;
 
-	/* fill in BITMAP structure, return NULL if it didn't work */
-	if (!GetObject(hBitmap, sizeof(bm), (LPSTR)&bm))
-		return NULL;
+    /* fill in BITMAP structure, return NULL if it didn't work */
+    if (!GetObject(hBitmap, sizeof(bm), (LPSTR)&bm))
+        return NULL;
 
-	/* if no palette is specified, use default palette */
-	if (hPal == NULL)
-		hPal = (HPALETTE)GetStockObject(DEFAULT_PALETTE);
+    /* if no palette is specified, use default palette */
+    if (hPal == NULL)
+        hPal = (HPALETTE)GetStockObject(DEFAULT_PALETTE);
 
-	/* calculate bits per pixel */
-	biBits = bm.bmPlanes * bm.bmBitsPixel;
+    /* calculate bits per pixel */
+    biBits = bm.bmPlanes * bm.bmBitsPixel;
 
-	/* make sure bits per pixel is valid */
-	if (biBits <= 1)
-		biBits = 1;
-	else if (biBits <= 4)
-		biBits = 4;
-	else if (biBits <= 8)
-		biBits = 8;
-	else /* if greater than 8-bit, force to 24-bit */
-		biBits = 24;
+    /* make sure bits per pixel is valid */
+    if (biBits <= 1)
+        biBits = 1;
+    else if (biBits <= 4)
+        biBits = 4;
+    else if (biBits <= 8)
+        biBits = 8;
+    else /* if greater than 8-bit, force to 24-bit */
+        biBits = 24;
 
-	/* initialize BITMAPINFOHEADER */
-	bi.biSize = sizeof(BITMAPINFOHEADER);
-	bi.biWidth = bm.bmWidth;
-	bi.biHeight = bm.bmHeight;
-	bi.biPlanes = 1;
-	bi.biBitCount = biBits;
-	bi.biCompression = BI_RGB;
-	bi.biSizeImage = 0;
-	bi.biXPelsPerMeter = 0;
-	bi.biYPelsPerMeter = 0;
-	bi.biClrUsed = 0;
-	bi.biClrImportant = 0;
+    /* initialize BITMAPINFOHEADER */
+    bi.biSize = sizeof(BITMAPINFOHEADER);
+    bi.biWidth = bm.bmWidth;
+    bi.biHeight = bm.bmHeight;
+    bi.biPlanes = 1;
+    bi.biBitCount = biBits;
+    bi.biCompression = BI_RGB;
+    bi.biSizeImage = 0;
+    bi.biXPelsPerMeter = 0;
+    bi.biYPelsPerMeter = 0;
+    bi.biClrUsed = 0;
+    bi.biClrImportant = 0;
 
-	/* calculate size of memory block required to store BITMAPINFO */
-	dwLen = bi.biSize + PaletteSize((LPSTR)&bi);
+    /* calculate size of memory block required to store BITMAPINFO */
+    dwLen = bi.biSize + PaletteSize((LPSTR)&bi);
 
-	/* get a DC */
-	hDC = GetDC(NULL);
+    /* get a DC */
+    hDC = GetDC(NULL);
 
-	/* select and realize our palette */
-	hPal = SelectPalette(hDC, hPal, FALSE);
-	RealizePalette(hDC);
+    /* select and realize our palette */
+    hPal = SelectPalette(hDC, hPal, FALSE);
+    RealizePalette(hDC);
 
-	/* alloc memory block to store our bitmap */
-	hDIB = GlobalAlloc(GHND, dwLen);
+    /* alloc memory block to store our bitmap */
+    hDIB = GlobalAlloc(GHND, dwLen);
 
-	/* if we couldn't get memory block */
-	if (!hDIB)
-	{
-		/* clean up and return NULL */
-		SelectPalette(hDC, hPal, TRUE);
-		RealizePalette(hDC);
-		ReleaseDC(NULL, hDC);
-		return NULL;
-	}
+    /* if we couldn't get memory block */
+    if (!hDIB)
+    {
+        /* clean up and return NULL */
+        SelectPalette(hDC, hPal, TRUE);
+        RealizePalette(hDC);
+        ReleaseDC(NULL, hDC);
+        return NULL;
+    }
 
-	/* lock memory and get pointer to it */
-	lpbi = (BITMAPINFOHEADER *)GlobalLock(hDIB);
+    /* lock memory and get pointer to it */
+    lpbi = (BITMAPINFOHEADER *)GlobalLock(hDIB);
 
-	/* use our bitmap info. to fill BITMAPINFOHEADER */
-	*lpbi = bi;
+    /* use our bitmap info. to fill BITMAPINFOHEADER */
+    *lpbi = bi;
 
-	/*  call GetDIBits with a NULL lpBits param, so it will calculate the
-	 *  biSizeImage field for us
-	 */
-	GetDIBits(hDC, hBitmap, 0, (WORD)bi.biHeight, NULL, (LPBITMAPINFO)lpbi,
-		DIB_RGB_COLORS);
+    /*  call GetDIBits with a NULL lpBits param, so it will calculate the
+     *  biSizeImage field for us
+     */
+    GetDIBits(hDC, hBitmap, 0, (WORD)bi.biHeight, NULL, (LPBITMAPINFO)lpbi,
+        DIB_RGB_COLORS);
 
-	/* get the info. returned by GetDIBits and unlock memory block */
-	bi = *lpbi;
-	GlobalUnlock(hDIB);
+    /* get the info. returned by GetDIBits and unlock memory block */
+    bi = *lpbi;
+    GlobalUnlock(hDIB);
 
-	/* if the driver did not fill in the biSizeImage field, make one up */
-	if (bi.biSizeImage == 0)
-		bi.biSizeImage = WIDTHBYTES((DWORD)bm.bmWidth * biBits) * bm.bmHeight;
+    /* if the driver did not fill in the biSizeImage field, make one up */
+    if (bi.biSizeImage == 0)
+        bi.biSizeImage = WIDTHBYTES((DWORD)bm.bmWidth * biBits) * bm.bmHeight;
 
-	/* realloc the buffer big enough to hold all the bits */
-	dwLen = bi.biSize + PaletteSize((LPSTR)&bi) + bi.biSizeImage;
-	h = GlobalReAlloc(hDIB, dwLen, 0);
-	if (h)
-		hDIB = h;
-	else
-	{
-		/* clean up and return NULL */
-		GlobalFree(hDIB);
-		hDIB = NULL;
-		SelectPalette(hDC, hPal, TRUE);
-		RealizePalette(hDC);
-		ReleaseDC(NULL, hDC);
-		return NULL;
-	}
+    /* realloc the buffer big enough to hold all the bits */
+    dwLen = bi.biSize + PaletteSize((LPSTR)&bi) + bi.biSizeImage;
+    h = GlobalReAlloc(hDIB, dwLen, 0);
+    if (h)
+        hDIB = h;
+    else
+    {
+        /* clean up and return NULL */
+        GlobalFree(hDIB);
+        hDIB = NULL;
+        SelectPalette(hDC, hPal, TRUE);
+        RealizePalette(hDC);
+        ReleaseDC(NULL, hDC);
+        return NULL;
+    }
 
-	/* lock memory block and get pointer to it */
-	lpbi = (BITMAPINFOHEADER *)GlobalLock(hDIB);
+    /* lock memory block and get pointer to it */
+    lpbi = (BITMAPINFOHEADER *)GlobalLock(hDIB);
 
-	/*  call GetDIBits with a NON-NULL lpBits param, and actualy get the
-	 *  bits this time
-	 */
-	if (GetDIBits(hDC, hBitmap, 0, (WORD)bi.biHeight, (LPSTR)lpbi + (WORD)lpbi
-		->biSize + PaletteSize((LPSTR)lpbi), (LPBITMAPINFO)lpbi,
-		DIB_RGB_COLORS) == 0)
-	{
-		/* clean up and return NULL */
-		GlobalUnlock(hDIB);
-		hDIB = NULL;
-		SelectPalette(hDC, hPal, TRUE);
-		RealizePalette(hDC);
-		ReleaseDC(NULL, hDC);
-		return NULL;
-	}
-	bi = *lpbi;
+    /*  call GetDIBits with a NON-NULL lpBits param, and actualy get the
+     *  bits this time
+     */
+    if (GetDIBits(hDC, hBitmap, 0, (WORD)bi.biHeight, (LPSTR)lpbi + (WORD)lpbi
+        ->biSize + PaletteSize((LPSTR)lpbi), (LPBITMAPINFO)lpbi,
+        DIB_RGB_COLORS) == 0)
+    {
+        /* clean up and return NULL */
+        GlobalUnlock(hDIB);
+        hDIB = NULL;
+        SelectPalette(hDC, hPal, TRUE);
+        RealizePalette(hDC);
+        ReleaseDC(NULL, hDC);
+        return NULL;
+    }
+    bi = *lpbi;
 
-	/* clean up */
-	GlobalUnlock(hDIB);
-	SelectPalette(hDC, hPal, TRUE);
-	RealizePalette(hDC);
-	ReleaseDC(NULL, hDC);
+    /* clean up */
+    GlobalUnlock(hDIB);
+    SelectPalette(hDC, hPal, TRUE);
+    RealizePalette(hDC);
+    ReleaseDC(NULL, hDC);
 
-	/* return handle to the DIB */
-	return hDIB;
+    /* return handle to the DIB */
+    return hDIB;
 }
 
 #endif
 
 BOOL CaptureWindow(HWND hwndOwner, HWND hwnd)
 {
-	RECT rect;
-	HDC hdc, hdcMem, hdcOld;
-	HBITMAP hBmp;
-	HANDLE hDIB;
+    RECT rect;
+    HDC hdc, hdcMem, hdcOld;
+    HBITMAP hBmp;
+    HANDLE hDIB;
 
-	HPALETTE hPal;
+    HPALETTE hPal;
 
-	int width, height;
+    int width, height;
 
-	int RasterCapsScrn;
-	int PaletteSizeScrn;
+    int RasterCapsScrn;
+    int PaletteSizeScrn;
 
-	GetWindowRect(hwnd, &rect);
-	width = GetRectWidth(&rect);
-	height = GetRectHeight(&rect);
+    GetWindowRect(hwnd, &rect);
+    width = GetRectWidth(&rect);
+    height = GetRectHeight(&rect);
 
-	hdc = GetDC(0);
+    hdc = GetDC(0);
 
-	hdcMem = CreateCompatibleDC(hdc);
-	hBmp = CreateCompatibleBitmap(hdc, width, height);
+    hdcMem = CreateCompatibleDC(hdc);
+    hBmp = CreateCompatibleBitmap(hdc, width, height);
 
-	hdcOld = (HDC)SelectObject(hdcMem, hBmp);
+    hdcOld = (HDC)SelectObject(hdcMem, hBmp);
 
-	//copy the screen contents
-	BitBlt(hdcMem, 0, 0, width, height, hdc, rect.left, rect.top, SRCCOPY);
-	SelectObject(hdcMem, hdcOld);
+    //copy the screen contents
+    BitBlt(hdcMem, 0, 0, width, height, hdc, rect.left, rect.top, SRCCOPY);
+    SelectObject(hdcMem, hdcOld);
 
-	OpenClipboard(hwndOwner);
-	EmptyClipboard();
+    OpenClipboard(hwndOwner);
+    EmptyClipboard();
 
 #ifdef SUPPORT_DIBS
-	//palette detection
-	RasterCapsScrn = GetDeviceCaps(hdc, RASTERCAPS);
-	PaletteSizeScrn = GetDeviceCaps(hdc, SIZEPALETTE);
+    //palette detection
+    RasterCapsScrn = GetDeviceCaps(hdc, RASTERCAPS);
+    PaletteSizeScrn = GetDeviceCaps(hdc, SIZEPALETTE);
 
-	if ((RasterCapsScrn & RC_PALETTE) && (PaletteSizeScrn == 256))
-		hPal = GetSystemPalette(hdc);
-	else
-		hPal = 0;
+    if ((RasterCapsScrn & RC_PALETTE) && (PaletteSizeScrn == 256))
+        hPal = GetSystemPalette(hdc);
+    else
+        hPal = 0;
 
-	hDIB = BitmapToDIB(hBmp, hPal);
-	SetClipboardData(CF_DIB, hDIB);
+    hDIB = BitmapToDIB(hBmp, hPal);
+    SetClipboardData(CF_DIB, hDIB);
 #endif
 
-	SetClipboardData(CF_BITMAP, hBmp);
+    SetClipboardData(CF_BITMAP, hBmp);
 
 
-	CloseClipboard();
+    CloseClipboard();
 
-	ReleaseDC(0, hdc);
+    ReleaseDC(0, hdc);
 
-	return TRUE;
+    return TRUE;
 }
 
