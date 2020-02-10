@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+BOOL StrBeginsWith(PCWSTR pcsz, PCWSTR pcszPrefix);
+
 UINT AddStyle(HWND hwnd, UINT style);
 UINT AddDlgItemStyle(HWND hwnd, UINT nCtrlId, UINT style);
 UINT DelStyle(HWND hwnd, UINT style);
@@ -35,6 +37,9 @@ HBITMAP LoadPNGImage(UINT id, void **bits);
 HBITMAP ExpandNineGridImage(SIZE outputSize, HBITMAP hbmSrc, RECT edges);
 
 void UpdateLayeredWindowContent(HWND hwnd, RECT rc, HBITMAP hbmp, BYTE alpha);
+
+BOOL IsWindowsFormsClassName(PCWSTR pcszClass);
+void ExtractWindowsFormsInnerClassName(PWSTR pszName, size_t cchName);
 
 #ifdef __cplusplus
 }

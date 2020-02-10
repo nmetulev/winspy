@@ -14,6 +14,17 @@
 int atoi(const char *string);
 
 //
+// Case sensitive prefix match.
+//
+
+BOOL StrBeginsWith(PCWSTR pcsz, PCWSTR pcszPrefix)
+{
+    size_t cch = wcslen(pcszPrefix);
+
+    return (wcsncmp(pcsz, pcszPrefix, cch) == 0);
+}
+
+//
 //  Enable/Disable privilege with specified name (for current process)
 //
 BOOL EnablePrivilege(TCHAR *szPrivName, BOOL fEnable)
@@ -566,5 +577,46 @@ void UpdateLayeredWindowContent(HWND hwnd, RECT rc, HBITMAP hbmp, BYTE alpha)
     DeleteDC(hdcMem);
 
     ReleaseDC(0, hdcSrc);
+}
+
+
+//
+// Winforms wraps standard controls with a custom class name.
+// Extract the underlying class name, e.g.:
+//
+//  WindowsForms10.SysTabControl32.app.0.fb11c8_r6_ad1
+//     maps to:
+//  SysTabControl32
+//
+// The buffer is modified in place.
+//
+// This is used to show the right window styles and pick nicer treeview
+// icons for the cases where winforms is simply wrapping comctl32.
+//
+
+BOOL IsWindowsFormsClassName(PCWSTR pcszClass)
+{
+    return StrBeginsWith(pcszClass, _T("WindowsForms"));
+}
+
+void ExtractWindowsFormsInnerClassName(PWSTR pszName, size_t cchName)
+{
+    if (StrBeginsWith(pszName, L"WindowsForms"))
+    {
+        WCHAR* pchStart = wcschr(pszName, '.');
+
+        if (pchStart)
+        {
+            pchStart++;
+
+            TCHAR *pchEnd = wcschr(pchStart, '.');
+
+            if (pchEnd)
+            {
+                *pchEnd = '\0';
+                wcscpy_s(pszName, cchName, pchStart);
+            }
+        }
+    }
 }
 

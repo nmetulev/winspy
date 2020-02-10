@@ -37,6 +37,7 @@
 
 #include "WinSpy.h"
 
+#include "Utils.h"
 #include <richedit.h>
 #include "resource.h"
 
@@ -726,6 +727,7 @@ ClassStyleLookup StandardControls[] =
     _T("RICHEDIT"),             RichedStyles,       0,
     _T("RichEdit20A"),          RichedStyles,       0,
     _T("RichEdit20W"),          RichedStyles,       0,
+    _T("RICHEDIT50W"),          RichedStyles,       0,
 
     _T("Scrollbar"),            ScrollbarStyles,    0,
     _T("Static"),               StaticStyles,       0,
@@ -872,6 +874,9 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
     //window class
     GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
 
+    // Adjust the name for winforms.
+    ExtractWindowsFormsInnerClassName(szClassName, ARRAYSIZE(szClassName));
+
     // enumerate the standard window styles, for any window no
     // matter what class it might be
     DWORD remainingStyles = EnumStyles(WindowStyles, hwndStyleList, dwStyles, fAllStyles);
@@ -932,6 +937,9 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 
     //window class
     GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
+
+    // Adjust the name for winforms.
+    ExtractWindowsFormsInnerClassName(szClassName, ARRAYSIZE(szClassName));
 
     EnumStyles(StyleExList, hwndExStyleList, dwExStyles, fAllStyles);
 

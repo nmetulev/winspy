@@ -177,13 +177,21 @@ void InitAtomList()
 //  window classname. dwStyle lets us differentiate further
 //  when we find a match.
 //
-int IconFromClassName(TCHAR *szName, DWORD dwStyle)
+int IconFromClassName(PCWSTR pszName, DWORD dwStyle)
 {
     int i = 0;
+    WCHAR szCopy[200];
+
+    if (IsWindowsFormsClassName(pszName))
+    {
+        wcscpy_s(szCopy, ARRAYSIZE(szCopy), pszName);
+        ExtractWindowsFormsInnerClassName(szCopy, ARRAYSIZE(szCopy));
+        pszName = szCopy;
+    }
 
     while (ClassImage[i].szName[0] != _T('\0'))
     {
-        if (lstrcmpi(ClassImage[i].szName, szName) == 0)
+        if (lstrcmpi(ClassImage[i].szName, pszName) == 0)
         {
             DWORD dwMask = ClassImage[i].dwMask;
 
