@@ -875,7 +875,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
     GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
 
     // Adjust the name for winforms.
-    ExtractWindowsFormsInnerClassName(szClassName, ARRAYSIZE(szClassName));
+    ExtractWindowsFormsInnerClassName(szClassName);
 
     // enumerate the standard window styles, for any window no
     // matter what class it might be
@@ -939,7 +939,7 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
     GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
 
     // Adjust the name for winforms.
-    ExtractWindowsFormsInnerClassName(szClassName, ARRAYSIZE(szClassName));
+    ExtractWindowsFormsInnerClassName(szClassName);
 
     EnumStyles(StyleExList, hwndExStyleList, dwExStyles, fAllStyles);
 

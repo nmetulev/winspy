@@ -185,7 +185,7 @@ int IconFromClassName(PCWSTR pszName, DWORD dwStyle)
     if (IsWindowsFormsClassName(pszName))
     {
         wcscpy_s(szCopy, ARRAYSIZE(szCopy), pszName);
-        ExtractWindowsFormsInnerClassName(szCopy, ARRAYSIZE(szCopy));
+        ExtractWindowsFormsInnerClassName(szCopy);
         pszName = szCopy;
     }
 

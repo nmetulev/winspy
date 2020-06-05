@@ -39,7 +39,7 @@ HBITMAP ExpandNineGridImage(SIZE outputSize, HBITMAP hbmSrc, RECT edges);
 void UpdateLayeredWindowContent(HWND hwnd, RECT rc, HBITMAP hbmp, BYTE alpha);
 
 BOOL IsWindowsFormsClassName(PCWSTR pcszClass);
-void ExtractWindowsFormsInnerClassName(PWSTR pszName, size_t cchName);
+void ExtractWindowsFormsInnerClassName(PWSTR pszName);
 
 #ifdef __cplusplus
 }

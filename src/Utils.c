@@ -599,7 +599,7 @@ BOOL IsWindowsFormsClassName(PCWSTR pcszClass)
     return StrBeginsWith(pcszClass, _T("WindowsForms"));
 }
 
-void ExtractWindowsFormsInnerClassName(PWSTR pszName, size_t cchName)
+void ExtractWindowsFormsInnerClassName(PWSTR pszName)
 {
     if (StrBeginsWith(pszName, L"WindowsForms"))
     {
@@ -611,10 +611,12 @@ void ExtractWindowsFormsInnerClassName(PWSTR pszName, size_t cchName)
 
             TCHAR *pchEnd = wcschr(pchStart, '.');
 
+            // Found a substring that looks good, copy it to the front of the buffer.
+
             if (pchEnd)
             {
                 *pchEnd = '\0';
-                wcscpy_s(pszName, cchName, pchStart);
+                memmove(pszName, pchStart, (wcslen(pchStart) + 1) * sizeof(WCHAR));
             }
         }
     }
