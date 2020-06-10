@@ -414,7 +414,7 @@ static const MessageLookup WindowMessages[] = {
 //
 static BOOL IsWindowEx(HWND hwnd) 
 {
-    return hwnd == HWND_BROADCAST ? TRUE : IsWindow(hwnd);
+    return hwnd == HWND_BROADCAST || IsWindow(hwnd);
 }
 
 static void SetInitialGuiInfo(HWND hwnd, HWND hwndTarget)
@@ -564,7 +564,7 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
 {
-    if (IsWindowEx(hwndTarget))
+    if (IsWindow(spy_hCurWnd))
     {
         DialogBoxParam(
             hInst,
@@ -582,5 +582,16 @@ void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
             szAppName,
             MB_OK | MB_ICONEXCLAMATION);
     }
+}
+
+
+void ShowBroadcasterDlg(HWND hwndParent)
+{
+    DialogBoxParam(
+        hInst,
+        MAKEINTRESOURCE(IDD_POSTER),
+        hwndParent,
+        PosterDlgProc,
+        (LPARAM)HWND_BROADCAST);
 }
 
