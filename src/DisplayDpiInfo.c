@@ -22,6 +22,8 @@ DECLARE_HANDLE(DPI_AWARENESS_CONTEXT);
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2  ((DPI_AWARENESS_CONTEXT)-4)
 #define DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED     ((DPI_AWARENESS_CONTEXT)-5)
 
+#define DPI_AWARENESS_SYSTEM_AWARE                  1
+
 #endif
 
 
@@ -36,6 +38,7 @@ typedef BOOL (WINAPI * PFN_GetProcessDpiAwareness)(HANDLE, int *);
 typedef DPI_AWARENESS_CONTEXT (WINAPI * PFN_GetDpiAwarenessContextForProcess)(HANDLE);
 typedef UINT (WINAPI * PFN_GetSystemDpiForProcess)(HANDLE);
 typedef BOOL (WINAPI * PFN_SetProcessDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
+typedef UINT (WINAPI * PFN_GetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
 
 static PFN_GetDpiForWindow s_pfnGetDpiForWindow = NULL;
 static PFN_GetWindowDpiAwarenessContext s_pfnGetWindowDpiAwarenessContext = NULL;
@@ -44,6 +47,7 @@ static PFN_GetProcessDpiAwareness s_pfnGetProcessDpiAwareness = NULL;
 static PFN_GetDpiAwarenessContextForProcess s_pfnGetDpiAwarenessContextForProcess = NULL;
 static PFN_GetSystemDpiForProcess s_pfnGetSystemDpiForProcess = NULL;
 static PFN_SetProcessDpiAwarenessContext s_pfnSetProcessDpiAwarenessContext = NULL;
+static PFN_GetAwarenessFromDpiAwarenessContext s_pfnGetAwarenessFromDpiAwarenessContext = NULL;
 
 static BOOL s_fCheckedForAPIs = FALSE;
 
@@ -60,7 +64,7 @@ void InitializeDpiApis()
         s_pfnGetDpiAwarenessContextForProcess = (PFN_GetDpiAwarenessContextForProcess)GetProcAddress(hmod, "GetDpiAwarenessContextForProcess");
         s_pfnGetSystemDpiForProcess = (PFN_GetSystemDpiForProcess)GetProcAddress(hmod, "GetSystemDpiForProcess");
         s_pfnSetProcessDpiAwarenessContext = (PFN_SetProcessDpiAwarenessContext)GetProcAddress(hmod, "SetProcessDpiAwarenessContext");
-
+        s_pfnGetAwarenessFromDpiAwarenessContext = (PFN_GetAwarenessFromDpiAwarenessContext)GetProcAddress(hmod, "GetAwarenessFromDpiAwarenessContext");
         s_fCheckedForAPIs = TRUE;
     }
 }
@@ -92,18 +96,33 @@ void DescribeDpiAwarenessContext(DPI_AWARENESS_CONTEXT dpiContext, PSTR pszBuffe
     {
         pszValue = "Unaware (GDI Scaled)";
     }
-    else if (s_pfnAreDpiAwarenessContextsEqual(dpiContext, DPI_AWARENESS_CONTEXT_SYSTEM_AWARE))
+    else if (s_pfnGetAwarenessFromDpiAwarenessContext(dpiContext) == DPI_AWARENESS_SYSTEM_AWARE)
     {
+        //
+        // Windows 10 version 1803 (April 2018 Update) introduced a feature
+        // where system-aware applications/windows can be associated with the
+        // DPI of the primary monitor at the point in time that the process
+        // started, rather than the older behavior where system-aware was
+        // associated with the DPI of the primary monitor when the user
+        // session started.
+        //
+        // This means that the system-aware DPI context from two different
+        // processes may be associated with different DPI values, and that
+        // means that we cannot use AreDpiAwarenessContextsEqual to determine
+        // if the other process is system-aware.  Instead we can extract the
+        // underlying awareness enum from the context and examine it instead.
+        //
+
         pszValue = "System Aware";
-    }
-    else
-    {
-        sprintf_s(pszBuffer, cchBuffer, "Unknown (0x%08p)", dpiContext);
     }
 
     if (pszValue)
     {
         StringCchCopyA(pszBuffer, cchBuffer, pszValue);
+    }
+    else
+    {
+        StringCchPrintfA(pszBuffer, cchBuffer, "Unknown (0x%08p)", dpiContext);
     }
 }
 
