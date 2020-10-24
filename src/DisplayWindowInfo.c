@@ -82,10 +82,9 @@ void SetWindowInfo(HWND hwnd)
     HWND hParentWnd = NULL;
     TCHAR ach[10];
 
-    *ach = 0;
-
     HWND hwndList1 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST1);
     HWND hwndList2 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST2);
+    HWND hwndLink;
 
     ListView_DeleteAllItems(hwndList1);
     ListView_DeleteAllItems(hwndList2);
@@ -103,16 +102,34 @@ void SetWindowInfo(HWND hwnd)
     }
 
     // Set the Parent hyperlink
-    if (hwnd)
+    hwndLink = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_PARENT);
+
+    if (hParentWnd)
     {
         _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hParentWnd);
     }
-    SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_PARENT, ach);
+    else
+    {
+        *ach = 0;
+    }
+
+    SetWindowText(hwndLink, ach);
+    EnableWindow(hwndLink, (*ach != 0));
 
     // Set the Owner hyperlink
-    if (hwnd)
+    HWND hwndOwner = hwnd ? GetWindow(hwnd, GW_OWNER) : NULL;
+
+    hwndLink = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_OWNER);
+
+    if (hwndOwner)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)GetWindow(hwnd, GW_OWNER));
+        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwndOwner);
     }
-    SetDlgItemText(WinSpyTab[WINDOW_TAB].hwnd, IDC_OWNER, ach);
+    else
+    {
+        *ach = 0;
+    }
+
+    SetWindowText(hwndLink, ach);
+    EnableWindow(hwndLink, (*ach != 0));
 }

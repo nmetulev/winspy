@@ -484,9 +484,12 @@ INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
         {
         case IDC_PARENT:
         case IDC_OWNER:
-            GetDlgItemText(hwnd, LOWORD(wParam), ach, ARRAYSIZE(ach));
-            DisplayWindowInfo((HWND)_tstrtoib16(ach));
-            return TRUE;
+            if (HIWORD(wParam) == STN_CLICKED)
+            {
+                GetDlgItemText(hwnd, LOWORD(wParam), ach, ARRAYSIZE(ach));
+                DisplayWindowInfo((HWND)_tstrtoib16(ach));
+                return TRUE;
+            }
         }
 
         return FALSE;
