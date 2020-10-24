@@ -113,6 +113,10 @@ StyleLookupEx ButtonStyles[] =
     STYLE_MASK(BS_USERBUTTON, BS_TYPEMASK),                 //0x0008
     STYLE_MASK(BS_AUTORADIOBUTTON, BS_TYPEMASK),            //0x0009
     STYLE_MASK(BS_OWNERDRAW, BS_TYPEMASK),                  //0x000B
+    STYLE_MASK(BS_SPLITBUTTON, BS_TYPEMASK),                //0x000C
+    STYLE_MASK(BS_DEFSPLITBUTTON, BS_TYPEMASK),             //0x000D
+    STYLE_MASK(BS_COMMANDLINK, BS_TYPEMASK),                //0x000E
+    STYLE_MASK(BS_DEFCOMMANDLINK, BS_TYPEMASK),             //0x000F
     //} BS_TYPEMASK
 
     STYLE_SIMPLE(BS_LEFTTEXT),                              //0x0020
