@@ -239,6 +239,7 @@ void SetSysMenuIconFromLayout(HWND hwnd, UINT layout);
 
 void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget);
 void ShowPosterDlg(HWND hwndParent, HWND hwndTarget);
+void ShowBroadcasterDlg(HWND hwndParent);
 void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended);
 void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew);
 void ShowOptionsDlg(HWND hwndParent);

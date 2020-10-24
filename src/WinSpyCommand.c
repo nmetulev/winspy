@@ -278,6 +278,10 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
         ShowOptionsDlg(hwnd);
         return TRUE;
 
+    case IDM_WINSPY_BROADCASTER:
+        ShowBroadcasterDlg(hwnd);
+        return TRUE;
+
     case IDM_WINSPY_ONTOP:
 
         PostMessage(hwnd, WM_COMMAND, wParam, lParam);

@@ -409,6 +409,14 @@ static const MessageLookup WindowMessages[] = {
     NULL, 0
 };
 
+//
+// Checks if window is valid for Poster
+//
+static BOOL IsWindowEx(HWND hwnd) 
+{
+    return hwnd == HWND_BROADCAST || IsWindow(hwnd);
+}
+
 static void SetInitialGuiInfo(HWND hwnd, HWND hwndTarget)
 {
     HWND     hwndMsgsCombo;
@@ -461,7 +469,7 @@ static void PosterSendMessage(HWND hwnd)
 
     GetGuiInfo(hwnd, &hwndTarget, &uMsg, &wParam, &lParam);
 
-    if (!IsWindow(hwndTarget))
+    if (!IsWindowEx(hwndTarget))
     {
         MessageBox(hwnd,
             _T("Not a valid window"),
@@ -492,7 +500,7 @@ static void PosterPostMessage(HWND hwnd)
 
     GetGuiInfo(hwnd, &hwndTarget, &uMsg, &wParam, &lParam);
 
-    if (!IsWindow(hwndTarget))
+    if (!IsWindowEx(hwndTarget))
     {
         MessageBox(hwnd,
             _T("Not a valid window"),
@@ -574,5 +582,16 @@ void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
             szAppName,
             MB_OK | MB_ICONEXCLAMATION);
     }
+}
+
+
+void ShowBroadcasterDlg(HWND hwndParent)
+{
+    DialogBoxParam(
+        hInst,
+        MAKEINTRESOURCE(IDD_POSTER),
+        hwndParent,
+        PosterDlgProc,
+        (LPARAM)HWND_BROADCAST);
 }
 
