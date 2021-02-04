@@ -957,8 +957,8 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
         // Add them if required
         if (StyleList != 0)
         {
-            // Use SendMessageTimeout to prefent winspy from hanging if the
-            // process/thread owning the widow isn't responding.  For example,
+            // Use SendMessageTimeout to prevent winspy from hanging if the
+            // process/thread owning the window isn't responding.  For example,
             // when the other application is broken into a debugger.
             LRESULT lr;
             DWORD_PTR result;
