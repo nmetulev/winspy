@@ -33,6 +33,7 @@ BOOL       spy_fPassword = FALSE;   // is it a password (edit) control?
 TCHAR      spy_szPassword[200];
 TCHAR      spy_szClassName[70];
 DWORD      g_dwSelectedPID;         // Set only when a process node is selected in the treeview
+BOOL       g_fShowClientRectAsMargins = FALSE;
 
 static TBBUTTON tbbPin[] =
 {

@@ -334,6 +334,7 @@ extern TCHAR      spy_szPassword[];
 extern TCHAR      spy_szClassName[];
 
 extern DWORD      g_dwSelectedPID;
+extern BOOL       g_fShowClientRectAsMargins;
 
 //
 //  Useful SetWindowPos constants (saves space!)

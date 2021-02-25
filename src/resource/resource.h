@@ -155,6 +155,7 @@
 #define IDC_WINDOW_DPI                  1086
 #define IDC_PROCESS_SYSTEM_DPI_LABEL    1087
 #define IDC_PROCESS_SYSTEM_DPI          1088
+#define IDC_CLIENTRECT_LABEL            1089
 #define IDM_GENERAL_ONTOP               40003
 #define IDM_GENERAL_VISIBLE             40004
 #define IDM_GENERAL_ENABLED             40005

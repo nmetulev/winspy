@@ -35,6 +35,7 @@ void SetGeneralInfo(HWND hwnd)
     LONG_PTR lp;
 
     *ach = 0;
+    ZeroMemory(&rect, sizeof(rect));
 
     //handle
     if (hwnd)
@@ -116,17 +117,31 @@ void SetGeneralInfo(HWND hwnd)
     //client rect
     if (fValid)
     {
-        GetClientRect(hwnd, &rect);
-        MapWindowPoints(hwnd, 0, (POINT *)&rect, 2);
-        x1 = rect.left - x1;
-        y1 = rect.top - y1;
+        RECT rcClient;
 
-        OffsetRect(&rect, -rect.left, -rect.top);
-        OffsetRect(&rect, x1, y1);
+        GetClientRect(hwnd, &rcClient);
+        MapWindowPoints(hwnd, 0, (POINT *)&rcClient, 2);
 
-        _stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
-            rect.left, rect.top, rect.right, rect.bottom,
-            GetRectWidth(&rect), GetRectHeight(&rect));
+        if (!g_fShowClientRectAsMargins)
+        {
+            x1 = rcClient.left - x1;
+            y1 = rcClient.top - y1;
+
+            OffsetRect(&rcClient, -rcClient.left, -rcClient.top);
+            OffsetRect(&rcClient, x1, y1);
+
+            _stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+                rcClient.left, rcClient.top, rcClient.right, rcClient.bottom,
+                GetRectWidth(&rcClient), GetRectHeight(&rcClient));
+        }
+        else
+        {
+            _stprintf_s(ach, ARRAYSIZE(ach), _T("{ %d, %d, %d, %d }"),
+                rcClient.left - rect.left,
+                rcClient.top - rect.top,
+                rect.right - rcClient.right,
+                rect.bottom - rcClient.bottom);
+        }
     }
     SetDlgItemText(hwndDlg, IDC_CLIENTRECT, ach);
 

@@ -191,6 +191,26 @@ void WinSpy_SetupPopupMenu(HMENU hMenu, HWND hwndTarget)
 //
 //  General tab
 //
+BOOL GeneralDlg_OnDoubleClick(HWND hwnd, LPARAM lParam)
+{
+    HWND hwndHit;
+    POINT pt;
+
+    pt.x = GET_X_LPARAM(lParam);
+    pt.y = GET_Y_LPARAM(lParam);
+
+    hwndHit = ChildWindowFromPointEx(hwnd, pt, CWP_ALL);
+
+    if (hwndHit == GetDlgItem(hwnd, IDC_CLIENTRECT_LABEL))
+    {
+        g_fShowClientRectAsMargins = !g_fShowClientRectAsMargins;
+        DisplayWindowInfo(spy_hCurWnd);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
     HWND     hCtrl;
@@ -344,6 +364,12 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         else
             break;
 
+
+    case WM_LBUTTONDBLCLK:
+        if (GeneralDlg_OnDoubleClick(hwnd, lParam))
+        {
+            return TRUE;
+        }
     }
 
     return FALSE;
