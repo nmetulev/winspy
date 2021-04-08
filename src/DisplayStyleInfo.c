@@ -585,6 +585,10 @@ StyleLookupEx PagerStyles[] =
     NULL
 };
 
+#ifndef WS_EX_NOREDIRECTIONBITMAP
+#define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
+#endif
+
 // Extended window styles (for all windows)
 StyleLookupEx StyleExList[] =
 {
@@ -611,6 +615,7 @@ StyleLookupEx StyleExList[] =
     STYLE_COMBINATION(WS_EX_PALETTEWINDOW),                     //(WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST)
     STYLE_SIMPLE(WS_EX_LAYERED),                                //0x00080000
     STYLE_SIMPLE(WS_EX_NOINHERITLAYOUT),                        //0x00100000
+    STYLE_SIMPLE(WS_EX_NOREDIRECTIONBITMAP),                    //0x00200000
     STYLE_SIMPLE(WS_EX_LAYOUTRTL),                              //0x00400000
     STYLE_SIMPLE(WS_EX_COMPOSITED),                             //0x02000000
     STYLE_SIMPLE(WS_EX_NOACTIVATE),                             //0x08000000
