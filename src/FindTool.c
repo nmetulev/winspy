@@ -265,29 +265,6 @@ LRESULT FindTool_EndDrag(UINT uCode)
     return 0;
 }
 
-void FindTool_OnDragMove(LPARAM lParam)
-{
-    POINT pt;
-    HWND hWndPoint;
-
-    pt.x = (short)LOWORD(lParam);
-    pt.y = (short)HIWORD(lParam);
-
-    if (g_fDragging && !(g_ptLast.x == pt.x && g_ptLast.y == pt.y))
-    {
-        g_ptLast = pt;
-
-        ClientToScreen(g_hwndFinder, (POINT *)&pt);
-
-        hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
-
-        if (hWndPoint && (hWndPoint != g_hwndCurrent))
-        {
-            FindTool_FireNotify(WFN_SELCHANGED, hWndPoint);
-        }
-    }
-}
-
 LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
