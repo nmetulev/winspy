@@ -52,18 +52,8 @@
 #include "CaptureWindow.h"
 
 HWND CreateOverlayWindow(HWND hwndToCover);
-void FindTool_ShowOverlay();
-void FindTool_RemoveOverlay();
-
-static HWND g_hwndOverlay = 0;
 
 static LONG    g_lRefCount = 0;
-
-static HCURSOR g_hOldCursor;
-static HHOOK   g_draghook = 0;
-
-// The active finder tool window.
-static HWND    g_hwndFinder = 0;
 
 //
 // Handle to the two dragger bitmaps
@@ -71,15 +61,22 @@ static HWND    g_hwndFinder = 0;
 static HBITMAP hBitmapDrag1, hBitmapDrag2;
 static HCURSOR hCursor;
 
-//is the finder-tool being dragged??
-static BOOL g_fDragging = FALSE;
-
 // Old window procedure...?
 static WNDPROC oldstaticproc;
 
-static POINT g_ptLast;
 
-static HWND g_hwndCurrent;
+//
+// These globals are valid while a finder drag operation is active.
+//
+
+static BOOL    g_fDragging;
+static HWND    g_hwndFinder;    // The active finder tool window
+static HWND    g_hwndOverlay;   // The overlay/highlight window
+static HWND    g_hwndCurrent;   // The currently selected window
+static POINT   g_ptLast;        // Position of last mouse move
+static HCURSOR g_hOldCursor;
+static HHOOK   g_draghook;
+
 
 void LoadFinderResources()
 {
@@ -95,6 +92,17 @@ void FreeFinderResources()
     DeleteObject(hBitmapDrag2);
 
     DestroyCursor(hCursor);
+}
+
+void FindTool_ShowOverlay()
+{
+    g_hwndOverlay = CreateOverlayWindow(g_hwndCurrent);
+}
+
+void FindTool_RemoveOverlay()
+{
+    DestroyWindow(g_hwndOverlay);
+    g_hwndOverlay = NULL;
 }
 
 UINT FindTool_FireNotify(UINT uCode, HWND hwnd)
@@ -130,28 +138,6 @@ UINT FindTool_FireNotify(UINT uCode, HWND hwnd)
     }
 
     return result;
-}
-
-LRESULT FindTool_EndDrag(UINT uCode)
-{
-    FindTool_RemoveOverlay();
-    ReleaseCapture();
-    SetCursor(g_hOldCursor);
-
-    // Remove keyboard hook. This is done even if the user presses ESC
-    UnhookWindowsHookEx(g_draghook);
-
-    g_fDragging = FALSE;
-    SendMessage(g_hwndFinder, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
-
-    // Final notification.
-    HWND hwndForNotify = (uCode == WFN_END) ? g_hwndCurrent : NULL;
-
-    g_hwndCurrent = NULL;
-
-    FindTool_FireNotify(uCode, hwndForNotify);
-
-    return 0;
 }
 
 // Keyboard hook for the Finder Tool.
@@ -224,78 +210,119 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(g_draghook, code, wParam, lParam);
 }
 
-void FindTool_ShowOverlay()
+void FindTool_BeginDrag(HWND hwnd, LPARAM lParam)
 {
-    g_hwndOverlay = CreateOverlayWindow(g_hwndCurrent);
+    g_ptLast.x = (short)LOWORD(lParam);
+    g_ptLast.y = (short)HIWORD(lParam);
+
+    g_hwndFinder = hwnd;
+
+    // Ask the callback function if we want to proceed
+    if (FindTool_FireNotify(WFN_BEGIN, 0) != -1)
+    {
+        g_fDragging = TRUE;
+
+        SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag2);
+
+        SetCapture(hwnd);
+        g_hOldCursor = SetCursor(hCursor);
+
+        // Install keyboard hook to trap ESCAPE key
+        // I don't see how our window can get the mouse capture
+        // without also getting the keyboard focus,
+        // but attempting to install a desktop-wide hook will definitely fail,
+        // so let's install our keyboard hook for this thread only - at least that works
+        g_draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
+
+        // Current window has changed
+        FindTool_FireNotify(WFN_SELCHANGED, hwnd);
+    }
+    else
+    {
+        g_hwndFinder = NULL;
+    }
 }
 
-void FindTool_RemoveOverlay()
+LRESULT FindTool_EndDrag(UINT uCode)
 {
-    DestroyWindow(g_hwndOverlay);
-    g_hwndOverlay = NULL;
+    FindTool_RemoveOverlay();
+    ReleaseCapture();
+    SetCursor(g_hOldCursor);
+
+    // Remove keyboard hook. This is done even if the user presses ESC
+    UnhookWindowsHookEx(g_draghook);
+
+    g_fDragging = FALSE;
+    SendMessage(g_hwndFinder, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
+
+    // Final notification.
+    HWND hwndForNotify = (uCode == WFN_END) ? g_hwndCurrent : NULL;
+
+    g_hwndCurrent = NULL;
+
+    FindTool_FireNotify(uCode, hwndForNotify);
+
+    return 0;
+}
+
+void FindTool_OnDragMove(LPARAM lParam)
+{
+    POINT pt;
+    HWND hWndPoint;
+
+    pt.x = (short)LOWORD(lParam);
+    pt.y = (short)HIWORD(lParam);
+
+    if (g_fDragging && !(g_ptLast.x == pt.x && g_ptLast.y == pt.y))
+    {
+        g_ptLast = pt;
+
+        ClientToScreen(g_hwndFinder, (POINT *)&pt);
+
+        hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
+
+        if (hWndPoint && (hWndPoint != g_hwndCurrent))
+        {
+            FindTool_FireNotify(WFN_SELCHANGED, hWndPoint);
+        }
+    }
 }
 
 LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    POINT pt;
-
     switch (msg)
     {
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
 
-        g_ptLast.x = (short)LOWORD(lParam);
-        g_ptLast.y = (short)HIWORD(lParam);
-
-        g_hwndFinder = hwnd;
-
-        // Ask the callback function if we want to proceed
-        if (FindTool_FireNotify(WFN_BEGIN, 0) != -1)
-        {
-            g_fDragging = TRUE;
-
-            SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag2);
-
-            SetCapture(hwnd);
-            g_hOldCursor = SetCursor(hCursor);
-
-            // Install keyboard hook to trap ESCAPE key
-            // I don't see how our window can get the mouse capture
-            // without also getting the keyboard focus,
-            // but attempting to install a desktop-wide hook will definitely fail,
-            // so let's install our keyboard hook for this thread only - at least that works
-            g_draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
-
-            // Current window has changed
-            FindTool_FireNotify(WFN_SELCHANGED, hwnd);
-        }
-        else
-        {
-            g_hwndFinder = NULL;
-        }
-
+        FindTool_BeginDrag(hwnd, lParam);
         return 0;
 
     case WM_MOUSEMOVE:
 
-        pt.x = (short)LOWORD(lParam);
-        pt.y = (short)HIWORD(lParam);
-
-        if (g_fDragging && !(g_ptLast.x == pt.x && g_ptLast.y == pt.y))
+        if (g_fDragging)
         {
-            HWND hWndPoint;
+            POINT pt;
 
-            g_ptLast = pt;
-            ClientToScreen(hwnd, (POINT *)&pt);
+            pt.x = (short)LOWORD(lParam);
+            pt.y = (short)HIWORD(lParam);
 
-            hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
-
-            if (hWndPoint == 0)
-                return 0;
-
-            if (hWndPoint != g_hwndCurrent)
+            if (!(g_ptLast.x == pt.x && g_ptLast.y == pt.y))
             {
-                FindTool_FireNotify(WFN_SELCHANGED, hWndPoint);
+                HWND hWndPoint;
+
+                g_ptLast = pt;
+                ClientToScreen(hwnd, (POINT *)&pt);
+
+                hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
+
+                if (hWndPoint == 0)
+                    return 0;
+
+                if (hWndPoint != g_hwndCurrent)
+                {
+                    FindTool_FireNotify(WFN_SELCHANGED, hWndPoint);
+                }
             }
         }
         return 0;
