@@ -112,18 +112,9 @@ void FlashWindowBorder(HWND hwnd)
 {
     HWND hwndFlash = CreateFlashWindow(hwnd);
 
-    // If unable to create the transparent overlay window, fall back to the
-    // older method of xor'ing a rect on the screen DC.
-
     if (!hwndFlash)
     {
-        int i;
-
-        for (i = 0; i < 3 * 2; i++)
-        {
-            InvertWindow(hwnd, TRUE);
-            Sleep(100);
-        }
+        MessageBeep(NULL);
     }
 }
 
