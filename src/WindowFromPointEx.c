@@ -125,7 +125,7 @@ static HWND FindBestChild(HWND hwndFound, POINT pt, BOOL fAllowHidden)
 //
 //  Find window under specified point (screen coordinates)
 //
-HWND WindowFromPointEx(POINT pt, BOOL fAllowHidden)
+HWND WindowFromPointEx(POINT pt, BOOL fTopLevel, BOOL fAllowHidden)
 {
     HWND hWndPoint;
 
@@ -138,15 +138,22 @@ HWND WindowFromPointEx(POINT pt, BOOL fAllowHidden)
     if (hWndPoint == 0)
         return 0;
 
-    // WindowFromPoint is not too accurate. There is quite likely
-    // another window under the mouse.
-    hWndPoint = FindBestChild(hWndPoint, pt, fAllowHidden);
-
-    //if we don't allow hidden windows, then return the parent
-    if (!fAllowHidden)
+    if (fTopLevel)
     {
-        while (hWndPoint && !IsWindowVisible(hWndPoint))
-            hWndPoint = GetRealParent(hWndPoint);
+        hWndPoint = GetAncestor(hWndPoint, GA_ROOT);
+    }
+    else
+    {
+        // WindowFromPoint is not too accurate. There is quite likely
+        // another window under the mouse.
+        hWndPoint = FindBestChild(hWndPoint, pt, fAllowHidden);
+
+        //if we don't allow hidden windows, then return the parent
+        if (!fAllowHidden)
+        {
+            while (hWndPoint && !IsWindowVisible(hWndPoint))
+                hWndPoint = GetRealParent(hWndPoint);
+        }
     }
 
     return hWndPoint;

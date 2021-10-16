@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-HWND WindowFromPointEx(POINT pt, BOOL fAllowHidden);
+HWND WindowFromPointEx(POINT pt, BOOL fTopLevel, BOOL fAllowHidden);
 
 #ifdef __cplusplus
 }

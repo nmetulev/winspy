@@ -76,6 +76,7 @@ static HWND    g_hwndCurrent;   // The currently selected window
 static POINT   g_ptLast;        // Position of last mouse move
 static HCURSOR g_hOldCursor;
 static HHOOK   g_draghook;
+static BOOL    g_fAltDown;      // Is the alt key pressed?
 
 
 void LoadFinderResources()
@@ -140,6 +141,20 @@ UINT FindTool_FireNotify(UINT uCode, HWND hwnd)
     return result;
 }
 
+void FindTool_UpdateSelectionFromPoint(POINT pt)
+{
+    HWND hwndPoint;
+
+    ClientToScreen(g_hwndFinder, (POINT *)&pt);
+
+    hwndPoint = WindowFromPointEx(pt, g_fAltDown, g_opts.fShowHidden);
+
+    if (hwndPoint && (hwndPoint != g_hwndCurrent))
+    {
+        FindTool_FireNotify(WFN_SELCHANGED, hwndPoint);
+    }
+}
+
 // Keyboard hook for the Finder Tool.
 // This hook just monitors the ESCAPE key
 static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
@@ -190,6 +205,15 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
         }
 
         return -1;
+
+    case VK_MENU: // Alt Key
+
+        g_fAltDown = !newStateReleased;
+
+        // Re-evaluate the window under the cursor.
+        FindTool_UpdateSelectionFromPoint(g_ptLast);
+
+        return -1;
     }
 
     // Test to see if a key is pressed for first time
@@ -221,6 +245,7 @@ void FindTool_BeginDrag(HWND hwnd, LPARAM lParam)
     if (FindTool_FireNotify(WFN_BEGIN, 0) != -1)
     {
         g_fDragging = TRUE;
+        g_fAltDown = ((GetKeyState(VK_MENU) & 0x8000) != 0);
 
         SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag2);
 
@@ -234,8 +259,9 @@ void FindTool_BeginDrag(HWND hwnd, LPARAM lParam)
         // so let's install our keyboard hook for this thread only - at least that works
         g_draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
 
-        // Current window has changed
-        FindTool_FireNotify(WFN_SELCHANGED, hwnd);
+        // Select initial window.
+        g_hwndCurrent = NULL;
+        FindTool_UpdateSelectionFromPoint(g_ptLast);
     }
     else
     {
@@ -286,20 +312,8 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             if (!(g_ptLast.x == pt.x && g_ptLast.y == pt.y))
             {
-                HWND hWndPoint;
-
                 g_ptLast = pt;
-                ClientToScreen(hwnd, (POINT *)&pt);
-
-                hWndPoint = WindowFromPointEx(pt, g_opts.fShowHidden);
-
-                if (hWndPoint == 0)
-                    return 0;
-
-                if (hWndPoint != g_hwndCurrent)
-                {
-                    FindTool_FireNotify(WFN_SELCHANGED, hWndPoint);
-                }
+                FindTool_UpdateSelectionFromPoint(pt);
             }
         }
         return 0;
