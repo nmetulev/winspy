@@ -97,7 +97,21 @@ void SetGeneralInfo(HWND hwnd)
     {
         _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
         _tcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? _T("  (visible, ") : _T("  (hidden, "));
-        _tcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? _T("enabled)") : _T("disabled)"));
+        _tcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? _T("enabled") : _T("disabled"));
+
+        DWORD dwCloaked = 0;
+        DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &dwCloaked, sizeof(dwCloaked));
+
+        if (dwCloaked & DWM_CLOAKED_APP)
+        {
+            _tcscat_s(ach, ARRAYSIZE(ach), _T(", app cloaked"));
+        }
+        else if (dwCloaked & DWM_CLOAKED_SHELL)
+        {
+            _tcscat_s(ach, ARRAYSIZE(ach), _T(", cloaked"));
+        }
+
+        _tcscat_s(ach, ARRAYSIZE(ach), _T(")"));
     }
     SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 

@@ -42,6 +42,7 @@
 #define IDR_MENU_BYTES                  165
 #define IDD_POSTER                      166
 #define IDD_TAB_DPI                     167
+#define IDB_WINDOW_CLOAKED              168
 #define IDC_LIST1                       1000
 #define IDC_DRAGGER                     1001
 #define IDC_LIST2                       1001

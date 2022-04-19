@@ -94,7 +94,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <DelayLoadDLLs>uxtheme.dll;windowscodecs.dll</DelayLoadDLLs>
-      <AdditionalDependencies>psapi.lib;version.lib;uxtheme.lib;windowscodecs.lib;comctl32.lib;gdi32.lib;Advapi32.lib;Shell32.lib;Ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>psapi.lib;version.lib;uxtheme.lib;windowscodecs.lib;comctl32.lib;gdi32.lib;Advapi32.lib;Shell32.lib;Ole32.lib;%(AdditionalDependencies);dwmapi.lib</AdditionalDependencies>
     </Link>
     <Manifest>
       <AdditionalManifestFiles>resource\winspy.exe.manifest</AdditionalManifestFiles>

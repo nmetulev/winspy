@@ -229,7 +229,7 @@ int IconFromClassName(PCWSTR pszName, DWORD dwStyle)
 //
 //  szTotal must be MIN_FORMAT_LEN characters
 //
-int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
+int FormatWindowText(HWND hwnd, DWORD dwCloaked, TCHAR szTotal[], int cchTotal)
 {
     //ASSERT(cchTotal >= MIN_FORMAT_LEN);
     static TCHAR szClass[MAX_CLASS_LEN + MAX_VERBOSE_LEN];
@@ -305,6 +305,16 @@ int FormatWindowText(HWND hwnd, TCHAR szTotal[], int cchTotal)
     {
         _tcscat_s(szTotal, cchTotal, _T("  "));
         _tcscat_s(szTotal, cchTotal, szClass);
+    }
+
+    // Add cloaked annotation to windows that have been explicitly cloaked.
+    if (dwCloaked == DWM_CLOAKED_APP)
+    {
+        _tcscat_s(szTotal, cchTotal, _T(" [app cloaked]"));
+    }
+    else if (dwCloaked == DWM_CLOAKED_SHELL)
+    {
+        _tcscat_s(szTotal, cchTotal, _T(" [cloaked]"));
     }
 
     return idx;
@@ -434,6 +444,9 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     HWND hwndTree = (HWND)lParam;
     BOOL fIsVisible = IsWindowVisible(hwnd);
 
+    DWORD dwCloaked = 0;
+    DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &dwCloaked, sizeof(dwCloaked));
+
     // Ignore it if it is hidden and we are omitting hidden windows from the list.
     if (!fIsVisible && !g_opts.fShowHiddenInList)
         return TRUE;
@@ -476,7 +489,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     WinStackType *WindowStack = winProc->windowStack;
 
 
-    idx = FormatWindowText(hwnd, szTotal, ARRAYSIZE(szTotal));
+    idx = FormatWindowText(hwnd, dwCloaked, szTotal, ARRAYSIZE(szTotal));
 
     // Prepare the TVINSERTSTRUCT object
     ZeroMemory(&tv, sizeof(tv));
@@ -518,8 +531,21 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     if (idx != -1)
         tv.item.iImage = idx;
 
-    if (g_opts.fShowDimmed && !fIsVisible && hwnd != hwndTree)
-        tv.item.iImage += NUM_CLASS_BITMAPS;
+    // Adjust icon index for hidden/cloaked windows.
+    // The imagelist starts with NUM_CLASS_BITMAPS images to be used for
+    // visible windows, followed by an alternate set to be used for hidden
+    // windows, then a third set for cloaked windows.
+    if (g_opts.fShowDimmed && hwnd != hwndTree)
+    {
+        if (dwCloaked != 0)
+        {
+            tv.item.iImage += (2 * NUM_CLASS_BITMAPS);
+        }
+        else if (!fIsVisible)
+        {
+            tv.item.iImage += NUM_CLASS_BITMAPS;
+        }
+    }
 
     //set the selected bitmap to be the same
     tv.item.iSelectedImage = tv.item.iImage;
@@ -593,7 +619,7 @@ void FillGlobalWindowTree(HWND hwndTree)
         TVINSERTSTRUCT tv;
         TCHAR ach[MIN_FORMAT_LEN];
 
-        FormatWindowText(hwndDesktop, ach, ARRAYSIZE(ach));
+        FormatWindowText(hwndDesktop, 0, ach, ARRAYSIZE(ach));
 
         TREENODE *pNode = NULL;
         ptrdiff_t nodeIndex = AllocateTreeNode();
@@ -661,6 +687,10 @@ void WindowTree_Initialize(HWND hwndTree)
         DeleteObject(hBitmap);
 
         hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WINDOW_INVISIBLE));
+        ImageList_AddMasked(hImgList, hBitmap, RGB(255, 0, 255));
+        DeleteObject(hBitmap);
+
+        hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WINDOW_CLOAKED));
         ImageList_AddMasked(hImgList, hBitmap, RGB(255, 0, 255));
         DeleteObject(hBitmap);
 

@@ -13,6 +13,14 @@ extern "C" {
 #include <commctrl.h>
 #include <tchar.h>
 #include <Strsafe.h>
+#include <dwmapi.h>
+
+#ifndef DWM_CLOAKED_APP
+#define DWMWA_CLOAKED           14
+#define DWM_CLOAKED_APP         0x00000001
+#define DWM_CLOAKED_SHELL       0x00000002
+#define DWM_CLOAKED_INHERITED   0x00000004
+#endif
 
 #define UNREFERENCED_PARAMETER(P)          (P)
 #define IDM_WINSPY_ABOUT    100
