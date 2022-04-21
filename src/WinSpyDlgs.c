@@ -32,10 +32,10 @@ void  GetRemoteInfo(HWND hwnd);
     DWORD pid, tid;
     HANDLE hThread;
     DWORD exitcode = FALSE;
-    PVOID proc = GetProcAddress(GetModuleHandle(_T("user32.dll")), "DestroyWindow");
+    PVOID proc = GetProcAddress(GetModuleHandle(L"user32.dll"), "DestroyWindow");
     int (WINAPI * ZwAlertResumeThread)(HANDLE, DWORD*);
 
-    ZwAlertResumeThread = (PVOID)GetProcAddress(GetModuleHandle(_T("ntdll.dll")), "ZwAlertResumeThread");
+    ZwAlertResumeThread = (PVOID)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwAlertResumeThread");
 
     tid = GetWindowThreadProcessId(hwnd, &pid);
 
@@ -214,7 +214,7 @@ BOOL GeneralDlg_OnDoubleClick(HWND hwnd, LPARAM lParam)
 INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
     HWND     hCtrl;
-    TCHAR    ach[256];
+    WCHAR    ach[256];
     HWND     hwndEdit1, hwndEdit2;
     HMENU    hMenu, hPopup;
     RECT     rect;
@@ -441,7 +441,7 @@ INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
     RECT      rect;
     int       width;
     //int       xs[] = { 64, 100, 140 };
-    TCHAR     ach[10];
+    WCHAR     ach[10];
     NMITEMACTIVATE *nmatv;
 
     switch (iMsg)
@@ -464,18 +464,18 @@ INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
         lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
         lvcol.cx = DPIScale(hwnd, 64);
         lvcol.iSubItem = 0;
-        lvcol.pszText = _T("Handle");
+        lvcol.pszText = L"Handle";
         ListView_InsertColumn(hwndList1, 0, &lvcol);
         ListView_InsertColumn(hwndList2, 0, &lvcol);
         width -= lvcol.cx;
 
-        lvcol.pszText = _T("Class Name");
+        lvcol.pszText = L"Class Name";
         lvcol.cx = DPIScale(hwnd, 100);
         ListView_InsertColumn(hwndList1, 1, &lvcol);
         ListView_InsertColumn(hwndList2, 1, &lvcol);
         width -= lvcol.cx;
 
-        lvcol.pszText = _T("Window Text");
+        lvcol.pszText = L"Window Text";
         lvcol.cx = max(width, DPIScale(hwnd, 64));
         ListView_InsertColumn(hwndList1, 2, &lvcol);
         ListView_InsertColumn(hwndList2, 2, &lvcol);
@@ -539,7 +539,7 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
     HMENU     hMenu;
     UINT      uCmd;
     LVITEM    lvitem;
-    TCHAR     ach[256];
+    WCHAR     ach[256];
 
     switch (iMsg)
     {
@@ -560,12 +560,12 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
         lvcol.mask = LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
         lvcol.iSubItem = 0;
         lvcol.cx = width - cxHandle;
-        lvcol.pszText = _T("Property Name");
+        lvcol.pszText = L"Property Name";
         ListView_InsertColumn(hwndList1, 0, &lvcol);
 
         // Insert "Handle" header-item
         lvcol.cx = cxHandle;
-        lvcol.pszText = _T("Handle");
+        lvcol.pszText = L"Handle";
         ListView_InsertColumn(hwndList1, 1, &lvcol);
 
         return TRUE;
@@ -672,7 +672,7 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 //
 INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-    TCHAR    ach[256];
+    WCHAR    ach[256];
     int      index;
     HMENU    hMenu;
     UINT     uCmd;

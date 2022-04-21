@@ -58,7 +58,7 @@ static LRESULT CALLBACK URLCtrlProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM 
     int     nTextLen;
     HANDLE  hOld;
 
-    static  TCHAR szWinText[MAX_PATH];
+    static  WCHAR szWinText[MAX_PATH];
 
     switch (iMsg)
     {

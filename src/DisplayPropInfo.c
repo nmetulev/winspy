@@ -16,11 +16,11 @@
 //
 //  Called once for each window property
 //
-BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_PTR dwUser)
+BOOL CALLBACK PropEnumProcEx(HWND hwnd, PWSTR lpszString, HANDLE hData, ULONG_PTR dwUser)
 {
     UNREFERENCED_PARAMETER(hwnd);
     HWND   hwndList = (HWND)dwUser;
-    TCHAR  ach[256];
+    WCHAR  ach[256];
     LVITEM lvitem;
     int    index;
 
@@ -32,7 +32,7 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, LPTSTR lpszString, HANDLE hData, ULONG_P
     // check that lpszString is a valid string, and not an ATOM in disguise
     if (((ULONG_PTR)lpszString & ~(ULONG_PTR)0xFFFF) == 0)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szAtomFmt _T(" (Atom)"), (ATOM)(intptr_t)lpszString);
+        _stprintf_s(ach, ARRAYSIZE(ach), szAtomFmt L" (Atom)", (ATOM)(intptr_t)lpszString);
         lvitem.pszText = ach;
 
         lvitem.lParam = (LPARAM)lpszString;

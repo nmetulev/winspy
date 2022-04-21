@@ -15,9 +15,9 @@
 
 static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 {
-    TCHAR  ach[256];
-    TCHAR  cname[256];
-    TCHAR  wname[256];
+    WCHAR  ach[256];
+    WCHAR  cname[256];
+    WCHAR  wname[256];
     LVITEM lvitem;
 
     //only display 1st generation (1-deep) children -
@@ -45,9 +45,9 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 
 static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 {
-    TCHAR  ach[256];
-    TCHAR  cname[256];
-    TCHAR  wname[256];
+    WCHAR  ach[256];
+    WCHAR  cname[256];
+    WCHAR  wname[256];
     LVITEM lvitem;
 
     //sibling windows must share the same parent
@@ -80,7 +80,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 void SetWindowInfo(HWND hwnd)
 {
     HWND hParentWnd = NULL;
-    TCHAR ach[10];
+    WCHAR ach[10];
 
     HWND hwndList1 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST1);
     HWND hwndList2 = GetDlgItem(WinSpyTab[WINDOW_TAB].hwnd, IDC_LIST2);

@@ -53,17 +53,13 @@ void GetWorkArea(RECT *prcWinRect, RECT *prcWorkArea)
     HMODULE     hUser32;
     MONITORINFO mi;
 
-    hUser32 = GetModuleHandle(_T("USER32.DLL"));
+    hUser32 = GetModuleHandle(L"USER32.DLL");
 
     // if we havn't already tried,
     if (fFindMultiMon == TRUE)
     {
         pMonitorFromRect = (MFR_PROC)GetProcAddress(hUser32, "MonitorFromRect");
-#ifdef UNICODE
         pGetMonitorInfo = (GMI_PROC)GetProcAddress(hUser32, "GetMonitorInfoW");
-#else
-        pGetMonitorInfo = (GMI_PROC)GetProcAddress(hUser32, "GetMonitorInfoA");
-#endif
 
         fFindMultiMon = FALSE;
     }
@@ -90,7 +86,7 @@ void ForceVisibleDisplay(HWND hwnd)
 
     GetWindowRect(hwnd, &rect);
 
-    hUser32 = GetModuleHandle(_T("USER32.DLL"));
+    hUser32 = GetModuleHandle(L"USER32.DLL");
 
     pMonitorFromRect = (MFR_PROC)GetProcAddress(hUser32, "MonitorFromRect");
 
@@ -678,7 +674,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
                 DestroyIcon(hOld);
 
                 SetWindowLong(hwndExpand, GWL_STYLE, dwStyle | BS_RIGHT);
-                SetWindowText(hwndExpand, _T("&More"));
+                SetWindowText(hwndExpand, L"&More");
             }
             else
             {
@@ -688,7 +684,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
                 DestroyIcon(hOld);
 
                 SetWindowLong(hwndExpand, GWL_STYLE, dwStyle & ~BS_RIGHT);
-                SetWindowText(hwndExpand, _T("L&ess"));
+                SetWindowText(hwndExpand, L"L&ess");
             }
 
             SetSysMenuIconFromLayout(hwnd, layout);

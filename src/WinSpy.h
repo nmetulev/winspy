@@ -32,7 +32,7 @@ extern "C" {
 typedef struct
 {
     HWND    hwnd;
-    LPCTSTR szText;
+    PCWSTR  szText;
     UINT    id;
     DLGPROC dlgproc;
 } DialogTab;
@@ -56,7 +56,7 @@ extern DialogTab WinSpyTab[];
 //
 typedef struct
 {
-    LPCTSTR szName;
+    PCWSTR szName;
     UINT value;
 } ConstLookupType;
 
@@ -65,7 +65,7 @@ typedef struct
 //
 typedef struct
 {
-    LPCTSTR szName;
+    PCWSTR szName;
     HANDLE handle;
 } HandleLookupType;
 
@@ -107,9 +107,9 @@ typedef struct
 
 typedef struct
 {
-    LPCTSTR name;       // Textual name of style
-    DWORD   value;      // The value of the style
-    DWORD   extraMask;  // The extra bits determining the mask for testing presence of the style
+    PCWSTR name;       // Textual name of style
+    DWORD  value;      // The value of the style
+    DWORD  extraMask;  // The extra bits determining the mask for testing presence of the style
 
     // This style is only applicable if the following style is present:
     DWORD dependencyValue;
@@ -128,12 +128,12 @@ inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
 // which would cause a compilation error if the condition is false.
 #define value_with_static_assert(value, condition) 1 ? (value) : (sizeof(int[condition]), (value))
 
-#define HANDLE_(handle) _T(#handle), (HANDLE)handle
+#define HANDLE_(handle) L###handle, (HANDLE)handle
 
 //
 //  Use these helper macros to fill in the style structures.
 //
-#define CHECKEDNAMEANDVALUE_(name, value) _T(name), value_with_static_assert((UINT)(value), ARRAYSIZE(name) < MAX_STYLE_NAME_CCH)
+#define CHECKEDNAMEANDVALUE_(name, value) L##name, value_with_static_assert((UINT)(value), ARRAYSIZE(name) < MAX_STYLE_NAME_CCH)
 #define NAMEANDVALUE_(value) CHECKEDNAMEANDVALUE_(#value, value)
 
 #define STYLE_MASK_DEPENDS(style, extraMask, dependencyStyle, dependencyExtraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, dependencyStyle, dependencyExtraMask
@@ -160,7 +160,7 @@ inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
 //
 typedef struct
 {
-    LPCTSTR        szClassName;
+    PCWSTR          szClassName;
     StyleLookupEx  *stylelist;
     DWORD           dwMessage;
 } ClassStyleLookup;
@@ -256,14 +256,14 @@ void LoadSettings(void);
 void SaveSettings(void);
 
 BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass,
-    WNDPROC *pProc, TCHAR *pszText, int nTextLen);
+    WNDPROC *pProc, WCHAR *pszText, int nTextLen);
 
 BOOL RemoveTabCtrlFlicker(HWND hwndTab);
 
-void VerboseClassName(TCHAR ach[], size_t cch, WORD atom);
+void VerboseClassName(WCHAR ach[], size_t cch, WORD atom);
 
 void InitStockStyleLists();
-BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize);
+BOOL GetProcessNameByPid(DWORD dwProcessId, WCHAR szName[], DWORD nNameSize, WCHAR szPath[], DWORD nPathSize);
 
 void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND hwnd, DWORD dwProcessId);
 
@@ -319,12 +319,12 @@ extern Options g_opts;
 //
 extern HINSTANCE hInst;
 
-#define szAtomFmt _T("%04hX")
-#define szHexFmt _T("%08X")
-#define szPtrFmt _T("%p")
-#define szAppName _T("WinSpy++")
+#define szAtomFmt L"%04hX"
+#define szHexFmt L"%08X"
+#define szPtrFmt L"%p"
+#define szAppName L"WinSpy++"
 
-#define szInvalidWindow _T("(invalid window)")
+#define szInvalidWindow L"(invalid window)"
 
 extern HWND  hwndPin;       // Toolbar with pin bitmap
 extern HWND  hwndSizer;     // Sizing grip for bottom-right corner
@@ -338,8 +338,8 @@ extern HWND       spy_hCurWnd;
 extern WNDCLASSEX spy_WndClassEx;
 extern WNDPROC    spy_WndProc;
 extern BOOL       spy_fPassword;
-extern TCHAR      spy_szPassword[];
-extern TCHAR      spy_szClassName[];
+extern WCHAR      spy_szPassword[];
+extern WCHAR      spy_szClassName[];
 
 extern DWORD      g_dwSelectedPID;
 extern BOOL       g_fShowClientRectAsMargins;

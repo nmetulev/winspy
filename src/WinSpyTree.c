@@ -86,7 +86,7 @@ HTREEITEM    g_hRoot;
 //
 typedef struct
 {
-    LPCTSTR szName;         // Class name
+    PCWSTR szName;          // Class name
     int   index;            // Index into image list
     ATOM  atom;             // (Unused) Might use for fast lookups.
 
@@ -99,49 +99,49 @@ typedef struct
 
 ClassImageLookup ClassImage[] =
 {
-    _T("#32770"),               0,  0, 0, 0,
-    _T("Button"),               4,  0, BS_GROUPBOX,         0xF,
-    _T("Button"),               2,  0, BS_CHECKBOX,         0xF,
-    _T("Button"),               2,  0, BS_AUTOCHECKBOX,     0xF,
-    _T("Button"),               2,  0, BS_AUTO3STATE,       0xF,
-    _T("Button"),               2,  0, BS_3STATE,           0xF,
-    _T("Button"),               3,  0, BS_RADIOBUTTON,      0xF,
-    _T("Button"),               3,  0, BS_AUTORADIOBUTTON,  0xF,
-    _T("Button"),               1,  0, 0, 0,    // (default push-button)
-    _T("ComboBox"),             5,  0, 0, 0,
-    _T("Edit"),                 6,  0, 0, 0,
-    _T("ListBox"),              7,  0, 0, 0,
+    L"#32770",               0,  0, 0, 0,
+    L"Button",               4,  0, BS_GROUPBOX,         0xF,
+    L"Button",               2,  0, BS_CHECKBOX,         0xF,
+    L"Button",               2,  0, BS_AUTOCHECKBOX,     0xF,
+    L"Button",               2,  0, BS_AUTO3STATE,       0xF,
+    L"Button",               2,  0, BS_3STATE,           0xF,
+    L"Button",               3,  0, BS_RADIOBUTTON,      0xF,
+    L"Button",               3,  0, BS_AUTORADIOBUTTON,  0xF,
+    L"Button",               1,  0, 0, 0,    // (default push-button)
+    L"ComboBox",             5,  0, 0, 0,
+    L"Edit",                 6,  0, 0, 0,
+    L"ListBox",              7,  0, 0, 0,
 
-    _T("RICHEDIT"),             8,  0, 0, 0,
-    _T("RichEdit20A"),          8,  0, 0, 0,
-    _T("RichEdit20W"),          8,  0, 0, 0,
-    _T("RICHEDIT50W"),          8,  0, 0, 0,
-    _T("RICHEDIT60W"),          8,  0, 0, 0,
+    L"RICHEDIT",             8,  0, 0, 0,
+    L"RichEdit20A",          8,  0, 0, 0,
+    L"RichEdit20W",          8,  0, 0, 0,
+    L"RICHEDIT50W",          8,  0, 0, 0,
+    L"RICHEDIT60W",          8,  0, 0, 0,
 
-    _T("Scrollbar"),            9,  0, SBS_VERT, 0,
-    _T("Scrollbar"),            11, 0, SBS_SIZEBOX | SBS_SIZEGRIP, 0,
-    _T("Scrollbar"),            10, 0, 0, 0,  // (default horizontal)
-    _T("Static"),               12, 0, 0, 0,
+    L"Scrollbar",            9,  0, SBS_VERT, 0,
+    L"Scrollbar",            11, 0, SBS_SIZEBOX | SBS_SIZEGRIP, 0,
+    L"Scrollbar",            10, 0, 0, 0,  // (default horizontal)
+    L"Static",               12, 0, 0, 0,
 
-    _T("SysAnimate32"),         13, 0, 0, 0,
-    _T("SysDateTimePick32"),    14, 0, 0, 0,
-    _T("SysHeader32"),          15, 0, 0, 0,
-    _T("IPAddress"),            16, 0, 0, 0,
-    _T("SysListView32"),        17, 0, 0, 0,
-    _T("SysMonthCal32"),        18, 0, 0, 0,
-    _T("SysPager"),             19, 0, 0, 0,
-    _T("msctls_progress32"),    20, 0, 0, 0,
-    _T("ReBarWindow32"),        21, 0, 0, 0,
-    _T("msctls_statusbar32"),   22, 0, 0, 0,
-    _T("SysLink"),              23, 0, 0, 0,
-    _T("SysTabControl32"),      24, 0, 0, 0,
-    _T("ToolbarWindow32"),      25, 0, 0, 0,
-    _T("tooltips_class32"),     26, 0, 0, 0,
-    _T("msctls_trackbar32"),    27, 0, 0, 0,
-    _T("SysTreeView32"),        28, 0, 0, 0,
-    _T("msctls_updown32"),      29, 0, 0, 0,
+    L"SysAnimate32",         13, 0, 0, 0,
+    L"SysDateTimePick32",    14, 0, 0, 0,
+    L"SysHeader32",          15, 0, 0, 0,
+    L"IPAddress",            16, 0, 0, 0,
+    L"SysListView32",        17, 0, 0, 0,
+    L"SysMonthCal32",        18, 0, 0, 0,
+    L"SysPager",             19, 0, 0, 0,
+    L"msctls_progress32",    20, 0, 0, 0,
+    L"ReBarWindow32",        21, 0, 0, 0,
+    L"msctls_statusbar32",   22, 0, 0, 0,
+    L"SysLink",              23, 0, 0, 0,
+    L"SysTabControl32",      24, 0, 0, 0,
+    L"ToolbarWindow32",      25, 0, 0, 0,
+    L"tooltips_class32",     26, 0, 0, 0,
+    L"msctls_trackbar32",    27, 0, 0, 0,
+    L"SysTreeView32",        28, 0, 0, 0,
+    L"msctls_updown32",      29, 0, 0, 0,
 
-    _T(""), 0, 0, 0,
+    L"", 0, 0, 0,
 };
 
 //
@@ -189,7 +189,7 @@ int IconFromClassName(PCWSTR pszName, DWORD dwStyle)
         pszName = szCopy;
     }
 
-    while (ClassImage[i].szName[0] != _T('\0'))
+    while (ClassImage[i].szName[0] != L'\0')
     {
         if (lstrcmpi(ClassImage[i].szName, pszName) == 0)
         {
@@ -229,12 +229,12 @@ int IconFromClassName(PCWSTR pszName, DWORD dwStyle)
 //
 //  szTotal must be MIN_FORMAT_LEN characters
 //
-int FormatWindowText(HWND hwnd, DWORD dwCloaked, TCHAR szTotal[], int cchTotal)
+int FormatWindowText(HWND hwnd, DWORD dwCloaked, WCHAR szTotal[], int cchTotal)
 {
     //ASSERT(cchTotal >= MIN_FORMAT_LEN);
-    static TCHAR szClass[MAX_CLASS_LEN + MAX_VERBOSE_LEN];
+    static WCHAR szClass[MAX_CLASS_LEN + MAX_VERBOSE_LEN];
     int idx;
-    TCHAR *pszCaption;
+    WCHAR *pszCaption;
     DWORD dwStyle;
 
     //
@@ -242,11 +242,11 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, TCHAR szTotal[], int cchTotal)
     //
     if (g_opts.uTreeInclude & WINLIST_INCLUDE_HANDLE)
     {
-        _stprintf_s(szTotal, cchTotal, szHexFmt _T("  "), (UINT)(UINT_PTR)hwnd);
+        _stprintf_s(szTotal, cchTotal, szHexFmt L"  ", (UINT)(UINT_PTR)hwnd);
     }
     else
     {
-        _tcscpy_s(szTotal, cchTotal, _T(""));
+        wcscpy_s(szTotal, cchTotal, L"");
     }
 
     //
@@ -263,18 +263,18 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, TCHAR szTotal[], int cchTotal)
 
         if (g_opts.fClassThenText)
         {
-            _tcscat_s(szTotal, cchTotal, szClass);
-            _tcscat_s(szTotal, cchTotal, _T("  "));
+            wcscat_s(szTotal, cchTotal, szClass);
+            wcscat_s(szTotal, cchTotal, L"  ");
         }
     }
     else
     {
-        szClass[0] = _T('\0');
+        szClass[0] = L'\0';
     }
 
-    _tcscat_s(szTotal, cchTotal, _T("\""));
+    wcscat_s(szTotal, cchTotal, L"\"");
 
-    size_t len = _tcslen(szTotal);
+    size_t len = wcslen(szTotal);
     pszCaption = szTotal + len;
 
     size_t cchCaption = min(MAX_WINTEXT_LEN, cchTotal - len);
@@ -294,7 +294,7 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, TCHAR szTotal[], int cchTotal)
 
     if (*pszCaption != '\0')
     {
-        _tcscat_s(szTotal, cchTotal, _T("\""));
+        wcscat_s(szTotal, cchTotal, L"\"");
     }
     else
     {
@@ -303,18 +303,18 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, TCHAR szTotal[], int cchTotal)
 
     if (!g_opts.fClassThenText)
     {
-        _tcscat_s(szTotal, cchTotal, _T("  "));
-        _tcscat_s(szTotal, cchTotal, szClass);
+        wcscat_s(szTotal, cchTotal, L"  ");
+        wcscat_s(szTotal, cchTotal, szClass);
     }
 
     // Add cloaked annotation to windows that have been explicitly cloaked.
     if (dwCloaked == DWM_CLOAKED_APP)
     {
-        _tcscat_s(szTotal, cchTotal, _T(" [app cloaked]"));
+        wcscat_s(szTotal, cchTotal, L" [app cloaked]");
     }
     else if (dwCloaked == DWM_CLOAKED_SHELL)
     {
-        _tcscat_s(szTotal, cchTotal, _T(" [cloaked]"));
+        wcscat_s(szTotal, cchTotal, L" [cloaked]");
     }
 
     return idx;
@@ -367,9 +367,9 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     DWORD           pid;
     int             i;
     TVINSERTSTRUCT  tv;
-    TCHAR           ach[MIN_FORMAT_LEN];
-    TCHAR           name[100] = _T("");
-    TCHAR           path[MAX_PATH] = _T("");
+    WCHAR           ach[MIN_FORMAT_LEN];
+    WCHAR           name[100] = L"";
+    WCHAR           path[MAX_PATH] = L"";
     SHFILEINFO      shfi = { 0 };
 
     GetWindowThreadProcessId(hwnd, &pid);
@@ -387,7 +387,7 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     // couldn't find one - build a new one instead
     //
     GetProcessNameByPid(pid, name, 100, path, MAX_PATH);
-    _stprintf_s(ach, ARRAYSIZE(ach), _T("%s  (%u)"), name, pid);
+    _stprintf_s(ach, ARRAYSIZE(ach), L"%s  (%u)", name, pid);
 
     TREENODE *pNode = NULL;
     ptrdiff_t nodeIndex = AllocateTreeNode();
@@ -451,7 +451,7 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     if (!fIsVisible && !g_opts.fShowHiddenInList)
         return TRUE;
 
-    static TCHAR szTotal[MIN_FORMAT_LEN];
+    static WCHAR szTotal[MIN_FORMAT_LEN];
 
     int i, idx;
 
@@ -617,7 +617,7 @@ void FillGlobalWindowTree(HWND hwndTree)
     if (g_opts.fShowDesktopRoot)
     {
         TVINSERTSTRUCT tv;
-        TCHAR ach[MIN_FORMAT_LEN];
+        WCHAR ach[MIN_FORMAT_LEN];
 
         FormatWindowText(hwndDesktop, 0, ach, ARRAYSIZE(ach));
 
@@ -701,7 +701,7 @@ void WindowTree_Initialize(HWND hwndTree)
     //add an item to the tab control
     ZeroMemory(&tcitem, sizeof(tcitem));
     tcitem.mask = TCIF_TEXT;
-    tcitem.pszText = _T("All Windows");
+    tcitem.pszText = L"All Windows";
 
     hwndTab = GetDlgItem(GetParent(hwndTree), IDC_TAB2);
     SendMessage(hwndTab, TCM_INSERTITEM, 0, (LPARAM)&tcitem);

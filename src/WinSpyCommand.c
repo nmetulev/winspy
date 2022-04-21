@@ -165,7 +165,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDC_CAPTURE:
         CaptureWindow(hwnd, spy_hCurWnd);
-        MessageBox(hwnd, _T("Window contents captured to clipboard"), szAppName, MB_ICONINFORMATION);
+        MessageBox(hwnd, L"Window contents captured to clipboard", szAppName, MB_ICONINFORMATION);
         return TRUE;
 
     case IDC_AUTOUPDATE:
@@ -228,10 +228,10 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-    TCHAR szText[200];
-    TCHAR szTitle[60];
-    TCHAR szVersion[40];
-    TCHAR szCurExe[MAX_PATH];
+    WCHAR szText[200];
+    WCHAR szTitle[60];
+    WCHAR szVersion[40];
+    WCHAR szCurExe[MAX_PATH];
 
     switch (wParam & 0xFFF0)
     {
@@ -260,16 +260,16 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
         GetVersionString(szCurExe, TEXT("FileVersion"), szVersion, 40);
 
         _stprintf_s(szText, ARRAYSIZE(szText),
-            _T("%s v%s\n")
-            _T("\n")
-            _T("Copyright(c) 2002-2012 by Catch22 Productions.\n")
-            _T("Written by J Brown.\n")
-            _T("Homepage: www.catch22.net\n")
-            _T("\n")
-            _T("Forked and improved by RaMMicHaeL.\n")
-            _T("Homepage: rammichael.com"),
+            L"%s v%s\n"
+            L"\n"
+            L"Copyright(c) 2002-2012 by Catch22 Productions.\n"
+            L"Written by J Brown.\n"
+            L"Homepage: www.catch22.net\n"
+            L"\n"
+            L"Forked and improved by RaMMicHaeL.\n"
+            L"Homepage: rammichael.com",
             szAppName, szVersion);
-        _stprintf_s(szTitle, ARRAYSIZE(szTitle), _T("About %s"), szAppName);
+        _stprintf_s(szTitle, ARRAYSIZE(szTitle), L"About %s", szAppName);
 
         MessageBox(hwnd, szText, szTitle, MB_OK | MB_ICONINFORMATION);
         return TRUE;

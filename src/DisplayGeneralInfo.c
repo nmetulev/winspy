@@ -27,7 +27,7 @@ void FillBytesList(
 
 void SetGeneralInfo(HWND hwnd)
 {
-    TCHAR   ach[256];
+    WCHAR   ach[256];
     HWND    hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;
     RECT    rect;
     int     x1 = 0, y1 = 0;
@@ -48,7 +48,7 @@ void SetGeneralInfo(HWND hwnd)
     if (hwnd && !IsWindow(hwnd))
     {
         fValid = FALSE;
-        _tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
+        wcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
     }
 
     //caption
@@ -64,7 +64,7 @@ void SetGeneralInfo(HWND hwnd)
         if (spy_fPassword)
         {
             // In this case, the password has already been extracted by GetRemoteWindowInfo()
-            _tcscpy_s(ach, ARRAYSIZE(ach), spy_szPassword);
+            wcscpy_s(ach, ARRAYSIZE(ach), spy_szPassword);
         }
         else
         {
@@ -88,7 +88,7 @@ void SetGeneralInfo(HWND hwnd)
         VerboseClassName(ach, ARRAYSIZE(ach), (WORD)GetClassLong(hwnd, GCW_ATOM));
 
         if (IsWindowUnicode(hwnd))
-            _tcscat_s(ach, ARRAYSIZE(ach), _T("  (Unicode)"));
+            wcscat_s(ach, ARRAYSIZE(ach), L"  (Unicode)");
     }
     SetDlgItemText(hwndDlg, IDC_CLASS, ach);
 
@@ -96,22 +96,22 @@ void SetGeneralInfo(HWND hwnd)
     if (fValid)
     {
         _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
-        _tcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? _T("  (visible, ") : _T("  (hidden, "));
-        _tcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? _T("enabled") : _T("disabled"));
+        wcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? L"  (visible, " : L"  (hidden, ");
+        wcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? L"enabled" : L"disabled");
 
         DWORD dwCloaked = 0;
         DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &dwCloaked, sizeof(dwCloaked));
 
         if (dwCloaked & DWM_CLOAKED_APP)
         {
-            _tcscat_s(ach, ARRAYSIZE(ach), _T(", app cloaked"));
+            wcscat_s(ach, ARRAYSIZE(ach), L", app cloaked");
         }
         else if (dwCloaked & DWM_CLOAKED_SHELL)
         {
-            _tcscat_s(ach, ARRAYSIZE(ach), _T(", cloaked"));
+            wcscat_s(ach, ARRAYSIZE(ach), L", cloaked");
         }
 
-        _tcscat_s(ach, ARRAYSIZE(ach), _T(")"));
+        wcscat_s(ach, ARRAYSIZE(ach), L")");
     }
     SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
@@ -122,7 +122,7 @@ void SetGeneralInfo(HWND hwnd)
         x1 = rect.left;
         y1 = rect.top;
 
-        _stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+        _stprintf_s(ach, ARRAYSIZE(ach), L"(%d,%d) - (%d,%d)  -  %dx%d",
             rect.left, rect.top, rect.right, rect.bottom,
             GetRectWidth(&rect), GetRectHeight(&rect));
     }
@@ -144,13 +144,13 @@ void SetGeneralInfo(HWND hwnd)
             OffsetRect(&rcClient, -rcClient.left, -rcClient.top);
             OffsetRect(&rcClient, x1, y1);
 
-            _stprintf_s(ach, ARRAYSIZE(ach), _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+            _stprintf_s(ach, ARRAYSIZE(ach), L"(%d,%d) - (%d,%d)  -  %dx%d",
                 rcClient.left, rcClient.top, rcClient.right, rcClient.bottom,
                 GetRectWidth(&rcClient), GetRectHeight(&rcClient));
         }
         else
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), _T("{ %d, %d, %d, %d }"),
+            _stprintf_s(ach, ARRAYSIZE(ach), L"{ %d, %d, %d, %d }",
                 rcClient.left - rect.left,
                 rcClient.top - rect.top,
                 rect.right - rcClient.right,
@@ -161,7 +161,7 @@ void SetGeneralInfo(HWND hwnd)
 
     //restored rect
     /*GetWindowPlacement(hwnd, &wp);
-    wsprintf(ach, _T("(%d,%d) - (%d,%d)  -  %dx%d"),
+    wsprintf(ach, L"(%d,%d) - (%d,%d)  -  %dx%d",
         wp.rcNormalPosition.left, wp.rcNormalPosition.top,
         wp.rcNormalPosition.right, wp.rcNormalPosition.bottom,
         (wp.rcNormalPosition.right-wp.rcNormalPosition.left),
@@ -174,7 +174,7 @@ void SetGeneralInfo(HWND hwnd)
     {
         if (spy_WndProc == 0)
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), _T("N/A"));
+            _stprintf_s(ach, ARRAYSIZE(ach), L"N/A");
         }
         else
         {
@@ -207,7 +207,7 @@ void SetGeneralInfo(HWND hwnd)
         // despite the name "GWLP_ID" suggesting that control ID is pointer-sized,
         // it would only work properly in WM_COMMAND if it was a WORD,
         // as it is passed in LOWORD(wParam)
-        _stprintf_s(ach, ARRAYSIZE(ach), _T("%04IX  (%Id)"), lp, lp);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%04IX  (%Id)", lp, lp);
     }
     SetDlgItemText(hwndDlg, IDC_CONTROLID, ach);
 

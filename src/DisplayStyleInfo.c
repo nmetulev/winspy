@@ -726,40 +726,40 @@ StyleLookupEx RichedEventMask[] =
 //
 ClassStyleLookup StandardControls[] =
 {
-    _T("#32770"),               DialogStyles,       0,
-    _T("Button"),               ButtonStyles,       0,
-    _T("ComboBox"),             ComboStyles,        0,
-    _T("Edit"),                 EditStyles,         0,
-    _T("ListBox"),              ListBoxStyles,      0,
-    _T("ComboLBox"),            ListBoxStyles,      0,
+    L"#32770",               DialogStyles,       0,
+    L"Button",               ButtonStyles,       0,
+    L"ComboBox",             ComboStyles,        0,
+    L"Edit",                 EditStyles,         0,
+    L"ListBox",              ListBoxStyles,      0,
+    L"ComboLBox",            ListBoxStyles,      0,
 
-    _T("RICHEDIT"),             RichedStyles,       0,
-    _T("RichEdit20A"),          RichedStyles,       0,
-    _T("RichEdit20W"),          RichedStyles,       0,
-    _T("RICHEDIT50W"),          RichedStyles,       0,
+    L"RICHEDIT",             RichedStyles,       0,
+    L"RichEdit20A",          RichedStyles,       0,
+    L"RichEdit20W",          RichedStyles,       0,
+    L"RICHEDIT50W",          RichedStyles,       0,
 
-    _T("Scrollbar"),            ScrollbarStyles,    0,
-    _T("Static"),               StaticStyles,       0,
+    L"Scrollbar",            ScrollbarStyles,    0,
+    L"Static",               StaticStyles,       0,
 
-    _T("SysAnimate32"),         AnimateStyles,      0,
-    _T("ComboBoxEx"),           ComboStyles,        0,  //(Just a normal combobox)
-    _T("SysDateTimePick32"),    DateTimeStyles,     0,
-    _T("DragList"),             ListBoxStyles,      0,  //(Just a normal list)
-    _T("SysHeader32"),          HeaderStyles,       0,
+    L"SysAnimate32",         AnimateStyles,      0,
+    L"ComboBoxEx",           ComboStyles,        0,  //(Just a normal combobox)
+    L"SysDateTimePick32",    DateTimeStyles,     0,
+    L"DragList",             ListBoxStyles,      0,  //(Just a normal list)
+    L"SysHeader32",          HeaderStyles,       0,
     //"SysIPAddress32",         IPAddressStyles,    0,  (NO STYLES)
-    _T("SysListView32"),        ListViewStyles,     0,
-    _T("SysMonthCal32"),        MonthCalStyles,     0,
-    _T("SysPager"),             PagerStyles,        0,
-    _T("msctls_progress32"),    ProgressStyles,     0,
-    _T("RebarWindow32"),        RebarStyles,        0,
-    _T("msctls_statusbar32"),   StatusBarStyles,    0,
+    L"SysListView32",        ListViewStyles,     0,
+    L"SysMonthCal32",        MonthCalStyles,     0,
+    L"SysPager",             PagerStyles,        0,
+    L"msctls_progress32",    ProgressStyles,     0,
+    L"RebarWindow32",        RebarStyles,        0,
+    L"msctls_statusbar32",   StatusBarStyles,    0,
     //"SysLink",                SysLinkStyles,      0,  (DO IT!)
-    _T("SysTabControl32"),      TabStyles,          0,
-    _T("ToolbarWindow32"),      ToolbarStyles,      0,
-    _T("tooltips_class32"),     ToolTipStyles,      0,
-    _T("msctls_trackbar32"),    TrackbarStyles,     0,
-    _T("SysTreeView32"),        TreeViewStyles,     0,
-    _T("msctls_updown32"),      UpDownStyles,       0,
+    L"SysTabControl32",      TabStyles,          0,
+    L"ToolbarWindow32",      ToolbarStyles,      0,
+    L"tooltips_class32",     ToolTipStyles,      0,
+    L"msctls_trackbar32",    TrackbarStyles,     0,
+    L"SysTreeView32",        TreeViewStyles,     0,
+    L"msctls_updown32",      UpDownStyles,       0,
 
     NULL
 };
@@ -767,10 +767,10 @@ ClassStyleLookup StandardControls[] =
 // Classes which use the CCS_xxx styles
 ClassStyleLookup CustomControls[] =
 {
-    _T("msctls_statusbar32"),   CommCtrlList,       0,
-    _T("RebarWindow32"),        CommCtrlList,       0,
-    _T("ToolbarWindow32"),      CommCtrlList,       0,
-    _T("SysHeader32"),          CommCtrlList,       0,
+    L"msctls_statusbar32",   CommCtrlList,       0,
+    L"RebarWindow32",        CommCtrlList,       0,
+    L"ToolbarWindow32",      CommCtrlList,       0,
+    L"SysHeader32",          CommCtrlList,       0,
 
     NULL
 };
@@ -778,13 +778,13 @@ ClassStyleLookup CustomControls[] =
 // Classes which have extended window styles
 ClassStyleLookup ExtendedControls[] =
 {
-    _T("SysTabControl32"),      TabCtrlExStyles,    TCM_GETEXTENDEDSTYLE,
-    _T("ToolbarWindow32"),      ToolBarExStyles,    TB_GETEXTENDEDSTYLE,
-    _T("ComboBox"),             ComboBoxExStyles,   CBEM_GETEXTENDEDSTYLE,
-    _T("SysListView32"),        ListViewExStyles,   LVM_GETEXTENDEDLISTVIEWSTYLE,
-    _T("RICHEDIT"),             RichedEventMask,    EM_GETEVENTMASK,
-    _T("RichEdit20A"),          RichedEventMask,    EM_GETEVENTMASK,
-    _T("RichEdit20W"),          RichedEventMask,    EM_GETEVENTMASK,
+    L"SysTabControl32",      TabCtrlExStyles,    TCM_GETEXTENDEDSTYLE,
+    L"ToolbarWindow32",      ToolBarExStyles,    TB_GETEXTENDEDSTYLE,
+    L"ComboBox",             ComboBoxExStyles,   CBEM_GETEXTENDEDSTYLE,
+    L"SysListView32",        ListViewExStyles,   LVM_GETEXTENDEDLISTVIEWSTYLE,
+    L"RICHEDIT",             RichedEventMask,    EM_GETEVENTMASK,
+    L"RichEdit20A",          RichedEventMask,    EM_GETEVENTMASK,
+    L"RichEdit20W",          RichedEventMask,    EM_GETEVENTMASK,
 
     NULL
 };
@@ -795,7 +795,7 @@ ClassStyleLookup ExtendedControls[] =
 // pClassList - a lookup table of classname / matching stylelist
 //
 //
-StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, TCHAR *szClassName, DWORD *pdwMessage)
+StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, WCHAR *szClassName, DWORD *pdwMessage)
 {
     int i;
 
@@ -877,7 +877,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
 
     SendMessage(hwndStyleList, WM_SETREDRAW, FALSE, 0);
 
-    TCHAR szClassName[256];
+    WCHAR szClassName[256];
     StyleLookupEx *StyleList;
 
     //window class
@@ -910,7 +910,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
     if (remainingStyles != 0)
     {
         int idx;
-        TCHAR ach[10];
+        WCHAR ach[10];
 
         _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, remainingStyles);
         static_assert(ARRAYSIZE(ach) < MAX_STYLE_NAME_CCH, "Style name exceeds the expected limit");
@@ -940,7 +940,7 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 
     SendMessage(hwndExStyleList, WM_SETREDRAW, FALSE, 0);
 
-    TCHAR szClassName[256];
+    WCHAR szClassName[256];
     DWORD dwMessage;
     StyleLookupEx *StyleList;
 
@@ -1000,7 +1000,7 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 //
 void SetStyleInfo(HWND hwnd)
 {
-    TCHAR ach[20];
+    WCHAR ach[20];
     DWORD dwStyles = 0;
     DWORD dwExStyles = 0;
 
@@ -1014,7 +1014,7 @@ void SetStyleInfo(HWND hwnd)
     {
         fValid = FALSE;
         hwnd = NULL;
-        _tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
+        wcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
     }
 
     // Display the window style in static label

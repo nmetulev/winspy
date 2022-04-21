@@ -15,34 +15,34 @@ Options g_opts;
 
 extern HWND hwndToolTip;
 
-#define REG_BASESTR  _T("Software\\Catch22\\WinSpy++ 1.5")
+#define REG_BASESTR  L"Software\\Catch22\\WinSpy++ 1.5"
 
-static TCHAR szRegLoc[] = REG_BASESTR;
+static WCHAR szRegLoc[] = REG_BASESTR;
 
 void LoadSettings(void)
 {
     HKEY hkey;
 
-    RegCreateKeyEx(HKEY_CURRENT_USER, szRegLoc, 0, _T(""), 0, KEY_READ, NULL, &hkey, NULL);
+    RegCreateKeyEx(HKEY_CURRENT_USER, szRegLoc, 0, L"", 0, KEY_READ, NULL, &hkey, NULL);
 
-    g_opts.fSaveWinPos = GetSettingBool(hkey, _T("SavePosition"), TRUE);
-    g_opts.fAlwaysOnTop = GetSettingBool(hkey, _T("AlwaysOnTop"), FALSE);
-    g_opts.fMinimizeWinSpy = GetSettingBool(hkey, _T("MinimizeWinSpy"), TRUE);
-    g_opts.fFullDragging = GetSettingBool(hkey, _T("FullDragging"), TRUE);
-    g_opts.fShowHidden = GetSettingBool(hkey, _T("ShowHidden"), FALSE);
-    g_opts.fShowDimmed = GetSettingBool(hkey, _T("ShowDimmed"), TRUE);
-    g_opts.fClassThenText = GetSettingBool(hkey, _T("ClassThenText"), TRUE);
-    g_opts.fPinWindow = GetSettingBool(hkey, _T("PinWindow"), FALSE);
-    g_opts.fShowInCaption = GetSettingBool(hkey, _T("ShowInCaption"), TRUE);
-    g_opts.fEnableToolTips = GetSettingBool(hkey, _T("EnableToolTips"), FALSE);
-    g_opts.fShowDesktopRoot = GetSettingBool(hkey, _T("ShowDesktopRoot"), FALSE);
-    g_opts.uTreeInclude = GetSettingInt(hkey, _T("TreeItems"), WINLIST_INCLUDE_ALL);
-    g_opts.fShowHiddenInList = GetSettingBool(hkey, _T("List_ShowHidden"), TRUE);
+    g_opts.fSaveWinPos = GetSettingBool(hkey, L"SavePosition", TRUE);
+    g_opts.fAlwaysOnTop = GetSettingBool(hkey, L"AlwaysOnTop", FALSE);
+    g_opts.fMinimizeWinSpy = GetSettingBool(hkey, L"MinimizeWinSpy", TRUE);
+    g_opts.fFullDragging = GetSettingBool(hkey, L"FullDragging", TRUE);
+    g_opts.fShowHidden = GetSettingBool(hkey, L"ShowHidden", FALSE);
+    g_opts.fShowDimmed = GetSettingBool(hkey, L"ShowDimmed", TRUE);
+    g_opts.fClassThenText = GetSettingBool(hkey, L"ClassThenText", TRUE);
+    g_opts.fPinWindow = GetSettingBool(hkey, L"PinWindow", FALSE);
+    g_opts.fShowInCaption = GetSettingBool(hkey, L"ShowInCaption", TRUE);
+    g_opts.fEnableToolTips = GetSettingBool(hkey, L"EnableToolTips", FALSE);
+    g_opts.fShowDesktopRoot = GetSettingBool(hkey, L"ShowDesktopRoot", FALSE);
+    g_opts.uTreeInclude = GetSettingInt(hkey, L"TreeItems", WINLIST_INCLUDE_ALL);
+    g_opts.fShowHiddenInList = GetSettingBool(hkey, L"List_ShowHidden", TRUE);
 
-    g_opts.uPinnedCorner = GetSettingInt(hkey, _T("PinCorner"), 0);
+    g_opts.uPinnedCorner = GetSettingInt(hkey, L"PinCorner", 0);
 
-    g_opts.ptPinPos.x = GetSettingInt(hkey, _T("xpos"), CW_USEDEFAULT);
-    g_opts.ptPinPos.y = GetSettingInt(hkey, _T("ypos"), CW_USEDEFAULT);
+    g_opts.ptPinPos.x = GetSettingInt(hkey, L"xpos", CW_USEDEFAULT);
+    g_opts.ptPinPos.y = GetSettingInt(hkey, L"ypos", CW_USEDEFAULT);
 
     // Ignore the saved window position if it no longer lies within the
     // bounds of a monitor.
@@ -63,25 +63,25 @@ void SaveSettings(void)
 {
     HKEY hkey;
 
-    RegCreateKeyEx(HKEY_CURRENT_USER, szRegLoc, 0, _T(""), 0, KEY_WRITE, NULL, &hkey, NULL);
+    RegCreateKeyEx(HKEY_CURRENT_USER, szRegLoc, 0, L"", 0, KEY_WRITE, NULL, &hkey, NULL);
 
-    WriteSettingBool(hkey, _T("SavePosition"), g_opts.fSaveWinPos);
-    WriteSettingBool(hkey, _T("AlwaysOnTop"), g_opts.fAlwaysOnTop);
-    WriteSettingBool(hkey, _T("MinimizeWinSpy"), g_opts.fMinimizeWinSpy);
-    WriteSettingBool(hkey, _T("FullDragging"), g_opts.fFullDragging);
-    WriteSettingBool(hkey, _T("ShowHidden"), g_opts.fShowHidden);
-    WriteSettingBool(hkey, _T("ShowDimmed"), g_opts.fShowDimmed);
-    WriteSettingBool(hkey, _T("ClassThenText"), g_opts.fClassThenText);
-    WriteSettingBool(hkey, _T("PinWindow"), g_opts.fPinWindow);
-    WriteSettingBool(hkey, _T("ShowInCaption"), g_opts.fShowInCaption);
-    WriteSettingBool(hkey, _T("EnableToolTips"), g_opts.fEnableToolTips);
-    WriteSettingBool(hkey, _T("ShowDesktopRoot"), g_opts.fShowDesktopRoot);
-    WriteSettingInt(hkey, _T("TreeItems"), g_opts.uTreeInclude);
-    WriteSettingInt(hkey, _T("PinCorner"), g_opts.uPinnedCorner);
-    WriteSettingInt(hkey, _T("List_ShowHidden"), g_opts.fShowHiddenInList);
+    WriteSettingBool(hkey, L"SavePosition", g_opts.fSaveWinPos);
+    WriteSettingBool(hkey, L"AlwaysOnTop", g_opts.fAlwaysOnTop);
+    WriteSettingBool(hkey, L"MinimizeWinSpy", g_opts.fMinimizeWinSpy);
+    WriteSettingBool(hkey, L"FullDragging", g_opts.fFullDragging);
+    WriteSettingBool(hkey, L"ShowHidden", g_opts.fShowHidden);
+    WriteSettingBool(hkey, L"ShowDimmed", g_opts.fShowDimmed);
+    WriteSettingBool(hkey, L"ClassThenText", g_opts.fClassThenText);
+    WriteSettingBool(hkey, L"PinWindow", g_opts.fPinWindow);
+    WriteSettingBool(hkey, L"ShowInCaption", g_opts.fShowInCaption);
+    WriteSettingBool(hkey, L"EnableToolTips", g_opts.fEnableToolTips);
+    WriteSettingBool(hkey, L"ShowDesktopRoot", g_opts.fShowDesktopRoot);
+    WriteSettingInt(hkey, L"TreeItems", g_opts.uTreeInclude);
+    WriteSettingInt(hkey, L"PinCorner", g_opts.uPinnedCorner);
+    WriteSettingInt(hkey, L"List_ShowHidden", g_opts.fShowHiddenInList);
 
-    WriteSettingInt(hkey, _T("xpos"), g_opts.ptPinPos.x);
-    WriteSettingInt(hkey, _T("ypos"), g_opts.ptPinPos.y);
+    WriteSettingInt(hkey, L"xpos", g_opts.ptPinPos.x);
+    WriteSettingInt(hkey, L"ypos", g_opts.ptPinPos.y);
 
     RegCloseKey(hkey);
 }

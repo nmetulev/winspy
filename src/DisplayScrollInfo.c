@@ -13,7 +13,7 @@
 
 #include "resource.h"
 
-void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, LPCTSTR ach, DWORD dwStyle)
+void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, PCWSTR ach, DWORD dwStyle)
 {
     SCROLLINFO si;
     DWORD bartype = fVert ? SB_VERT : SB_HORZ;
@@ -24,17 +24,17 @@ void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, LPCTSTR ach, DWOR
         si.cbSize = sizeof(SCROLLINFO);
         si.fMask = SIF_ALL;
 
-        if (lstrcmpi(ach, _T("ScrollBar")) == 0)
+        if (lstrcmpi(ach, L"ScrollBar") == 0)
         {
             static_assert(SBS_HORZ == SB_HORZ && SBS_VERT == SB_VERT, "");
             if ((dwStyle & SBS_DIR_MASK) == bartype)
                 bartype = SB_CTL;
 
-            SetDlgItemText(hwndDlg, idc_state, _T("Visible"));
+            SetDlgItemText(hwndDlg, idc_state, L"Visible");
         }
         else
         {
-            SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? _T("Visible") : _T("Disabled"));
+            SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? L"Visible" : L"Disabled");
         }
     }
 
@@ -47,23 +47,23 @@ void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, LPCTSTR ach, DWOR
 
         if (bartype != SB_CTL)
         {
-            SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? _T("Visible") : _T("Hidden"));
+            SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? L"Visible" : L"Hidden");
         }
     }
     else
     {
-        SetDlgItemText(hwndDlg, fVert ? IDC_VMIN : IDC_HMIN, fValid ? _T("") : ach);
-        SetDlgItemText(hwndDlg, fVert ? IDC_VMAX : IDC_HMAX, fValid ? _T("") : ach);
-        SetDlgItemText(hwndDlg, fVert ? IDC_VPOS : IDC_HPOS, fValid ? _T("") : ach);
-        SetDlgItemText(hwndDlg, fVert ? IDC_VPAGE : IDC_HPAGE, fValid ? _T("") : ach);
-        SetDlgItemText(hwndDlg, idc_state, fValid ? _T("Disabled") : ach);
+        SetDlgItemText(hwndDlg, fVert ? IDC_VMIN : IDC_HMIN, fValid ? L"" : ach);
+        SetDlgItemText(hwndDlg, fVert ? IDC_VMAX : IDC_HMAX, fValid ? L"" : ach);
+        SetDlgItemText(hwndDlg, fVert ? IDC_VPOS : IDC_HPOS, fValid ? L"" : ach);
+        SetDlgItemText(hwndDlg, fVert ? IDC_VPAGE : IDC_HPAGE, fValid ? L"" : ach);
+        SetDlgItemText(hwndDlg, idc_state, fValid ? L"Disabled" : ach);
     }
 }
 
 void SetScrollbarInfo(HWND hwnd)
 {
     DWORD dwStyle = 0;
-    TCHAR  ach[256];
+    WCHAR  ach[256];
     HWND   hwndDlg = WinSpyTab[PROPERTY_TAB].hwnd;
 
     *ach = 0;
@@ -72,7 +72,7 @@ void SetScrollbarInfo(HWND hwnd)
     if (hwnd && !IsWindow(hwnd))
     {
         fValid = FALSE;
-        _tcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
+        wcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
     }
 
     if (fValid)

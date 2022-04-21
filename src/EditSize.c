@@ -152,7 +152,7 @@ void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget)
     else
     {
         MessageBox(hwndParent,
-            _T("Not a valid window"),
+            L"Not a valid window",
             szAppName,
             MB_OK | MB_ICONEXCLAMATION);
     }

@@ -21,7 +21,7 @@ typedef struct
     HWND   hwndTarget;  // what window are we looking at??
     BOOL   bAddNew;
 
-    TCHAR  szString[256];
+    WCHAR  szString[256];
     ATOM   aAtom;
 
 } PropertyEditState;
@@ -33,7 +33,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
     HWND hwndList;
 
     HANDLE hHandle;
-    TCHAR szText[32];
+    WCHAR szText[32];
 
     switch (iMsg)
     {
@@ -57,7 +57,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
                 CheckRadioButton(hwnd, IDC_RADIO_NAME, IDC_RADIO_ATOM, IDC_RADIO_ATOM);
                 EnableWindow(GetDlgItem(hwnd, IDC_RADIO_NAME), FALSE);
 
-                _stprintf_s(szText, ARRAYSIZE(szText), _T("%04hX"), state->aAtom);
+                _stprintf_s(szText, ARRAYSIZE(szText), L"%04hX", state->aAtom);
                 SetDlgItemText(hwnd, IDC_EDIT_NAME, szText);
 
                 hHandle = GetProp(state->hwndTarget, MAKEINTATOM(state->aAtom));

@@ -43,7 +43,7 @@ typedef struct
     WNDCLASSEXW wcOutput;
     WNDPROC     wndproc;
 
-    TCHAR       szText[200]; // Window text to retrieve
+    WCHAR       szText[200]; // Window text to retrieve
 } INJDATA;
 
 #pragma runtime_checks("", off)
@@ -83,13 +83,13 @@ static DWORD WINAPI GetDataProc(LPVOID pParam)
     {
         static_assert(sizeof(pInjData->wcOutput) == sizeof(WNDCLASSEXA), "Unicode and ANSI structures expected to be the same size");
         pInjData->wcOutput.cbSize = sizeof(pInjData->wcOutput);
-        fRet = fRet && pInjData->fnGetClassInfoEx(pInjData->hInst, (LPCTSTR)(intptr_t)pInjData->atom, &pInjData->wcOutput);
+        fRet = fRet && pInjData->fnGetClassInfoEx(pInjData->hInst, (PCWSTR)(intptr_t)pInjData->atom, &pInjData->wcOutput);
     }
 
     if (pInjData->fnSendMessageTimeout)
     {
         // Null-terminate in case the gettext fails
-        pInjData->szText[0] = _T('\0');
+        pInjData->szText[0] = L'\0';
 
         pInjData->fnSendMessageTimeout(pInjData->hwnd, WM_GETTEXT,
             pInjData->nTextSize, (LPARAM)pInjData->szText,
@@ -116,7 +116,7 @@ BOOL IsInjectionDataValid(INJDATA *pInjData)
     // It is only safe to inject this code if we are passing the addresses of functions in user32.dll (which is shared across all processes).
     // If an appcompat shim is applied to our process that replaces any of these functions' pointers with ones outside of user32.dll,
     // we cannot really do anything about this (as it will also override the GetProcAddress behavior), so the best we can do is fail gracefully
-    HMODULE hModUser32 = GetModuleHandle(_T("user32.dll"));
+    HMODULE hModUser32 = GetModuleHandle(L"user32.dll");
     if (!hModUser32)
         return FALSE;
 
@@ -129,7 +129,7 @@ BOOL IsInjectionDataValid(INJDATA *pInjData)
         IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnGetClassInfoEx));
 }
 
-BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, TCHAR *pszText, int nTextLen)
+BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, WCHAR *pszText, int nTextLen)
 {
     INJDATA InjData;
     BOOL    fReturn;

@@ -18,19 +18,19 @@ int WINAPI GetRectHeight(RECT *rect);
 int WINAPI GetRectWidth(RECT *rect);
 
 DWORD_PTR GetDlgItemBaseInt(HWND hwnd, UINT ctrlid, int base);
-DWORD_PTR _tstrtoib16(PCTSTR pszHexStr);
+DWORD_PTR _tstrtoib16(PCWSTR pszHexStr);
 BOOL EnableDialogTheme(HWND hwnd);
 
 BOOL EnableDebugPrivilege();
 
-TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULONG nLength);
+WCHAR *GetVersionString(WCHAR *szFileName, WCHAR *szValue, WCHAR *szBuffer, ULONG nLength);
 
 BOOL ProcessArchMatches(HWND hwnd);
 WORD GetProcessorArchitecture();
 
 HWND GetRealParent(HWND hWnd);
 
-BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz);
+BOOL CopyTextToClipboard(HWND hWnd, WCHAR *psz);
 
 HBITMAP LoadPNGImage(UINT id, void **bits);
 

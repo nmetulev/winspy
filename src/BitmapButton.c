@@ -152,7 +152,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
     int sxIcon, syIcon; // Icon size
     int xoff, yoff;     //
 
-    TCHAR szText[100];
+    WCHAR szText[100];
     size_t nTextLen;
 
     HICON hIcon;
@@ -185,7 +185,7 @@ BOOL DrawBitmapButton(DRAWITEMSTRUCT *dis)
         // Retrieve button text
         GetWindowText(dis->hwndItem, szText, ARRAYSIZE(szText));
 
-        nTextLen = _tcslen(szText);
+        nTextLen = wcslen(szText);
 
         // Retrieve button icon
         hIcon = (HICON)SendMessage(dis->hwndItem, BM_GETIMAGE, IMAGE_ICON, 0);
@@ -362,7 +362,7 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
 //
 void MakeDlgBitmapButton(HWND hwndDlg, UINT uCtrlId, UINT uIconId)
 {
-    if (GetModuleHandle(_T("uxtheme.dll")))
+    if (GetModuleHandle(L"uxtheme.dll"))
         g_fThemeApiAvailable = TRUE;
     else
         g_fThemeApiAvailable = FALSE;

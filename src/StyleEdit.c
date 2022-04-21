@@ -40,7 +40,7 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
 UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 {
     HWND hwndDlg;
-    TCHAR szText[120];
+    WCHAR szText[120];
 
     DWORD dwStyle;
 
@@ -62,7 +62,7 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
         }
         else
         {
-            _stprintf_s(szText, ARRAYSIZE(szText), _T("Window ") szHexFmt _T("\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  "), (UINT)(UINT_PTR)hwnd);
+            _stprintf_s(szText, ARRAYSIZE(szText), L"Window " szHexFmt L"\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  ", (UINT)(UINT_PTR)hwnd);
             MessageBox(hwndDlg, szText, szAppName, MB_OK | MB_ICONINFORMATION);
         }
 
@@ -79,7 +79,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
     HWND hwndList;
 
     DWORD dwStyles;
-    TCHAR szText[32];
+    WCHAR szText[32];
 
     int topindex;
     int caretindex;
@@ -171,7 +171,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
         case IDC_CLEAR:
             // I don't know why anyone would use that button
-            SetDlgItemText(hwnd, IDC_EDIT1, _T("00000000"));
+            SetDlgItemText(hwnd, IDC_EDIT1, L"00000000");
             return TRUE;
 
         }

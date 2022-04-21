@@ -222,7 +222,7 @@ static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
         // Find ASCII character
         UINT ch = MapVirtualKey((UINT)wParam, 2);
 
-        if (ch == _T('c') || ch == _T('C'))
+        if (ch == 'c' || ch == 'C')
         {
             FindTool_RemoveOverlay();
             CaptureWindow(GetParent(g_hwndFinder), g_hwndCurrent);

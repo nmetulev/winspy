@@ -20,12 +20,12 @@ void DescribeProcessDpiAwareness(DWORD dwProcessId, PSTR pszAwareness, size_t cc
 BOOL IsGetSystemDpiForProcessPresent();
 
 typedef BOOL(WINAPI * EnumProcessModulesProc)(HANDLE, HMODULE *, DWORD, LPDWORD);
-typedef DWORD(WINAPI * GetModuleBaseNameProc)(HANDLE, HMODULE, LPTSTR, DWORD);
-typedef DWORD(WINAPI * GetModuleFileNameExProc)(HANDLE, HMODULE, LPTSTR, DWORD);
+typedef DWORD(WINAPI * GetModuleBaseNameProc)(HANDLE, HMODULE, PWSTR, DWORD);
+typedef DWORD(WINAPI * GetModuleFileNameExProc)(HANDLE, HMODULE, PWSTR, DWORD);
 
-typedef BOOL(WINAPI * QueryFullProcessImageNameProc)(HANDLE hProcess, DWORD dwFlags, LPTSTR lpExeName, PDWORD lpdwSize);
+typedef BOOL(WINAPI * QueryFullProcessImageNameProc)(HANDLE hProcess, DWORD dwFlags, PWSTR lpExeName, PDWORD lpdwSize);
 
-BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
+BOOL GetProcessNameByPid1(DWORD dwProcessId, WCHAR szName[], DWORD nNameSize, WCHAR szPath[], DWORD nPathSize)
 {
     HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     PROCESSENTRY32 pe = { sizeof(pe) };
@@ -73,7 +73,7 @@ BOOL GetProcessNameByPid1(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TC
 //  szPath       [out]
 //  nPathSize    [in]
 //
-BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
+BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, WCHAR szName[], DWORD nNameSize, WCHAR szPath[], DWORD nPathSize)
 {
     HMODULE hPSAPI;
     HANDLE hProcess;
@@ -86,7 +86,7 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
     GetModuleFileNameExProc fnGetModuleFileNameEx;
 
     // Attempt to load Process Helper library
-    hPSAPI = LoadLibrary(_T("psapi.dll"));
+    hPSAPI = LoadLibrary(L"psapi.dll");
 
     if (!hPSAPI)
     {
@@ -104,14 +104,8 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
 
 
     fnEnumProcessModules = (EnumProcessModulesProc)GetProcAddress(hPSAPI, "EnumProcessModules");
-
-#ifdef UNICODE
     fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameW");
     fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExW");
-#else
-    fnGetModuleBaseName = (GetModuleBaseNameProc)GetProcAddress(hPSAPI, "GetModuleBaseNameA");
-    fnGetModuleFileNameEx = (GetModuleFileNameExProc)GetProcAddress(hPSAPI, "GetModuleFileNameExA");
-#endif
 
     if (!fnEnumProcessModules || !fnGetModuleBaseName)
     {
@@ -144,12 +138,12 @@ BOOL GetProcessNameByPid_BelowVista(DWORD dwProcessId, TCHAR szName[], DWORD nNa
     return TRUE;
 }
 
-BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCHAR szPath[], DWORD nPathSize)
+BOOL GetProcessNameByPid(DWORD dwProcessId, WCHAR szName[], DWORD nNameSize, WCHAR szPath[], DWORD nPathSize)
 {
     static QueryFullProcessImageNameProc fnQueryFullProcessImageName = NULL;
     HANDLE hProcess;
     DWORD dwSize;
-    TCHAR *pName;
+    WCHAR *pName;
     BOOL bSucceeded;
 
     if (!fnQueryFullProcessImageName)
@@ -173,10 +167,10 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, TCHAR szName[], DWORD nNameSize, TCH
 
         if (fnQueryFullProcessImageName(hProcess, 0, szPath, &dwSize))
         {
-            pName = _tcsrchr(szPath, '\\');
+            pName = wcsrchr(szPath, '\\');
             if (pName)
             {
-                _tcsncpy_s(szName, nNameSize, pName + 1, _TRUNCATE);
+                wcsncpy_s(szName, nNameSize, pName + 1, _TRUNCATE);
                 bSucceeded = TRUE;
             }
         }
@@ -195,11 +189,11 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 {
     DWORD dwProcessId = 0;
     DWORD dwThreadId = 0;
-    TCHAR ach[32];
-    TCHAR szPath[MAX_PATH];
+    WCHAR ach[32];
+    WCHAR szPath[MAX_PATH];
     BOOL  fValid;
     HWND  hwndDlg = WinSpyTab[PROCESS_TAB].hwnd;
-    PCTSTR pszDefault = _T("");
+    PCWSTR pszDefault = L"";
 
     if (hwnd)
     {
@@ -224,7 +218,7 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 
     if (dwProcessId)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwProcessId, dwProcessId);
+        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt L"  (%u)", dwProcessId, dwProcessId);
         SetDlgItemText(hwndDlg, IDC_PID, ach);
     }
     else
@@ -237,7 +231,7 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt _T("  (%u)"), dwThreadId, dwThreadId);
+        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt L"  (%u)", dwThreadId, dwThreadId);
         SetDlgItemText(hwndDlg, IDC_TID, ach);
     }
     else
@@ -255,8 +249,8 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
     }
     else
     {
-        SetDlgItemText(hwndDlg, IDC_PROCESSNAME, fValid ? _T("N/A") : pszDefault);
-        SetDlgItemText(hwndDlg, IDC_PROCESSPATH, fValid ? _T("N/A") : pszDefault);
+        SetDlgItemText(hwndDlg, IDC_PROCESSNAME, fValid ? L"N/A" : pszDefault);
+        SetDlgItemText(hwndDlg, IDC_PROCESSPATH, fValid ? L"N/A" : pszDefault);
     }
 
     if (dwProcessId)
@@ -283,12 +277,12 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 }
 
 
-TCHAR szWarning1[] = _T("Are you sure you want to close this process?");
-TCHAR szWarning2[] = _T("WARNING: Terminating a process can cause undesired\r\n")\
-_T("results including loss of data and system instability. The\r\n")\
-_T("process will not be given the chance to save its state or\r\n")\
-_T("data before it is terminated. Are you sure you want to\r\n")\
-_T("terminate the process?");
+WCHAR szWarning1[] = L"Are you sure you want to close this process?";
+WCHAR szWarning2[] = L"WARNING: Terminating a process can cause undesired\r\n"\
+L"results including loss of data and system instability. The\r\n"\
+L"process will not be given the chance to save its state or\r\n"\
+L"data before it is terminated. Are you sure you want to\r\n"\
+L"terminate the process?";
 
 void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND hwnd, DWORD dwProcessId)
 {
@@ -332,18 +326,18 @@ void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND
     {
         case IDM_WINSPY_FINDEXE:
         {
-            TCHAR szExplorer[MAX_PATH];
-            TCHAR szName[32];
-            TCHAR szPath[MAX_PATH];
+            WCHAR szExplorer[MAX_PATH];
+            WCHAR szName[32];
+            WCHAR szPath[MAX_PATH];
 
             if (GetProcessNameByPid(dwProcessId, szName, ARRAYSIZE(szName), szPath, ARRAYSIZE(szPath)))
             {
-                _stprintf_s(szExplorer, ARRAYSIZE(szExplorer), _T("/select,\"%s\""), szPath);
-                ShellExecute(0, _T("open"), _T("explorer"), szExplorer, 0, SW_SHOW);
+                _stprintf_s(szExplorer, ARRAYSIZE(szExplorer), L"/select,\"%s\"", szPath);
+                ShellExecute(0, L"open", L"explorer", szExplorer, 0, SW_SHOW);
             }
             else
             {
-                MessageBox(hwndParent, _T("Invalid Process Id"), szAppName, MB_OK | MB_ICONWARNING);
+                MessageBox(hwndParent, L"Invalid Process Id", szAppName, MB_OK | MB_ICONWARNING);
             }
         }
         break;
@@ -362,7 +356,7 @@ void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND
                 }
                 else
                 {
-                    MessageBox(hwndParent, _T("Invalid Process Id"), szAppName, MB_OK | MB_ICONWARNING);
+                    MessageBox(hwndParent, L"Invalid Process Id", szAppName, MB_OK | MB_ICONWARNING);
                 }
             }
 

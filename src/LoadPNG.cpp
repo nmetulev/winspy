@@ -13,7 +13,7 @@
 //#import "wincodec.idl" no_namespace
 
 // Creates a stream object initialized with the data from an executable resource.
-IStream * CreateStreamOnResource(LPCTSTR lpName, LPCTSTR lpType)
+IStream * CreateStreamOnResource(PCWSTR lpName, PCWSTR lpType)
 {
     IStream * ipStream = NULL;
 
@@ -195,7 +195,7 @@ HBITMAP LoadPNGImage(UINT id, OUT VOID **bits)
     HBITMAP hbmpSplash = NULL;
 
     // load the PNG image data into a stream
-    IStream * ipImageStream = CreateStreamOnResource(MAKEINTRESOURCE(id), _T("PNG"));
+    IStream * ipImageStream = CreateStreamOnResource(MAKEINTRESOURCE(id), L"PNG");
 
     if (ipImageStream == NULL)
         goto Return;

@@ -18,14 +18,14 @@
 #include "resource.h"
 #include "Utils.h"
 
-void VerboseClassName(TCHAR ach[], size_t cch, WORD atom)
+void VerboseClassName(WCHAR ach[], size_t cch, WORD atom)
 {
     // See https://msdn.microsoft.com/en-us/library/windows/desktop/ms633574(v=vs.85).aspx
-    if (atom == (intptr_t)WC_DIALOG) _tcscat_s(ach, cch, _T(" (Dialog)"));
-    else if (atom == 32768) _tcscat_s(ach, cch, _T(" (Menu)"));
-    else if (atom == 32769) _tcscat_s(ach, cch, _T(" (Desktop window)"));
-    else if (atom == 32771) _tcscat_s(ach, cch, _T(" (Task-switch window)"));
-    else if (atom == 32772) _tcscat_s(ach, cch, _T(" (Icon title)"));
+    if (atom == (intptr_t)WC_DIALOG) wcscat_s(ach, cch, L" (Dialog)");
+    else if (atom == 32768) wcscat_s(ach, cch, L" (Menu)");
+    else if (atom == 32769) wcscat_s(ach, cch, L" (Desktop window)");
+    else if (atom == 32771) wcscat_s(ach, cch, L" (Task-switch window)");
+    else if (atom == 32772) wcscat_s(ach, cch, L" (Icon title)");
 }
 
 //
@@ -182,7 +182,7 @@ void InitStockStyleLists()
 //
 //  Lookup the specified value in the lookup list
 //
-int FormatConst(TCHAR *ach, size_t cch, ConstLookupType *list, int items, UINT matchthis)
+int FormatConst(WCHAR *ach, size_t cch, ConstLookupType *list, int items, UINT matchthis)
 {
     int i;
 
@@ -190,7 +190,7 @@ int FormatConst(TCHAR *ach, size_t cch, ConstLookupType *list, int items, UINT m
     {
         if (list[i].value == matchthis)
         {
-            _tcscpy_s(ach, cch, list[i].szName);
+            wcscpy_s(ach, cch, list[i].szName);
             return i;
         }
     }
@@ -198,7 +198,7 @@ int FormatConst(TCHAR *ach, size_t cch, ConstLookupType *list, int items, UINT m
     return -1;
 }
 
-int PrintHandle(TCHAR *ach, size_t cch, ULONG_PTR value)
+int PrintHandle(WCHAR *ach, size_t cch, ULONG_PTR value)
 {
     // if the handle value fits into 32 bits, only use the 32-bit hex format; otherwise full pointer format (this only makes a difference for 64 bit)
     return _stprintf_s(ach, cch, value <= MAXUINT ? szHexFmt : szPtrFmt, value);
@@ -207,7 +207,7 @@ int PrintHandle(TCHAR *ach, size_t cch, ULONG_PTR value)
 //
 //  Lookup the specified value in the handle list
 //
-int FormatHandle(TCHAR *ach, size_t cch, HandleLookupType *handlelist, int items, ULONG_PTR matchthis)
+int FormatHandle(WCHAR *ach, size_t cch, HandleLookupType *handlelist, int items, ULONG_PTR matchthis)
 {
     int i;
 
@@ -215,13 +215,13 @@ int FormatHandle(TCHAR *ach, size_t cch, HandleLookupType *handlelist, int items
     {
         if (handlelist[i].handle == (HANDLE)matchthis)
         {
-            _tcscpy_s(ach, cch, handlelist[i].szName);
+            wcscpy_s(ach, cch, handlelist[i].szName);
             return i;
         }
     }
 
     if (matchthis == 0 || (HANDLE)matchthis == INVALID_HANDLE_VALUE)
-        _tcscpy_s(ach, cch, _T("(None)"));
+        wcscpy_s(ach, cch, L"(None)");
     else
         PrintHandle(ach, cch, matchthis);
 
@@ -237,7 +237,7 @@ void FillBytesList(
     LONG_PTR WINAPI pGetLongPtr(HWND, int)
 )
 {
-    TCHAR ach[256];
+    WCHAR ach[256];
     int i = 0;
     LONG_PTR lp;
 
@@ -299,10 +299,10 @@ void FillBytesList(
 
         if (dwLastError == ERROR_SUCCESS)
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), _T("+%-8d %0*IX"), i, 2 * chunkBytes, lp);
+            _stprintf_s(ach, ARRAYSIZE(ach), L"+%-8d %0*IX", i, 2 * chunkBytes, lp);
         }
         else
-            _stprintf_s(ach, ARRAYSIZE(ach), _T("+%-8d Unavailable (0x") szHexFmt _T(")"), i, dwLastError);
+            _stprintf_s(ach, ARRAYSIZE(ach), L"+%-8d Unavailable (0x" szHexFmt L")", i, dwLastError);
 
         i += chunkBytes;
         numBytes -= chunkBytes;
@@ -320,7 +320,7 @@ void FillBytesList(
 //
 void SetClassInfo(HWND hwnd)
 {
-    TCHAR ach[256];
+    WCHAR ach[256];
 
     int i, numstyles, classbytes;
     HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
@@ -349,21 +349,21 @@ void SetClassInfo(HWND hwnd)
     //atom
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), _T("%04X"), GetClassLong(hwnd, GCW_ATOM));
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%04X", GetClassLong(hwnd, GCW_ATOM));
     }
     SetDlgItemText(hwndDlg, IDC_ATOM, ach);
 
     //extra class bytes
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbClsExtra);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbClsExtra);
     }
     SetDlgItemText(hwndDlg, IDC_CLASSBYTES, ach);
 
     //extra window bytes
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), _T("%d"), spy_WndClassEx.cbWndExtra);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbWndExtra);
     }
     SetDlgItemText(hwndDlg, IDC_WINDOWBYTES, ach);
 
@@ -372,7 +372,7 @@ void SetClassInfo(HWND hwnd)
     {
         _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
     }
-    SetDlgItemText(hwndDlg, IDC_MENUHANDLE, _T("(None)"));
+    SetDlgItemText(hwndDlg, IDC_MENUHANDLE, L"(None)");
 
     //cursor handle
     if (hwnd)
@@ -404,7 +404,7 @@ void SetClassInfo(HWND hwnd)
             if (i != -1)
             {
                 int len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
-                _stprintf_s(ach + len, ARRAYSIZE(ach) - len, _T("  (%s)"), BrushLookup2[i].szName);
+                _stprintf_s(ach + len, ARRAYSIZE(ach) - len, L"  (%s)", BrushLookup2[i].szName);
             }
         }
     }
@@ -417,13 +417,13 @@ void SetClassInfo(HWND hwnd)
     {
         if (spy_WndProc == 0)
         {
-            _tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
+            wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
         }
         else
         {
             _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
             if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
-                _tcscat_s(ach, ARRAYSIZE(ach), _T(" (Subclassed)"));
+                wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
         }
     }
 
@@ -435,7 +435,7 @@ void SetClassInfo(HWND hwnd)
     if (hwnd)
     {
         if (spy_WndClassEx.lpfnWndProc == 0)
-            _tcscpy_s(ach, ARRAYSIZE(ach), _T("N/A"));
+            wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
         else
             _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndClassEx.lpfnWndProc);
     }

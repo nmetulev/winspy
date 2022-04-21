@@ -27,7 +27,7 @@ BOOL StrBeginsWith(PCWSTR pcsz, PCWSTR pcszPrefix)
 //
 //  Enable/Disable privilege with specified name (for current process)
 //
-BOOL EnablePrivilege(TCHAR *szPrivName, BOOL fEnable)
+BOOL EnablePrivilege(WCHAR *szPrivName, BOOL fEnable)
 {
     TOKEN_PRIVILEGES tp;
     LUID    luid;
@@ -109,7 +109,7 @@ int WINAPI GetRectWidth(RECT *rect)
 //  Convert the specified string
 //  into the equivalent decimal value
 //
-DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
+DWORD_PTR _tstrtoib10(WCHAR *szHexStr)
 {
 #ifdef _WIN64
     return _ttoi64(szHexStr);
@@ -122,10 +122,10 @@ DWORD_PTR _tstrtoib10(TCHAR *szHexStr)
 //  Convert the specified string (with a hex-number in it)
 //  into the equivalent hex-value
 //
-DWORD_PTR _tstrtoib16(PCTSTR pszHexStr)
+DWORD_PTR _tstrtoib16(PCWSTR pszHexStr)
 {
     DWORD_PTR num = 0;
-    const TCHAR *pch = pszHexStr;
+    PCWSTR pch = pszHexStr;
 
     // Skip any leading whitespace
     while (*pch == ' ')
@@ -137,14 +137,14 @@ DWORD_PTR _tstrtoib16(PCTSTR pszHexStr)
 
     while (isxdigit(*pch))
     {
-        static_assert(_T('9') < _T('A') && _T('A') < _T('a'), "Incorrect character code values assumption");
+        static_assert('9' < 'A' && 'A' < 'a', "Incorrect character code values assumption");
 
         UINT ch = *pch;
-        UINT x = ch <= _T('9') ?
-            ch - _T('0') :
-            10 + (ch < _T('a') ?
-                ch - _T('A') :
-                ch - _T('a'));
+        UINT x = ch <= '9' ?
+            ch - '0' :
+            10 + (ch < 'a' ?
+                ch - 'A' :
+                ch - 'a');
 
         num = (num << 4) | (x & 0x0f);
         pch++;
@@ -155,7 +155,7 @@ DWORD_PTR _tstrtoib16(PCTSTR pszHexStr)
 
 DWORD_PTR GetNumericValue(HWND hwnd, int base)
 {
-    TCHAR szAddressText[128];
+    WCHAR szAddressText[128];
 
     GetWindowText(hwnd, szAddressText, ARRAYSIZE(szAddressText));
 
@@ -200,7 +200,7 @@ BOOL EnableDialogTheme(HWND hwnd)
     HMODULE hUXTheme;
     ETDTProc fnEnableThemeDialogTexture;
 
-    hUXTheme = LoadLibrary(_T("uxtheme.dll"));
+    hUXTheme = LoadLibrary(L"uxtheme.dll");
 
     if (hUXTheme)
     {
@@ -235,12 +235,12 @@ BOOL EnableDialogTheme(HWND hwnd)
 //      "FileDescription", "FileVersion", "InternalName",
 //      "ProductName", "ProductVersion", etc  (see MSDN for others)
 //
-TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULONG nLength)
+WCHAR *GetVersionString(WCHAR *szFileName, WCHAR *szValue, WCHAR *szBuffer, ULONG nLength)
 {
     UINT  len;
     PVOID  ver;
     DWORD  *codepage;
-    TCHAR  fmt[0x40];
+    WCHAR  fmt[0x40];
     PVOID  ptr = 0;
     BOOL   result = FALSE;
 
@@ -260,7 +260,7 @@ TCHAR *GetVersionString(TCHAR *szFileName, TCHAR *szValue, TCHAR *szBuffer, ULON
 
             if (VerQueryValue(ver, fmt, &ptr, &len))
             {
-                lstrcpyn(szBuffer, (TCHAR*)ptr, min(nLength, len));
+                lstrcpyn(szBuffer, (WCHAR*)ptr, min(nLength, len));
                 result = TRUE;
             }
         }
@@ -384,19 +384,19 @@ HWND GetRealParent(HWND hWnd)
 //
 // Copies text to clipboard
 //
-BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
+BOOL CopyTextToClipboard(HWND hWnd, WCHAR *psz)
 {
     HGLOBAL hText;
-    TCHAR *pszText;
+    WCHAR *pszText;
     size_t nTextSize;
 
-    nTextSize = _tcslen(psz);
+    nTextSize = wcslen(psz);
 
-    hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize + 1) * sizeof(TCHAR));
+    hText = GlobalAlloc(GMEM_MOVEABLE, (nTextSize + 1) * sizeof(WCHAR));
     if (!hText)
         return FALSE;
 
-    pszText = (TCHAR *)GlobalLock(hText);
+    pszText = (WCHAR *)GlobalLock(hText);
     StringCchCopy(pszText, nTextSize + 1, psz);
     GlobalUnlock(hText);
 
@@ -405,11 +405,7 @@ BOOL CopyTextToClipboard(HWND hWnd, TCHAR *psz)
         if (EmptyClipboard())
         {
             if (SetClipboardData(
-#ifdef UNICODE
                 CF_UNICODETEXT,
-#else
-                CF_TEXT,
-#endif
                 hText))
             {
                 CloseClipboard();
@@ -596,7 +592,7 @@ void UpdateLayeredWindowContent(HWND hwnd, RECT rc, HBITMAP hbmp, BYTE alpha)
 
 BOOL IsWindowsFormsClassName(PCWSTR pcszClass)
 {
-    return StrBeginsWith(pcszClass, _T("WindowsForms"));
+    return StrBeginsWith(pcszClass, L"WindowsForms");
 }
 
 void ExtractWindowsFormsInnerClassName(PWSTR pszName)
@@ -609,7 +605,7 @@ void ExtractWindowsFormsInnerClassName(PWSTR pszName)
         {
             pchStart++;
 
-            TCHAR *pchEnd = wcschr(pchStart, '.');
+            WCHAR *pchEnd = wcschr(pchStart, '.');
 
             // Found a substring that looks good, copy it to the front of the buffer.
 

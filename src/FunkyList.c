@@ -62,7 +62,7 @@ BOOL FunkyList_MeasureItem(HWND hwnd, MEASUREITEMSTRUCT *mis)
 BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
 {
     HWND  hwndList = GetDlgItem(hwnd, uCtrlId);
-    TCHAR szText[MAX_STYLE_NAME_CCH];
+    WCHAR szText[MAX_STYLE_NAME_CCH];
 
     COLORREF crFG = GetTextColor(dis->hDC);
     COLORREF crBG = GetBkColor(dis->hDC);
@@ -105,7 +105,7 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
         ExtTextOut(dis->hDC,
             dis->rcItem.left + 2,
             dis->rcItem.top + 0,
-            ETO_OPAQUE, &dis->rcItem, szText, (UINT)_tcslen(szText), 0);
+            ETO_OPAQUE, &dis->rcItem, szText, (UINT)wcslen(szText), 0);
 
         if (!pStyle && (szText[0] == '<'))
         {
