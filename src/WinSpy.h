@@ -22,6 +22,9 @@ extern "C" {
 #define DWM_CLOAKED_INHERITED   0x00000004
 #endif
 
+#define QUOTE(arg)          #arg
+#define STRINGIZE(arg)      QUOTE(arg)
+
 #define UNREFERENCED_PARAMETER(P)          (P)
 #define IDM_WINSPY_ABOUT    100
 
@@ -251,6 +254,7 @@ void ShowBroadcasterDlg(HWND hwndParent);
 void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended);
 void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew);
 void ShowOptionsDlg(HWND hwndParent);
+void ShowAboutDlg(HWND hwndParent);
 
 void LoadSettings(void);
 void SaveSettings(void);

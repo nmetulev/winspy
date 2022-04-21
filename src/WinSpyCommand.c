@@ -228,11 +228,6 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-    WCHAR szText[200];
-    WCHAR szTitle[60];
-    WCHAR szVersion[40];
-    WCHAR szCurExe[MAX_PATH];
-
     switch (wParam & 0xFFF0)
     {
     case SC_RESTORE:
@@ -255,23 +250,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
     switch (wParam)
     {
     case IDM_WINSPY_ABOUT:
-
-        GetModuleFileName(0, szCurExe, MAX_PATH);
-        GetVersionString(szCurExe, TEXT("FileVersion"), szVersion, 40);
-
-        swprintf_s(szText, ARRAYSIZE(szText),
-            L"%s v%s\n"
-            L"\n"
-            L"Copyright(c) 2002-2012 by Catch22 Productions.\n"
-            L"Written by J Brown.\n"
-            L"Homepage: www.catch22.net\n"
-            L"\n"
-            L"Forked and improved by RaMMicHaeL.\n"
-            L"Homepage: rammichael.com",
-            szAppName, szVersion);
-        swprintf_s(szTitle, ARRAYSIZE(szTitle), L"About %s", szAppName);
-
-        MessageBox(hwnd, szText, szTitle, MB_OK | MB_ICONINFORMATION);
+        ShowAboutDlg(hwnd);
         return TRUE;
 
     case IDM_WINSPY_OPTIONS:
@@ -283,7 +262,6 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
         return TRUE;
 
     case IDM_WINSPY_ONTOP:
-
         PostMessage(hwnd, WM_COMMAND, wParam, lParam);
         return TRUE;
 
@@ -302,3 +280,37 @@ UINT WinSpyDlg_TimerHandler(UINT_PTR uTimerId)
 
     return FALSE;
 }
+
+void ShowAboutDlg(HWND hwndParent)
+{
+    CHAR  szText[400];
+    CHAR  szTitle[60];
+    WCHAR szVersion[40];
+    WCHAR szCurExe[MAX_PATH];
+
+    GetModuleFileName(0, szCurExe, MAX_PATH);
+    GetVersionString(szCurExe, TEXT("FileVersion"), szVersion, 40);
+
+    sprintf_s(szText, ARRAYSIZE(szText),
+        "%S v%S\n"
+        "\n"
+        "Original version:\n"
+        "    Copyright(c) 2002 - 2012 by Catch22 Productions\n"
+        "    Written by J Brown\n"
+        "    www.catch22.net | github.com/strobejb/winspy\n"
+        "\n"
+        "Forked and improved by various contributors:\n"
+        "    github.com/m417z/winspy\n"
+#ifdef WINSPY_GITHUB_FORK
+        "\n"
+        "This binary was built from this fork:\n"
+        "    " STRINGIZE(WINSPY_GITHUB_FORK) " (on " __DATE__ ")"
+#endif
+        "",
+        szAppName, szVersion);
+
+    sprintf_s(szTitle, ARRAYSIZE(szTitle), "About %S", szAppName);
+
+    MessageBoxA(hwndParent, szText, szTitle, MB_OK | MB_ICONINFORMATION);
+}
+
