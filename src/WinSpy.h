@@ -11,7 +11,7 @@ extern "C" {
 #include <windows.h>
 #include <WindowsX.h>
 #include <commctrl.h>
-#include <tchar.h>
+#include <stdlib.h>
 #include <Strsafe.h>
 #include <dwmapi.h>
 

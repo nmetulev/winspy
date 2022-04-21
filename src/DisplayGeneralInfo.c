@@ -40,7 +40,7 @@ void SetGeneralInfo(HWND hwnd)
     //handle
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwnd);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwnd);
     }
     SetDlgItemText(hwndDlg, IDC_HANDLE, ach);
 
@@ -95,7 +95,7 @@ void SetGeneralInfo(HWND hwnd)
     //style
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", GetWindowLong(hwnd, GWL_STYLE));
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", GetWindowLong(hwnd, GWL_STYLE));
         wcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? L"  (visible, " : L"  (hidden, ");
         wcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? L"enabled" : L"disabled");
 
@@ -122,7 +122,7 @@ void SetGeneralInfo(HWND hwnd)
         x1 = rect.left;
         y1 = rect.top;
 
-        _stprintf_s(ach, ARRAYSIZE(ach), L"(%d,%d) - (%d,%d)  -  %dx%d",
+        swprintf_s(ach, ARRAYSIZE(ach), L"(%d,%d) - (%d,%d)  -  %dx%d",
             rect.left, rect.top, rect.right, rect.bottom,
             GetRectWidth(&rect), GetRectHeight(&rect));
     }
@@ -144,13 +144,13 @@ void SetGeneralInfo(HWND hwnd)
             OffsetRect(&rcClient, -rcClient.left, -rcClient.top);
             OffsetRect(&rcClient, x1, y1);
 
-            _stprintf_s(ach, ARRAYSIZE(ach), L"(%d,%d) - (%d,%d)  -  %dx%d",
+            swprintf_s(ach, ARRAYSIZE(ach), L"(%d,%d) - (%d,%d)  -  %dx%d",
                 rcClient.left, rcClient.top, rcClient.right, rcClient.bottom,
                 GetRectWidth(&rcClient), GetRectHeight(&rcClient));
         }
         else
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), L"{ %d, %d, %d, %d }",
+            swprintf_s(ach, ARRAYSIZE(ach), L"{ %d, %d, %d, %d }",
                 rcClient.left - rect.left,
                 rcClient.top - rect.top,
                 rect.right - rcClient.right,
@@ -174,11 +174,11 @@ void SetGeneralInfo(HWND hwnd)
     {
         if (spy_WndProc == 0)
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), L"N/A");
+            swprintf_s(ach, ARRAYSIZE(ach), L"N/A");
         }
         else
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
+            swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
         }
     }
     ShowDlgItem(hwndDlg, IDC_WINDOWPROC, (!fValid || spy_WndProc) ? SW_HIDE : SW_SHOW);
@@ -189,14 +189,14 @@ void SetGeneralInfo(HWND hwnd)
     //instance handle
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
     }
     SetDlgItemText(hwndDlg, IDC_INSTANCE, ach);
 
     //user data
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
     }
     SetDlgItemText(hwndDlg, IDC_USERDATA, ach);
 
@@ -207,7 +207,7 @@ void SetGeneralInfo(HWND hwnd)
         // despite the name "GWLP_ID" suggesting that control ID is pointer-sized,
         // it would only work properly in WM_COMMAND if it was a WORD,
         // as it is passed in LOWORD(wParam)
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%04IX  (%Id)", lp, lp);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%04IX  (%Id)", lp, lp);
     }
     SetDlgItemText(hwndDlg, IDC_CONTROLID, ach);
 

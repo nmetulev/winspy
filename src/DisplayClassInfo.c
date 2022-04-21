@@ -201,7 +201,7 @@ int FormatConst(WCHAR *ach, size_t cch, ConstLookupType *list, int items, UINT m
 int PrintHandle(WCHAR *ach, size_t cch, ULONG_PTR value)
 {
     // if the handle value fits into 32 bits, only use the 32-bit hex format; otherwise full pointer format (this only makes a difference for 64 bit)
-    return _stprintf_s(ach, cch, value <= MAXUINT ? L"%08X" : L"%p", value);
+    return swprintf_s(ach, cch, value <= MAXUINT ? L"%08X" : L"%p", value);
 }
 
 //
@@ -299,10 +299,10 @@ void FillBytesList(
 
         if (dwLastError == ERROR_SUCCESS)
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), L"+%-8d %0*IX", i, 2 * chunkBytes, lp);
+            swprintf_s(ach, ARRAYSIZE(ach), L"+%-8d %0*IX", i, 2 * chunkBytes, lp);
         }
         else
-            _stprintf_s(ach, ARRAYSIZE(ach), L"+%-8d Unavailable (0x%08X)", i, dwLastError);
+            swprintf_s(ach, ARRAYSIZE(ach), L"+%-8d Unavailable (0x%08X)", i, dwLastError);
 
         i += chunkBytes;
         numBytes -= chunkBytes;
@@ -342,35 +342,35 @@ void SetClassInfo(HWND hwnd)
     //class style
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", spy_WndClassEx.style);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", spy_WndClassEx.style);
     }
     SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
     //atom
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%04X", GetClassLong(hwnd, GCW_ATOM));
+        swprintf_s(ach, ARRAYSIZE(ach), L"%04X", GetClassLong(hwnd, GCW_ATOM));
     }
     SetDlgItemText(hwndDlg, IDC_ATOM, ach);
 
     //extra class bytes
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbClsExtra);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbClsExtra);
     }
     SetDlgItemText(hwndDlg, IDC_CLASSBYTES, ach);
 
     //extra window bytes
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbWndExtra);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbWndExtra);
     }
     SetDlgItemText(hwndDlg, IDC_WINDOWBYTES, ach);
 
     //menu (not implemented)
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
     }
     SetDlgItemText(hwndDlg, IDC_MENUHANDLE, L"(None)");
 
@@ -404,7 +404,7 @@ void SetClassInfo(HWND hwnd)
             if (i != -1)
             {
                 int len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
-                _stprintf_s(ach + len, ARRAYSIZE(ach) - len, L"  (%s)", BrushLookup2[i].szName);
+                swprintf_s(ach + len, ARRAYSIZE(ach) - len, L"  (%s)", BrushLookup2[i].szName);
             }
         }
     }
@@ -421,7 +421,7 @@ void SetClassInfo(HWND hwnd)
         }
         else
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
+            swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
             if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
                 wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
         }
@@ -437,7 +437,7 @@ void SetClassInfo(HWND hwnd)
         if (spy_WndClassEx.lpfnWndProc == 0)
             wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
         else
-            _stprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.lpfnWndProc);
+            swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.lpfnWndProc);
     }
 
     SetDlgItemText(hwndDlg, IDC_CLASSPROC, ach);
@@ -446,7 +446,7 @@ void SetClassInfo(HWND hwnd)
     //instance handle
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.hInstance);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.hInstance);
     }
     SetDlgItemText(hwndDlg, IDC_INSTANCEHANDLE, ach);
 

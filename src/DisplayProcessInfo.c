@@ -218,7 +218,7 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 
     if (dwProcessId)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwProcessId, dwProcessId);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwProcessId, dwProcessId);
         SetDlgItemText(hwndDlg, IDC_PID, ach);
     }
     else
@@ -231,7 +231,7 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwThreadId, dwThreadId);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwThreadId, dwThreadId);
         SetDlgItemText(hwndDlg, IDC_TID, ach);
     }
     else
@@ -332,7 +332,7 @@ void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND
 
             if (GetProcessNameByPid(dwProcessId, szName, ARRAYSIZE(szName), szPath, ARRAYSIZE(szPath)))
             {
-                _stprintf_s(szExplorer, ARRAYSIZE(szExplorer), L"/select,\"%s\"", szPath);
+                swprintf_s(szExplorer, ARRAYSIZE(szExplorer), L"/select,\"%s\"", szPath);
                 ShellExecute(0, L"open", L"explorer", szExplorer, 0, SW_SHOW);
             }
             else

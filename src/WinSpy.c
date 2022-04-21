@@ -679,7 +679,7 @@ void DumpRect(HWND hwnd)
     RECT  rect;
     WCHAR ach[80];
     GetWindowRect(hwnd, &rect);
-    _stprintf_s(ach, ARRAYSIZE(ach), L"%d %d %d %d\n", rect.left, rect.top, rect.right, rect.bottom);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%d %d %d %d\n", rect.left, rect.top, rect.right, rect.bottom);
     OutputDebugString(ach);
 
 }

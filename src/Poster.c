@@ -422,7 +422,7 @@ static void SetInitialGuiInfo(HWND hwnd, HWND hwndTarget)
     HWND     hwndMsgsCombo;
     WCHAR    ach[256];
 
-    _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwndTarget);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwndTarget);
     SetDlgItemText(hwnd, IDC_POSTER_HANDLE, ach);
 
     hwndMsgsCombo = GetDlgItem(hwnd, IDC_POSTER_MESSAGES);
@@ -480,11 +480,11 @@ static void PosterSendMessage(HWND hwnd)
 
     if (SendMessageTimeout(hwndTarget, uMsg, wParam, lParam, 0, 7000, &dwResult))
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)dwResult);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)dwResult);
     }
     else
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"Error 0x%08X", GetLastError());
+        swprintf_s(ach, ARRAYSIZE(ach), L"Error 0x%08X", GetLastError());
     }
 
     SetDlgItemText(hwnd, IDC_POSTER_RESULT, ach);
@@ -515,7 +515,7 @@ static void PosterPostMessage(HWND hwnd)
     }
     else
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), L"Error 0x%08X", GetLastError());
+        swprintf_s(ach, ARRAYSIZE(ach), L"Error 0x%08X", GetLastError());
     }
 
     SetDlgItemText(hwnd, IDC_POSTER_RESULT, ach);

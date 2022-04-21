@@ -259,7 +259,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
         GetModuleFileName(0, szCurExe, MAX_PATH);
         GetVersionString(szCurExe, TEXT("FileVersion"), szVersion, 40);
 
-        _stprintf_s(szText, ARRAYSIZE(szText),
+        swprintf_s(szText, ARRAYSIZE(szText),
             L"%s v%s\n"
             L"\n"
             L"Copyright(c) 2002-2012 by Catch22 Productions.\n"
@@ -269,7 +269,7 @@ UINT WinSpyDlg_SysMenuHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
             L"Forked and improved by RaMMicHaeL.\n"
             L"Homepage: rammichael.com",
             szAppName, szVersion);
-        _stprintf_s(szTitle, ARRAYSIZE(szTitle), L"About %s", szAppName);
+        swprintf_s(szTitle, ARRAYSIZE(szTitle), L"About %s", szAppName);
 
         MessageBox(hwnd, szText, szTitle, MB_OK | MB_ICONINFORMATION);
         return TRUE;

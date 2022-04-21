@@ -112,9 +112,9 @@ int WINAPI GetRectWidth(RECT *rect)
 DWORD_PTR _tstrtoib10(WCHAR *szHexStr)
 {
 #ifdef _WIN64
-    return _ttoi64(szHexStr);
+    return _wtoi64(szHexStr);
 #else
-    return _ttoi(szHexStr);
+    return _wtoi(szHexStr);
 #endif
 }
 
@@ -255,7 +255,7 @@ WCHAR *GetVersionString(WCHAR *szFileName, WCHAR *szValue, WCHAR *szBuffer, ULON
     {
         if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), (LPVOID *)&codepage, &len))
         {
-            _stprintf_s(fmt, ARRAYSIZE(fmt), TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
+            swprintf_s(fmt, ARRAYSIZE(fmt), TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
                 (*codepage) >> 16, szValue);
 
             if (VerQueryValue(ver, fmt, &ptr, &len))

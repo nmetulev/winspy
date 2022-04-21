@@ -242,7 +242,7 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, WCHAR szTotal[], int cchTotal)
     //
     if (g_opts.uTreeInclude & WINLIST_INCLUDE_HANDLE)
     {
-        _stprintf_s(szTotal, cchTotal, L"%08X  ", (UINT)(UINT_PTR)hwnd);
+        swprintf_s(szTotal, cchTotal, L"%08X  ", (UINT)(UINT_PTR)hwnd);
     }
     else
     {
@@ -387,7 +387,7 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
     // couldn't find one - build a new one instead
     //
     GetProcessNameByPid(pid, name, 100, path, MAX_PATH);
-    _stprintf_s(ach, ARRAYSIZE(ach), L"%s  (%u)", name, pid);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%s  (%u)", name, pid);
 
     TREENODE *pNode = NULL;
     ptrdiff_t nodeIndex = AllocateTreeNode();

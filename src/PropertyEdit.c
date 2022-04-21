@@ -57,7 +57,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
                 CheckRadioButton(hwnd, IDC_RADIO_NAME, IDC_RADIO_ATOM, IDC_RADIO_ATOM);
                 EnableWindow(GetDlgItem(hwnd, IDC_RADIO_NAME), FALSE);
 
-                _stprintf_s(szText, ARRAYSIZE(szText), L"%04hX", state->aAtom);
+                swprintf_s(szText, ARRAYSIZE(szText), L"%04hX", state->aAtom);
                 SetDlgItemText(hwnd, IDC_EDIT_NAME, szText);
 
                 hHandle = GetProp(state->hwndTarget, MAKEINTATOM(state->aAtom));
@@ -74,7 +74,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 
             SendDlgItemMessage(hwnd, IDC_EDIT_NAME, EM_SETREADONLY, TRUE, 0);
 
-            _stprintf_s(szText, ARRAYSIZE(szText), L"%p", hHandle);
+            swprintf_s(szText, ARRAYSIZE(szText), L"%p", hHandle);
             SetDlgItemText(hwnd, IDC_EDIT_HANDLE, szText);
         }
 

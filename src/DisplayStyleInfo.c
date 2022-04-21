@@ -912,7 +912,7 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
         int idx;
         WCHAR ach[10];
 
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", remainingStyles);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", remainingStyles);
         static_assert(ARRAYSIZE(ach) < MAX_STYLE_NAME_CCH, "Style name exceeds the expected limit");
         idx = (int)SendMessage(hwndStyleList, LB_ADDSTRING, 0, (LPARAM)ach);
         // For the "unrecognized bits" item, we don't store any StyleLookupEx item,
@@ -1021,7 +1021,7 @@ void SetStyleInfo(HWND hwnd)
     if (fValid)
     {
         dwStyles = GetWindowLong(hwnd, GWL_STYLE);
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwStyles);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwStyles);
     }
     SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
@@ -1029,7 +1029,7 @@ void SetStyleInfo(HWND hwnd)
     if (fValid)
     {
         dwExStyles = GetWindowLong(hwnd, GWL_EXSTYLE);
-        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwExStyles);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwExStyles);
     }
     SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
 
