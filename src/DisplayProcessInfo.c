@@ -11,6 +11,7 @@
 
 #include "WinSpy.h"
 
+#include "Utils.h"
 #include <shellapi.h>
 #include <psapi.h>
 #include "resource.h"
@@ -219,11 +220,11 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
     if (dwProcessId)
     {
         swprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwProcessId, dwProcessId);
-        SetDlgItemText(hwndDlg, IDC_PID, ach);
+        SetDlgItemTextEx(hwndDlg, IDC_PID, ach);
     }
     else
     {
-        SetDlgItemText(hwndDlg, IDC_PID, pszDefault);
+        SetDlgItemTextEx(hwndDlg, IDC_PID, pszDefault);
     }
 
 
@@ -232,11 +233,11 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
     if (fValid)
     {
         swprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwThreadId, dwThreadId);
-        SetDlgItemText(hwndDlg, IDC_TID, ach);
+        SetDlgItemTextEx(hwndDlg, IDC_TID, ach);
     }
     else
     {
-        SetDlgItemText(hwndDlg, IDC_TID, pszDefault);
+        SetDlgItemTextEx(hwndDlg, IDC_TID, pszDefault);
     }
 
 
@@ -244,13 +245,13 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
     if (dwProcessId && GetProcessNameByPid(dwProcessId, ach, ARRAYSIZE(ach),
         szPath, ARRAYSIZE(szPath)))
     {
-        SetDlgItemText(hwndDlg, IDC_PROCESSNAME, ach);
-        SetDlgItemText(hwndDlg, IDC_PROCESSPATH, szPath);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESSNAME, ach);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESSPATH, szPath);
     }
     else
     {
-        SetDlgItemText(hwndDlg, IDC_PROCESSNAME, fValid ? L"N/A" : pszDefault);
-        SetDlgItemText(hwndDlg, IDC_PROCESSPATH, fValid ? L"N/A" : pszDefault);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESSNAME, fValid ? L"N/A" : pszDefault);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESSPATH, fValid ? L"N/A" : pszDefault);
     }
 
     if (dwProcessId)
@@ -260,8 +261,8 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 
         DescribeProcessDpiAwareness(dwProcessId, szMode, ARRAYSIZE(szMode), szDpi, ARRAYSIZE(szDpi));
 
-        SetDlgItemTextA(hwndDlg, IDC_PROCESS_DPI_AWARENESS, szMode);
-        SetDlgItemTextA(hwndDlg, IDC_PROCESS_SYSTEM_DPI, szDpi);
+        SetDlgItemTextExA(hwndDlg, IDC_PROCESS_DPI_AWARENESS, szMode);
+        SetDlgItemTextExA(hwndDlg, IDC_PROCESS_SYSTEM_DPI, szDpi);
 
         if (!IsGetSystemDpiForProcessPresent())
         {
@@ -271,8 +272,8 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
     }
     else
     {
-        SetDlgItemText(hwndDlg, IDC_PROCESS_DPI_AWARENESS, pszDefault);
-        SetDlgItemText(hwndDlg, IDC_PROCESS_SYSTEM_DPI, pszDefault);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESS_DPI_AWARENESS, pszDefault);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESS_SYSTEM_DPI, pszDefault);
     }
 }
 

@@ -12,6 +12,7 @@
 #include "WinSpy.h"
 
 #include "resource.h"
+#include "Utils.h"
 
 void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, PCWSTR ach, DWORD dwStyle)
 {
@@ -30,11 +31,11 @@ void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, PCWSTR ach, DWORD
             if ((dwStyle & SBS_DIR_MASK) == bartype)
                 bartype = SB_CTL;
 
-            SetDlgItemText(hwndDlg, idc_state, L"Visible");
+            SetDlgItemTextEx(hwndDlg, idc_state, L"Visible");
         }
         else
         {
-            SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? L"Visible" : L"Disabled");
+            SetDlgItemTextEx(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? L"Visible" : L"Disabled");
         }
     }
 
@@ -47,16 +48,16 @@ void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, PCWSTR ach, DWORD
 
         if (bartype != SB_CTL)
         {
-            SetDlgItemText(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? L"Visible" : L"Hidden");
+            SetDlgItemTextEx(hwndDlg, idc_state, dwStyle & ((fVert ? WS_VSCROLL : WS_HSCROLL)) ? L"Visible" : L"Hidden");
         }
     }
     else
     {
-        SetDlgItemText(hwndDlg, fVert ? IDC_VMIN : IDC_HMIN, fValid ? L"" : ach);
-        SetDlgItemText(hwndDlg, fVert ? IDC_VMAX : IDC_HMAX, fValid ? L"" : ach);
-        SetDlgItemText(hwndDlg, fVert ? IDC_VPOS : IDC_HPOS, fValid ? L"" : ach);
-        SetDlgItemText(hwndDlg, fVert ? IDC_VPAGE : IDC_HPAGE, fValid ? L"" : ach);
-        SetDlgItemText(hwndDlg, idc_state, fValid ? L"Disabled" : ach);
+        SetDlgItemTextEx(hwndDlg, fVert ? IDC_VMIN : IDC_HMIN, fValid ? L"" : ach);
+        SetDlgItemTextEx(hwndDlg, fVert ? IDC_VMAX : IDC_HMAX, fValid ? L"" : ach);
+        SetDlgItemTextEx(hwndDlg, fVert ? IDC_VPOS : IDC_HPOS, fValid ? L"" : ach);
+        SetDlgItemTextEx(hwndDlg, fVert ? IDC_VPAGE : IDC_HPAGE, fValid ? L"" : ach);
+        SetDlgItemTextEx(hwndDlg, idc_state, fValid ? L"Disabled" : ach);
     }
 }
 

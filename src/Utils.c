@@ -11,7 +11,6 @@
 #include <malloc.h>
 #include "Utils.h"
 
-int atoi(const char *string);
 
 //
 // Case sensitive prefix match.
@@ -92,6 +91,46 @@ BOOL EnableDlgItem(HWND hwnd, UINT nCtrlId, BOOL fEnabled)
 BOOL ShowDlgItem(HWND hwnd, UINT nCtrlId, DWORD dwShowCmd)
 {
     return ShowWindow(GetDlgItem(hwnd, nCtrlId), dwShowCmd);
+}
+
+
+//
+// SetDlgItemTextEx is a Variant of SetDlgItemText that that avoids re-setting
+// the value if it is the same as what is already in the control.  This allows
+// you to, say, select the text in a label and not have the selection state
+// cleared by a redundant reset of the same value.
+//
+
+void SetDlgItemTextEx(HWND hwndDlg, UINT id, PCWSTR pcszNew)
+{
+    HWND hwnd = GetDlgItem(hwndDlg, id);
+    WCHAR szOld[256];
+
+    if (hwnd)
+    {
+        GetWindowText(hwnd, szOld, ARRAYSIZE(szOld));
+
+        if (wcscmp(pcszNew, szOld) != 0)
+        {
+            SetWindowText(hwnd, pcszNew);
+        }
+    }
+}
+
+void SetDlgItemTextExA(HWND hwndDlg, UINT id, PCSTR pcszNew)
+{
+    HWND hwnd = GetDlgItem(hwndDlg, id);
+    CHAR szOld[256];
+
+    if (hwnd)
+    {
+        GetWindowTextA(hwnd, szOld, ARRAYSIZE(szOld));
+
+        if (strcmp(pcszNew, szOld) != 0)
+        {
+            SetWindowTextA(hwnd, pcszNew);
+        }
+    }
 }
 
 int WINAPI GetRectHeight(RECT *rect)

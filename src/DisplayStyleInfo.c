@@ -995,49 +995,89 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
     SendMessage(hwndExStyleList, WM_SETREDRAW, TRUE, 0);
 }
 
+
+//
+// Remember the HWND and style values that are currently on screen.
+//
+
+static HWND  s_hwndCurrent;
+static DWORD s_dwStyleCurrent;
+static DWORD s_dwExStyleCurrent;
+
+//
+// Clears all the controls on the style tab because either there is no
+// current window, or the current window is invalid.
+//
+
+void ResetStyleTab(HWND hwnd, HWND hwndDlg)
+{
+    // Reset the labels to blank or '<invalid window>'
+
+    PCWSTR pszMessage = hwnd ? szInvalidWindow : L"";
+
+    SetDlgItemText(hwndDlg, IDC_STYLE,   pszMessage);
+    SetDlgItemText(hwndDlg, IDC_STYLEEX, pszMessage);
+
+    // Clear the listboxes.
+
+    SendDlgItemMessage(hwndDlg, IDC_LIST1, LB_RESETCONTENT, 0, 0);
+    SendDlgItemMessage(hwndDlg, IDC_LIST2, LB_RESETCONTENT, 0, 0);
+
+    // Reset cached state
+
+    s_hwndCurrent      = NULL;
+    s_dwStyleCurrent   = 0;
+    s_dwExStyleCurrent = 0;
+}
+
 //
 //  Update the Style tab with styles for specified window
 //
+
 void SetStyleInfo(HWND hwnd)
 {
     WCHAR ach[20];
-    DWORD dwStyles = 0;
-    DWORD dwExStyles = 0;
-
+    BOOL fWindowChanged = (hwnd != s_hwndCurrent);
     HWND hwndDlg = WinSpyTab[STYLE_TAB].hwnd;
-    HWND hwndStyle, hwndStyleEx;
+    HWND hwndCtrl;
+    DWORD dw = 0;
 
-    *ach = 0;
-
-    BOOL fValid = hwnd != NULL;
-    if (hwnd && !IsWindow(hwnd))
+    if (!hwnd || !IsWindow(hwnd))
     {
-        fValid = FALSE;
-        hwnd = NULL;
-        wcscpy_s(ach, ARRAYSIZE(ach), szInvalidWindow);
+        ResetStyleTab(hwnd, hwndDlg);
+        return;
     }
 
-    // Display the window style in static label
-    if (fValid)
+    // Update the styles controls.
+
+    dw = GetWindowLong(hwnd, GWL_STYLE);
+
+    if (fWindowChanged || (dw != s_dwStyleCurrent))
     {
-        dwStyles = GetWindowLong(hwnd, GWL_STYLE);
-        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwStyles);
-    }
-    SetDlgItemText(hwndDlg, IDC_STYLE, ach);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dw);
+        SetDlgItemText(hwndDlg, IDC_STYLE, ach);
 
-    // Display the extended window style in static label
-    if (fValid)
+        hwndCtrl = GetDlgItem(hwndDlg, IDC_LIST1);
+        FillStyleLists(hwnd, hwndCtrl, FALSE, dw);
+
+        s_dwStyleCurrent = dw;
+    }
+
+    // Update the EX styles controls.
+
+    dw = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+    if (fWindowChanged || (dw != s_dwExStyleCurrent))
     {
-        dwExStyles = GetWindowLong(hwnd, GWL_EXSTYLE);
-        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwExStyles);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dw);
+        SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
+
+        hwndCtrl = GetDlgItem(hwndDlg, IDC_LIST2);
+        FillExStyleLists(hwnd, hwndCtrl, FALSE, dw, TRUE);
+
+        s_dwExStyleCurrent = dw;
     }
-    SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
 
-    // Find handles to standard and extended style lists
-    hwndStyle = GetDlgItem(hwndDlg, IDC_LIST1);
-    hwndStyleEx = GetDlgItem(hwndDlg, IDC_LIST2);
-
-    // Fill both lists with their styles!
-    FillStyleLists(hwnd, hwndStyle, FALSE, dwStyles);
-    FillExStyleLists(hwnd, hwndStyleEx, FALSE, dwExStyles, TRUE);
+    s_hwndCurrent = hwnd;
 }
+

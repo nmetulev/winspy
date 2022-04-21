@@ -7,6 +7,7 @@
 #include "WinSpy.h"
 
 #include "resource.h"
+#include "Utils.h"
 
 
 //
@@ -253,7 +254,7 @@ void SetDpiInfo(HWND hwnd)
         }
     }
 
-    SetDlgItemTextA(hwndDlg, IDC_WINDOW_DPI, pszValue);
+    SetDlgItemTextExA(hwndDlg, IDC_WINDOW_DPI, pszValue);
 
     // DPI awareness field
 
@@ -272,7 +273,7 @@ void SetDpiInfo(HWND hwnd)
         }
     }
 
-    SetDlgItemTextA(hwndDlg, IDC_WINDOW_DPI_AWARENESS, pszValue);
+    SetDlgItemTextExA(hwndDlg, IDC_WINDOW_DPI_AWARENESS, pszValue);
 }
 
 void MarkProcessAsPerMonitorDpiAware()

@@ -13,6 +13,8 @@ UINT DelStyle(HWND hwnd, UINT style);
 UINT DelDlgItemStyle(HWND hwnd, UINT nCtrlId, UINT style);
 BOOL EnableDlgItem(HWND hwnd, UINT nCtrlId, BOOL fEnabled);
 BOOL ShowDlgItem(HWND hwnd, UINT nCtrlId, DWORD dwShowCmd);
+void SetDlgItemTextEx(HWND hwndDlg, UINT nCtrlId, PCWSTR pcsz);
+void SetDlgItemTextExA(HWND hwndDlg, UINT nCtrlId, PCSTR pcsz);
 
 int WINAPI GetRectHeight(RECT *rect);
 int WINAPI GetRectWidth(RECT *rect);

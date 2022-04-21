@@ -42,7 +42,7 @@ void SetGeneralInfo(HWND hwnd)
     {
         swprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwnd);
     }
-    SetDlgItemText(hwndDlg, IDC_HANDLE, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_HANDLE, ach);
 
     BOOL fValid = hwnd != NULL;
     if (hwnd && !IsWindow(hwnd))
@@ -77,8 +77,8 @@ void SetGeneralInfo(HWND hwnd)
             }
         }
     }
-    SetDlgItemText(hwndDlg, IDC_CAPTION1, ach); // edit box
-    SetDlgItemText(hwndDlg, IDC_CAPTION2, ach); // combo box
+    SetDlgItemTextEx(hwndDlg, IDC_CAPTION1, ach); // edit box
+    SetDlgItemTextEx(hwndDlg, IDC_CAPTION2, ach); // combo box
 
     //class name
     if (fValid)
@@ -90,7 +90,7 @@ void SetGeneralInfo(HWND hwnd)
         if (IsWindowUnicode(hwnd))
             wcscat_s(ach, ARRAYSIZE(ach), L"  (Unicode)");
     }
-    SetDlgItemText(hwndDlg, IDC_CLASS, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_CLASS, ach);
 
     //style
     if (fValid)
@@ -113,7 +113,7 @@ void SetGeneralInfo(HWND hwnd)
 
         wcscat_s(ach, ARRAYSIZE(ach), L")");
     }
-    SetDlgItemText(hwndDlg, IDC_STYLE, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_STYLE, ach);
 
     //rectangle
     if (fValid)
@@ -126,7 +126,7 @@ void SetGeneralInfo(HWND hwnd)
             rect.left, rect.top, rect.right, rect.bottom,
             GetRectWidth(&rect), GetRectHeight(&rect));
     }
-    SetDlgItemText(hwndDlg, IDC_RECTANGLE, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_RECTANGLE, ach);
 
     //client rect
     if (fValid)
@@ -157,7 +157,7 @@ void SetGeneralInfo(HWND hwnd)
                 rect.bottom - rcClient.bottom);
         }
     }
-    SetDlgItemText(hwndDlg, IDC_CLIENTRECT, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_CLIENTRECT, ach);
 
     //restored rect
     /*GetWindowPlacement(hwnd, &wp);
@@ -183,22 +183,22 @@ void SetGeneralInfo(HWND hwnd)
     }
     ShowDlgItem(hwndDlg, IDC_WINDOWPROC, (!fValid || spy_WndProc) ? SW_HIDE : SW_SHOW);
     ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, (!fValid || spy_WndProc) ? SW_SHOW : SW_HIDE);
-    SetDlgItemText(hwndDlg, IDC_WINDOWPROC, ach);
-    SetDlgItemText(hwndDlg, IDC_WINDOWPROC2, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_WINDOWPROC, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_WINDOWPROC2, ach);
 
     //instance handle
     if (fValid)
     {
         swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
     }
-    SetDlgItemText(hwndDlg, IDC_INSTANCE, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_INSTANCE, ach);
 
     //user data
     if (fValid)
     {
         swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
     }
-    SetDlgItemText(hwndDlg, IDC_USERDATA, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_USERDATA, ach);
 
     //control ID
     if (fValid)
@@ -209,7 +209,7 @@ void SetGeneralInfo(HWND hwnd)
         // as it is passed in LOWORD(wParam)
         swprintf_s(ach, ARRAYSIZE(ach), L"%04IX  (%Id)", lp, lp);
     }
-    SetDlgItemText(hwndDlg, IDC_CONTROLID, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_CONTROLID, ach);
 
     //extra window bytes
     numbytes = fValid ? GetClassLong(hwnd, GCL_CBWNDEXTRA) : 0;
