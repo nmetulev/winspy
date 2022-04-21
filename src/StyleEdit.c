@@ -56,13 +56,13 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
             else
                 dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
-            _stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyle);
+            _stprintf_s(szText, ARRAYSIZE(szText), L"%08X", dwStyle);
 
             SetDlgItemText(hwndDlg, IDC_EDIT1, szText);
         }
         else
         {
-            _stprintf_s(szText, ARRAYSIZE(szText), L"Window " szHexFmt L"\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  ", (UINT)(UINT_PTR)hwnd);
+            _stprintf_s(szText, ARRAYSIZE(szText), L"Window %08X\n\nUnable to copy this window's styles, \nbecause it belongs to a different class.  ", (UINT)(UINT_PTR)hwnd);
             MessageBox(hwndDlg, szText, szAppName, MB_OK | MB_ICONINFORMATION);
         }
 
@@ -96,7 +96,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
         else
             dwStyles = GetWindowLong(pState->hwndTarget, GWL_STYLE);
 
-        _stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
+        _stprintf_s(szText, ARRAYSIZE(szText), L"%08X", dwStyles);
         SetDlgItemText(hwnd, IDC_EDIT1, szText);
 
         MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
@@ -216,7 +216,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
                     dwStyles &= ~style;
                 }
 
-                _stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, dwStyles);
+                _stprintf_s(szText, ARRAYSIZE(szText), L"%08X", dwStyles);
                 SetDlgItemText(hwnd, IDC_EDIT1, szText);
 
                 return TRUE;

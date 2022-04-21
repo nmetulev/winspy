@@ -319,9 +319,6 @@ extern Options g_opts;
 //
 extern HINSTANCE hInst;
 
-#define szAtomFmt L"%04hX"
-#define szHexFmt L"%08X"
-#define szPtrFmt L"%p"
 #define szAppName L"WinSpy++"
 
 #define szInvalidWindow L"(invalid window)"

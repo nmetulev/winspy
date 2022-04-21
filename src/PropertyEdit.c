@@ -74,7 +74,7 @@ INT_PTR CALLBACK PropertyEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lP
 
             SendDlgItemMessage(hwnd, IDC_EDIT_NAME, EM_SETREADONLY, TRUE, 0);
 
-            _stprintf_s(szText, ARRAYSIZE(szText), szPtrFmt, hHandle);
+            _stprintf_s(szText, ARRAYSIZE(szText), L"%p", hHandle);
             SetDlgItemText(hwnd, IDC_EDIT_HANDLE, szText);
         }
 

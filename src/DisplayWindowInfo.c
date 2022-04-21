@@ -26,7 +26,7 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
     {
         GetClassName(hwnd, cname, ARRAYSIZE(cname));
         GetWindowText(hwnd, wname, ARRAYSIZE(wname));
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwnd);
 
         lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
         lvitem.iSubItem = 0;
@@ -55,7 +55,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
     {
         GetClassName(hwnd, cname, ARRAYSIZE(cname));
         GetWindowText(hwnd, wname, ARRAYSIZE(wname));
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwnd);
 
         lvitem.mask = LVIF_TEXT | LVIF_IMAGE | LVIF_PARAM | LVIF_STATE;
         lvitem.iSubItem = 0;
@@ -106,7 +106,7 @@ void SetWindowInfo(HWND hwnd)
 
     if (hParentWnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hParentWnd);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hParentWnd);
     }
     else
     {
@@ -123,7 +123,7 @@ void SetWindowInfo(HWND hwnd)
 
     if (hwndOwner)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwndOwner);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwndOwner);
     }
     else
     {

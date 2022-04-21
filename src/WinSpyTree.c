@@ -242,7 +242,7 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, WCHAR szTotal[], int cchTotal)
     //
     if (g_opts.uTreeInclude & WINLIST_INCLUDE_HANDLE)
     {
-        _stprintf_s(szTotal, cchTotal, szHexFmt L"  ", (UINT)(UINT_PTR)hwnd);
+        _stprintf_s(szTotal, cchTotal, L"%08X  ", (UINT)(UINT_PTR)hwnd);
     }
     else
     {

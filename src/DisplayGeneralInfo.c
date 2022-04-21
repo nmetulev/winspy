@@ -40,7 +40,7 @@ void SetGeneralInfo(HWND hwnd)
     //handle
     if (hwnd)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, (UINT)(UINT_PTR)hwnd);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwnd);
     }
     SetDlgItemText(hwndDlg, IDC_HANDLE, ach);
 
@@ -95,7 +95,7 @@ void SetGeneralInfo(HWND hwnd)
     //style
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt, GetWindowLong(hwnd, GWL_STYLE));
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X", GetWindowLong(hwnd, GWL_STYLE));
         wcscat_s(ach, ARRAYSIZE(ach), IsWindowVisible(hwnd) ? L"  (visible, " : L"  (hidden, ");
         wcscat_s(ach, ARRAYSIZE(ach), IsWindowEnabled(hwnd) ? L"enabled" : L"disabled");
 
@@ -178,7 +178,7 @@ void SetGeneralInfo(HWND hwnd)
         }
         else
         {
-            _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, spy_WndProc);
+            _stprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
         }
     }
     ShowDlgItem(hwndDlg, IDC_WINDOWPROC, (!fValid || spy_WndProc) ? SW_HIDE : SW_SHOW);
@@ -189,14 +189,14 @@ void SetGeneralInfo(HWND hwnd)
     //instance handle
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
     }
     SetDlgItemText(hwndDlg, IDC_INSTANCE, ach);
 
     //user data
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
     }
     SetDlgItemText(hwndDlg, IDC_USERDATA, ach);
 

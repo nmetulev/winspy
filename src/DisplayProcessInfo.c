@@ -218,7 +218,7 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 
     if (dwProcessId)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt L"  (%u)", dwProcessId, dwProcessId);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwProcessId, dwProcessId);
         SetDlgItemText(hwndDlg, IDC_PID, ach);
     }
     else
@@ -231,7 +231,7 @@ void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
 
     if (fValid)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szHexFmt L"  (%u)", dwThreadId, dwThreadId);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwThreadId, dwThreadId);
         SetDlgItemText(hwndDlg, IDC_TID, ach);
     }
     else

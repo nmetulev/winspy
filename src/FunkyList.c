@@ -120,7 +120,7 @@ BOOL FunkyList_DrawItem(HWND hwnd, UINT uCtrlId, DRAWITEMSTRUCT *dis)
                 SetTextColor(dis->hDC, GetSysColor(COLOR_3DSHADOW));
 
             if (pStyle)
-                _stprintf_s(szText, ARRAYSIZE(szText), szHexFmt, pStyle->value); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
+                _stprintf_s(szText, ARRAYSIZE(szText), L"%08X", pStyle->value); // otherwise, this is the "unrecognized bits" item and its text coincides with its numeric value
 
             dis->rcItem.right -= 4;
 

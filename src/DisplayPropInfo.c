@@ -32,7 +32,7 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, PWSTR lpszString, HANDLE hData, ULONG_PT
     // check that lpszString is a valid string, and not an ATOM in disguise
     if (((ULONG_PTR)lpszString & ~(ULONG_PTR)0xFFFF) == 0)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szAtomFmt L" (Atom)", (ATOM)(intptr_t)lpszString);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%04hX (Atom)", (ATOM)(intptr_t)lpszString);
         lvitem.pszText = ach;
 
         lvitem.lParam = (LPARAM)lpszString;
@@ -43,7 +43,7 @@ BOOL CALLBACK PropEnumProcEx(HWND hwnd, PWSTR lpszString, HANDLE hData, ULONG_PT
     index = ListView_InsertItem(hwndList, &lvitem);
     if (index != -1)
     {
-        _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)hData);
+        _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)hData);
         ListView_SetItemText(hwndList, index, 1, ach);
     }
 

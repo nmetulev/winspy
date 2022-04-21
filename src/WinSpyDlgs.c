@@ -268,7 +268,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
             switch (uCmd)
             {
             case IDM_BYTES_COPY:
-                _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)lp);
+                _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)lp);
                 CopyTextToClipboard(hwnd, ach);
                 break;
             }
@@ -726,7 +726,7 @@ INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
             switch (uCmd)
             {
             case IDM_BYTES_COPY:
-                _stprintf_s(ach, ARRAYSIZE(ach), szPtrFmt, (void*)lp);
+                _stprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)lp);
                 CopyTextToClipboard(hwnd, ach);
                 break;
             }
