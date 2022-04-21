@@ -559,11 +559,11 @@ IDB_WINDOW_VISIBLE      BITMAP                  "treeicons.bmp"
 IDB_WINDOW_INVISIBLE    BITMAP                  "treeicons-hidden.bmp"
 IDB_WINDOW_CLOAKED      BITMAP                  "treeicons-cloaked.bmp"
 
-IDB_DRAGTOOL1           BITMAP                  "bitmap1.bmp"
-IDB_DRAGTOOL2           BITMAP                  "bitmap2.bmp"
-IDB_CHECK1              BITMAP                  "bitmap3.bmp"
-IDB_CHECK2              BITMAP                  "bitmap4.bmp"
-IDB_PIN_BITMAP          BITMAP                  "bitmap7.bmp"
+IDB_DRAGTOOL1           BITMAP                  "dragtool1.bmp"
+IDB_DRAGTOOL2           BITMAP                  "dragtool2.bmp"
+IDB_CHECK1              BITMAP                  "check1.bmp"
+IDB_CHECK2              BITMAP                  "check2.bmp"
+IDB_PIN_BITMAP          BITMAP                  "thumbtack.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -579,12 +579,12 @@ IDC_CURSOR1             CURSOR                  "cursor1.cur"
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APP                 ICON                    "icon1.ico"
-IDI_DOTS                ICON                    "icon2.ico"
-IDI_DOWN_ARROW          ICON                    "icon3.ico"
-IDI_ENTER               ICON                    "icon4.ico"
-IDI_MORE                ICON                    "icon5.ico"
-IDI_LESS                ICON                    "icon6.ico"
+IDI_APP                 ICON                    "app.ico"
+IDI_DOTS                ICON                    "dots.ico"
+IDI_DOWN_ARROW          ICON                    "down.ico"
+IDI_ENTER               ICON                    "enter.ico"
+IDI_MORE                ICON                    "more.ico"
+IDI_LESS                ICON                    "less.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
