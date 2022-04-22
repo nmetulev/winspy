@@ -314,167 +314,189 @@ void FillBytesList(
     SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_SETCURSEL, 0, 0);
 }
 
+
 //
-//  Set the class information on the Class Tab, for the specified window.
-//  This function assumes that spy_WndClassEx is completely populated.
+// Clears all the controls on the tab because either there is no current window,
+// or the current window is invalid.
+//
+
+void ResetClassTab(HWND hwnd, HWND hwndDlg)
+{
+    // Reset the labels to blank or '(invalid window)'
+
+    PCWSTR pszMessage = hwnd ? szInvalidWindow : L"";
+
+    SetDlgItemTextEx(hwndDlg, IDC_CLASSNAME,      pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_ATOM,           pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_WINDOWBYTES,    pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_MENUHANDLE,     pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_CURSORHANDLE,   pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_ICONHANDLE,     pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_BKGNDBRUSH,     pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC,        pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_CLASSPROC,      pszMessage);
+    SetDlgItemTextEx(hwndDlg, IDC_INSTANCEHANDLE, pszMessage);
+
+    // Labels too short for "(invalid window)"
+
+    SetDlgItemTextEx(hwndDlg, IDC_STYLE,          L"");
+    SetDlgItemTextEx(hwndDlg, IDC_CLASSBYTES,     L"");
+
+    // Clear the lists.
+
+    SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_RESETCONTENT, 0, 0);
+    SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_RESETCONTENT, 0, 0);
+    EnableDlgItem(hwndDlg, IDC_STYLELIST, FALSE);
+    EnableDlgItem(hwndDlg, IDC_BYTESLIST, FALSE);
+}
+
+
+//
+// Set the class information on the Class Tab, for the specified window.
+// This function assumes that spy_WndClassEx is completely populated.
 //
 void SetClassInfo(HWND hwnd)
 {
     WCHAR ach[256];
-
     int i, numstyles, classbytes;
     HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
     UINT_PTR handle;
 
-    *ach = 0;
-
-    if (hwnd)
+    if (!hwnd || !IsWindow(hwnd))
     {
-        GetClassName(hwnd, ach, ARRAYSIZE(ach));
-
-        // be nice and give the proper name for the following class names
-        //
-        VerboseClassName(ach, ARRAYSIZE(ach), (WORD)GetClassLong(hwnd, GCW_ATOM));
+        ResetClassTab(hwnd, hwndDlg);
+        return;
     }
+
+    // Class name
+
+    GetClassName(hwnd, ach, ARRAYSIZE(ach));
+    VerboseClassName(ach, ARRAYSIZE(ach), (WORD)GetClassLong(hwnd, GCW_ATOM));
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASSNAME, ach);
 
-    //class style
-    if (hwnd)
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", spy_WndClassEx.style);
-    }
+    // Class style
+
+    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", spy_WndClassEx.style);
+
     SetDlgItemTextEx(hwndDlg, IDC_STYLE, ach);
 
-    //atom
-    if (hwnd)
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%04X", GetClassLong(hwnd, GCW_ATOM));
-    }
+    // Atom
+
+    swprintf_s(ach, ARRAYSIZE(ach), L"%04X", GetClassLong(hwnd, GCW_ATOM));
+
     SetDlgItemTextEx(hwndDlg, IDC_ATOM, ach);
 
-    //extra class bytes
-    if (hwnd)
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbClsExtra);
-    }
+    // Extra class bytes
+
+    swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbClsExtra);
+
     SetDlgItemTextEx(hwndDlg, IDC_CLASSBYTES, ach);
 
-    //extra window bytes
-    if (hwnd)
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbWndExtra);
-    }
+    // Extra window bytes
+
+    swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbWndExtra);
+
     SetDlgItemTextEx(hwndDlg, IDC_WINDOWBYTES, ach);
 
-    //menu (not implemented)
-    if (hwnd)
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
-    }
+    // Menu (not implemented)
+
+    // swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
+
     SetDlgItemTextEx(hwndDlg, IDC_MENUHANDLE, L"(None)");
 
-    //cursor handle
-    if (hwnd)
-    {
-        handle = GetClassLongPtr(hwnd, GCLP_HCURSOR);
-        FormatHandle(ach, ARRAYSIZE(ach), CursorLookup, NUM_CURSOR_LOOKUP, handle);
-    }
+    // Cursor handle
+
+    handle = GetClassLongPtr(hwnd, GCLP_HCURSOR);
+    FormatHandle(ach, ARRAYSIZE(ach), CursorLookup, NUM_CURSOR_LOOKUP, handle);
+
     SetDlgItemTextEx(hwndDlg, IDC_CURSORHANDLE, ach);
 
-    //icon handle
-    if (hwnd)
-    {
-        handle = GetClassLongPtr(hwnd, GCLP_HICON);
-        FormatHandle(ach, ARRAYSIZE(ach), IconLookup, NUM_ICON_LOOKUP, handle);
-    }
+    // Icon handle
+
+    handle = GetClassLongPtr(hwnd, GCLP_HICON);
+    FormatHandle(ach, ARRAYSIZE(ach), IconLookup, NUM_ICON_LOOKUP, handle);
+
     SetDlgItemTextEx(hwndDlg, IDC_ICONHANDLE, ach);
 
-    //background brush handle
-    if (hwnd)
-    {
-        handle = GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
+    // Background brush handle
 
-        //see hbrBackground description at https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
-        //first of all, search by COLOR_xxx value
-        if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatConst(ach, ARRAYSIZE(ach), BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
+    handle = GetClassLongPtr(hwnd, GCLP_HBRBACKGROUND);
+
+    //see hbrBackground description at https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577.aspx
+    //first of all, search by COLOR_xxx value
+    if (!(handle > 0 && handle <= MAXUINT) || (-1 == FormatConst(ach, ARRAYSIZE(ach), BrushLookup, NUM_BRUSH_STYLES, (UINT)handle - 1)))
+    {
+        //now search by handle value
+        i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
+        if (i != -1)
         {
-            //now search by handle value
-            i = FormatHandle(ach, ARRAYSIZE(ach), BrushLookup2, NUM_BRUSH2_LOOKUP, handle);
-            if (i != -1)
-            {
-                int len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
-                swprintf_s(ach + len, ARRAYSIZE(ach) - len, L"  (%s)", BrushLookup2[i].szName);
-            }
+            int len = PrintHandle(ach, ARRAYSIZE(ach), (UINT_PTR)BrushLookup2[i].handle);
+            swprintf_s(ach + len, ARRAYSIZE(ach) - len, L"  (%s)", BrushLookup2[i].szName);
         }
     }
 
-    //set the brush handle text
     SetDlgItemTextEx(hwndDlg, IDC_BKGNDBRUSH, ach);
 
-    //window procedure
-    if (hwnd)
+    // Window procedure
+
+    if (spy_WndProc == 0)
     {
-        if (spy_WndProc == 0)
-        {
-            wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
-        }
-        else
-        {
-            swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
-            if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
-                wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
-        }
+        wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
+    }
+    else
+    {
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
+        if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
+            wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
     }
 
     SetDlgItemTextEx(hwndDlg, IDC_WNDPROC, ach);
 
     SetDlgItemTextEx(WinSpyTab[GENERAL_TAB].hwnd, IDC_WINDOWPROC2, ach);
 
-    //class window procedure
-    if (hwnd)
+    // Class window procedure
+
+    if (spy_WndClassEx.lpfnWndProc == 0)
     {
-        if (spy_WndClassEx.lpfnWndProc == 0)
-            wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
-        else
-            swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.lpfnWndProc);
+        wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
+    }
+    else
+    {
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.lpfnWndProc);
     }
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASSPROC, ach);
 
 
-    //instance handle
-    if (hwnd)
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.hInstance);
-    }
+    // Instance handle
+
+    swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.hInstance);
+
     SetDlgItemTextEx(hwndDlg, IDC_INSTANCEHANDLE, ach);
 
-    //
-    // fill the combo box with the class styles
-    //
+    // Fill the combo box with the class styles
+
     numstyles = 0;
     SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_RESETCONTENT, 0, 0);
-    if (hwnd)
-    {
-        for (i = 0; i < NUM_CLASS_STYLES; i++)
-        {
-            if (spy_WndClassEx.style & ClassLookup[i].value)
-            {
-                SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
-                    (LPARAM)ClassLookup[i].szName);
 
-                numstyles++;
-            }
+    for (i = 0; i < NUM_CLASS_STYLES; i++)
+    {
+        if (spy_WndClassEx.style & ClassLookup[i].value)
+        {
+            SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
+                (LPARAM)ClassLookup[i].szName);
+
+            numstyles++;
         }
     }
 
     SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_SETCURSEL, 0, 0);
     EnableDlgItem(hwndDlg, IDC_STYLELIST, numstyles != 0);
 
-    //
-    // fill combo box with class extra bytes
-    //
+
+    // Fill combo box with class extra bytes
+
     classbytes = spy_WndClassEx.cbClsExtra;
 
     FillBytesList(hwndDlg, hwnd, classbytes, GetClassWord, (LONG (WINAPI *)(HWND, int))GetClassLong, (LONG_PTR (WINAPI *)(HWND, int))GetClassLongPtr);

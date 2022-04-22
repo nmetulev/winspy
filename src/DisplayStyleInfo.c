@@ -1011,7 +1011,7 @@ static DWORD s_dwExStyleCurrent;
 
 void ResetStyleTab(HWND hwnd, HWND hwndDlg)
 {
-    // Reset the labels to blank or '<invalid window>'
+    // Reset the labels to blank or '(invalid window)'
 
     PCWSTR pszMessage = hwnd ? szInvalidWindow : L"";
 
