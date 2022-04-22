@@ -5,15 +5,15 @@
 extern "C" {
 #endif
 
-LONG GetSettingInt(HKEY hkey, WCHAR szKeyName[], LONG nDefault);
-BOOL GetSettingBool(HKEY hkey, WCHAR szKeyName[], BOOL nDefault);
-LONG GetSettingStr(HKEY hkey, WCHAR szKeyName[], WCHAR szDefault[], WCHAR szReturnStr[], DWORD nSize);
-LONG GetSettingBinary(HKEY hkey, WCHAR szKeyName[], void *buf, ULONG nNumBytes);
+LONG GetSettingInt(HKEY hkey, PCWSTR szKeyName, LONG nDefault);
+BOOL GetSettingBool(HKEY hkey, PCWSTR szKeyName, BOOL nDefault);
+LONG GetSettingStr(HKEY hkey, PCWSTR szKeyName, PCWSTR szDefault, PWSTR szReturnStr, DWORD nSize);
+LONG GetSettingBinary(HKEY hkey, PCWSTR szKeyName, void *buf, ULONG nNumBytes);
 
-LONG WriteSettingInt(HKEY hkey, WCHAR szKeyName[], LONG nValue);
-LONG WriteSettingBool(HKEY hkey, WCHAR szKeyName[], BOOL nValue);
-LONG WriteSettingStr(HKEY hkey, WCHAR szKeyName[], WCHAR szString[]);
-LONG WriteSettingBinary(HKEY hkey, WCHAR szKeyName[], void *buf, UINT nNumBytes);
+LONG WriteSettingInt(HKEY hkey, PCWSTR szKeyName, LONG nValue);
+LONG WriteSettingBool(HKEY hkey, PCWSTR szKeyName, BOOL nValue);
+LONG WriteSettingStr(HKEY hkey, PCWSTR szKeyName, PCWSTR szString);
+LONG WriteSettingBinary(HKEY hkey, PCWSTR szKeyName, void *buf, UINT nNumBytes);
 
 #ifdef __cplusplus
 }

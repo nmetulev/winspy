@@ -74,9 +74,9 @@ void SaveSettings(void)
     WriteSettingBool(hkey, L"ShowInCaption", g_opts.fShowInCaption);
     WriteSettingBool(hkey, L"EnableToolTips", g_opts.fEnableToolTips);
     WriteSettingBool(hkey, L"ShowDesktopRoot", g_opts.fShowDesktopRoot);
+    WriteSettingBool(hkey, L"List_ShowHidden", g_opts.fShowHiddenInList);
     WriteSettingInt(hkey, L"TreeItems", g_opts.uTreeInclude);
     WriteSettingInt(hkey, L"PinCorner", g_opts.uPinnedCorner);
-    WriteSettingInt(hkey, L"List_ShowHidden", g_opts.fShowHiddenInList);
 
     WriteSettingInt(hkey, L"xpos", g_opts.ptPinPos.x);
     WriteSettingInt(hkey, L"ypos", g_opts.ptPinPos.y);
