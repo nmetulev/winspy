@@ -81,10 +81,10 @@ static BOOL    g_fAltDown;      // Is the alt key pressed?
 
 void LoadFinderResources()
 {
-    hBitmapDrag1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL1));
-    hBitmapDrag2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_DRAGTOOL2));
+    hBitmapDrag1 = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_DRAGTOOL1));
+    hBitmapDrag2 = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_DRAGTOOL2));
 
-    hCursor = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
+    hCursor = LoadCursor(g_hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 }
 
 void FreeFinderResources()
@@ -257,7 +257,7 @@ void FindTool_BeginDrag(HWND hwnd, LPARAM lParam)
         // without also getting the keyboard focus,
         // but attempting to install a desktop-wide hook will definitely fail,
         // so let's install our keyboard hook for this thread only - at least that works
-        g_draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, hInst, GetCurrentThreadId());
+        g_draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, g_hInst, GetCurrentThreadId());
 
         // Select initial window.
         g_hwndCurrent = NULL;

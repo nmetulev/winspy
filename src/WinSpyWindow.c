@@ -521,17 +521,17 @@ UINT WinSpyDlg_Size(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
             GetClientRect(hwnd, &rect);
 
-            MoveWindow(hwndSizer, rect.right - width, rect.bottom - height, width, height, TRUE);
+            MoveWindow(g_hwndSizer, rect.right - width, rect.bottom - height, width, height, TRUE);
 
         }
 
-        GetWindowRect(hwndPin, &rect2);
+        GetWindowRect(g_hwndPin, &rect2);
         OffsetRect(&rect2, -rect2.left, -rect2.top);
 
         // Position the pin toolbar
-        //SetWindowPos(hwndPin,
+        //SetWindowPos(g_hwndPin,
         //  HWND_TOP, rect.right-rect2.right, 1, rect2.right, rect2.bottom, 0);
-        MoveWindow(hwndPin, rect.right - rect2.right, 1, rect2.right, rect2.bottom, TRUE);
+        MoveWindow(g_hwndPin, rect.right - rect2.right, 1, rect2.right, rect2.bottom, TRUE);
     }
 
     return 0;
@@ -668,7 +668,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
 
             if (layout == WINSPY_NORMAL)
             {
-                hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_MORE), IMAGE_ICON, cxIcon, cxIcon, 0);
+                hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_MORE), IMAGE_ICON, cxIcon, cxIcon, 0);
                 hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 
                 DestroyIcon(hOld);
@@ -678,7 +678,7 @@ UINT WinSpyDlg_WindowPosChanged(HWND hwnd, WINDOWPOS *wp)
             }
             else
             {
-                hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_LESS), IMAGE_ICON, cxIcon, cxIcon, 0);
+                hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_LESS), IMAGE_ICON, cxIcon, cxIcon, 0);
                 hOld = (HICON)SendDlgItemMessage(hwnd, IDC_EXPAND, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hIcon);
 
                 DestroyIcon(hOld);
@@ -863,7 +863,7 @@ UINT WinSpyDlg_ExitSizeMove(HWND hwnd)
 
     if (uLayout == WINSPY_EXPANDED && uOldLayout != WINSPY_EXPANDED)
     {
-        WindowTree_Refresh(spy_hCurWnd, FALSE);
+        WindowTree_Refresh(g_hCurWnd, FALSE);
     }
 
     GetPinnedPosition(hwnd, &g_opts.ptPinPos);

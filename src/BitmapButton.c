@@ -338,7 +338,7 @@ void MakeBitmapButton(HWND hwnd, UINT uIconId)
     DWORD   dwStyle;
     int     cxIcon = DPIScale(hwnd, 16);
 
-    HICON hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(uIconId), IMAGE_ICON, cxIcon, cxIcon, 0);
+    HICON hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(uIconId), IMAGE_ICON, cxIcon, cxIcon, 0);
 
     // Add on BS_ICON and BS_OWNERDRAW styles
     dwStyle = GetWindowLong(hwnd, GWL_STYLE);

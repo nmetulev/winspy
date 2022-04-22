@@ -18,10 +18,10 @@ void SetPinState(BOOL fPinned)
 {
     g_opts.fPinWindow = fPinned;
 
-    SendMessage(hwndPin, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
+    SendMessage(g_hwndPin, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
         MAKELPARAM(fPinned, 0));
 
-    SendMessage(hwndPin, TB_CHECKBUTTON, IDM_WINSPY_PIN,
+    SendMessage(g_hwndPin, TB_CHECKBUTTON, IDM_WINSPY_PIN,
         MAKELPARAM(fPinned, 0));
 
 }
@@ -88,7 +88,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
         return TRUE;
 
     case IDM_WINSPY_REFRESH:
-        DisplayWindowInfo(spy_hCurWnd);
+        DisplayWindowInfo(g_hCurWnd);
         return TRUE;
 
     case IDM_WINSPY_OPTIONS:
@@ -99,13 +99,13 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         g_opts.fPinWindow = !g_opts.fPinWindow;
 
-        SendMessage(hwndPin, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
+        SendMessage(g_hwndPin, TB_CHANGEBITMAP, IDM_WINSPY_PIN,
             MAKELPARAM(g_opts.fPinWindow, 0));
 
         // if from an accelerator, then we have to manually check the
         if (HIWORD(wParam) == 1)
         {
-            SendMessage(hwndPin, TB_CHECKBUTTON, IDM_WINSPY_PIN,
+            SendMessage(g_hwndPin, TB_CHECKBUTTON, IDM_WINSPY_PIN,
                 MAKELPARAM(g_opts.fPinWindow, 0));
         }
 
@@ -153,7 +153,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         if (GetWindowLayout(hwnd) == WINSPY_NORMAL)
         {
-            WindowTree_Refresh(spy_hCurWnd, FALSE);
+            WindowTree_Refresh(g_hCurWnd, FALSE);
             SetWindowLayout(hwnd, WINSPY_EXPANDED);
         }
         else
@@ -164,7 +164,7 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
         return TRUE;
 
     case IDC_CAPTURE:
-        CaptureWindow(hwnd, spy_hCurWnd);
+        CaptureWindow(hwnd, g_hCurWnd);
         MessageBox(hwnd, L"Window contents captured to clipboard", szAppName, MB_ICONINFORMATION);
         return TRUE;
 
@@ -186,8 +186,8 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
             if (IsWindow(hwndCtrl))
             {
-                spy_hCurWnd = hwndCtrl;
-                DisplayWindowInfo(spy_hCurWnd);
+                g_hCurWnd = hwndCtrl;
+                DisplayWindowInfo(g_hCurWnd);
             }
 
             return 0;
@@ -209,16 +209,16 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDC_LOCATE:
 
-        if (spy_hCurWnd)
+        if (g_hCurWnd)
         {
-            WindowTree_Locate(spy_hCurWnd);
+            WindowTree_Locate(g_hCurWnd);
         }
 
         return TRUE;
 
     case IDC_REFRESH:
 
-        WindowTree_Refresh(spy_hCurWnd, TRUE);
+        WindowTree_Refresh(g_hCurWnd, TRUE);
 
         return TRUE;
     }
@@ -274,7 +274,7 @@ UINT WinSpyDlg_TimerHandler(UINT_PTR uTimerId)
 {
     if (uTimerId == 0)
     {
-        DisplayWindowInfo(spy_hCurWnd);
+        DisplayWindowInfo(g_hCurWnd);
         return TRUE;
     }
 

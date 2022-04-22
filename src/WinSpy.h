@@ -321,26 +321,26 @@ extern Options g_opts;
 //
 //  Application global variables
 //
-extern HINSTANCE hInst;
+extern HINSTANCE g_hInst;
 
 #define szAppName L"WinSpy++"
 
 #define szInvalidWindow L"(invalid window)"
 
-extern HWND  hwndPin;       // Toolbar with pin bitmap
-extern HWND  hwndSizer;     // Sizing grip for bottom-right corner
-extern HWND  hwndToolTip;   // tooltip for main window controls only
+extern HWND  g_hwndPin;       // Toolbar with pin bitmap
+extern HWND  g_hwndSizer;     // Sizing grip for bottom-right corner
+extern HWND  g_hwndToolTip;   // tooltip for main window controls only
 
 //
 //  Spy-window globals
 //
 //
-extern HWND       spy_hCurWnd;
-extern WNDCLASSEX spy_WndClassEx;
-extern WNDPROC    spy_WndProc;
-extern BOOL       spy_fPassword;
-extern WCHAR      spy_szPassword[];
-extern WCHAR      spy_szClassName[];
+extern HWND       g_hCurWnd;
+extern WNDCLASSEX g_WndClassEx;
+extern WNDPROC    g_WndProc;
+extern BOOL       g_fPassword;
+extern WCHAR      g_szPassword[];
+extern WCHAR      g_szClassName[];
 
 extern DWORD      g_dwSelectedPID;
 extern BOOL       g_fShowClientRectAsMargins;

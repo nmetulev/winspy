@@ -61,10 +61,10 @@ void SetGeneralInfo(HWND hwnd)
     {
         // SendMessage is better than GetWindowText,
         // because it gets text of children in other processes
-        if (spy_fPassword)
+        if (g_fPassword)
         {
             // In this case, the password has already been extracted by GetRemoteWindowInfo()
-            wcscpy_s(ach, ARRAYSIZE(ach), spy_szPassword);
+            wcscpy_s(ach, ARRAYSIZE(ach), g_szPassword);
         }
         else
         {
@@ -172,17 +172,17 @@ void SetGeneralInfo(HWND hwnd)
     //window procedure
     if (fValid)
     {
-        if (spy_WndProc == 0)
+        if (g_WndProc == 0)
         {
             swprintf_s(ach, ARRAYSIZE(ach), L"N/A");
         }
         else
         {
-            swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
+            swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
         }
     }
-    ShowDlgItem(hwndDlg, IDC_WINDOWPROC, (!fValid || spy_WndProc) ? SW_HIDE : SW_SHOW);
-    ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, (!fValid || spy_WndProc) ? SW_SHOW : SW_HIDE);
+    ShowDlgItem(hwndDlg, IDC_WINDOWPROC, (!fValid || g_WndProc) ? SW_HIDE : SW_SHOW);
+    ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, (!fValid || g_WndProc) ? SW_SHOW : SW_HIDE);
     SetDlgItemTextEx(hwndDlg, IDC_WINDOWPROC, ach);
     SetDlgItemTextEx(hwndDlg, IDC_WINDOWPROC2, ach);
 

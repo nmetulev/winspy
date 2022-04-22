@@ -17,7 +17,7 @@
 #include "Utils.h"
 
 static HWND       g_hwndTree;
-static HIMAGELIST hImgList = 0;
+static HIMAGELIST g_hImgList = 0;
 
 
 //
@@ -414,7 +414,7 @@ WinProc *GetProcessWindowStack(HWND hwndTree, HWND hwnd)
 
     if (SHGetFileInfo(path, 0, &shfi, sizeof(shfi), SHGFI_SMALLICON | SHGFI_ICON))
     {
-        tv.item.iImage = ImageList_AddIcon(hImgList, shfi.hIcon);
+        tv.item.iImage = ImageList_AddIcon(g_hImgList, shfi.hIcon);
         tv.item.iSelectedImage = tv.item.iImage;
     }
     else
@@ -676,26 +676,26 @@ void WindowTree_Initialize(HWND hwndTree)
     HWND    hwndTab;
 
     //only need to create the image list once.
-    if (hImgList == 0)
+    if (g_hImgList == 0)
     {
         // Create an empty image list
-        hImgList = ImageList_Create(16, 16, ILC_COLOR32 /*ILC_COLORDDB*/ | ILC_MASK, NUM_CLASS_BITMAPS, 8);
+        g_hImgList = ImageList_Create(16, 16, ILC_COLOR32 /*ILC_COLORDDB*/ | ILC_MASK, NUM_CLASS_BITMAPS, 8);
 
         // Load our bitmap and add it to the image list
-        hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WINDOW_VISIBLE));
-        ImageList_AddMasked(hImgList, hBitmap, RGB(255, 0, 255));
+        hBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_WINDOW_VISIBLE));
+        ImageList_AddMasked(g_hImgList, hBitmap, RGB(255, 0, 255));
         DeleteObject(hBitmap);
 
-        hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WINDOW_INVISIBLE));
-        ImageList_AddMasked(hImgList, hBitmap, RGB(255, 0, 255));
+        hBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_WINDOW_INVISIBLE));
+        ImageList_AddMasked(g_hImgList, hBitmap, RGB(255, 0, 255));
         DeleteObject(hBitmap);
 
-        hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WINDOW_CLOAKED));
-        ImageList_AddMasked(hImgList, hBitmap, RGB(255, 0, 255));
+        hBitmap = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_WINDOW_CLOAKED));
+        ImageList_AddMasked(g_hImgList, hBitmap, RGB(255, 0, 255));
         DeleteObject(hBitmap);
 
         // Assign the image list to the treeview control
-        TreeView_SetImageList(hwndTree, hImgList, TVSIL_NORMAL);
+        TreeView_SetImageList(hwndTree, g_hImgList, TVSIL_NORMAL);
     }
 
     //add an item to the tab control
@@ -718,7 +718,7 @@ void WindowTree_Initialize(HWND hwndTree)
 void WindowTree_Destroy()
 {
     TreeView_SetImageList(g_hwndTree, 0, TVSIL_NORMAL);
-    ImageList_Destroy(hImgList);
+    ImageList_Destroy(g_hImgList);
 }
 
 //
@@ -836,7 +836,7 @@ void WindowTree_OnRightClick(NMHDR *pnm)
 
         if (pNode->hwnd)
         {
-            hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_INTREE));
+            hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_INTREE));
             hPopup = GetSubMenu(hMenu, 0);
 
             WinSpy_SetupPopupMenu(hPopup, pNode->hwnd);

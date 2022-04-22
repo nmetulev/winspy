@@ -353,7 +353,7 @@ void ResetClassTab(HWND hwnd, HWND hwndDlg)
 
 //
 // Set the class information on the Class Tab, for the specified window.
-// This function assumes that spy_WndClassEx is completely populated.
+// This function assumes that g_WndClassEx is completely populated.
 //
 void SetClassInfo(HWND hwnd)
 {
@@ -377,7 +377,7 @@ void SetClassInfo(HWND hwnd)
 
     // Class style
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", spy_WndClassEx.style);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", g_WndClassEx.style);
 
     SetDlgItemTextEx(hwndDlg, IDC_STYLE, ach);
 
@@ -389,13 +389,13 @@ void SetClassInfo(HWND hwnd)
 
     // Extra class bytes
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbClsExtra);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%d", g_WndClassEx.cbClsExtra);
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASSBYTES, ach);
 
     // Extra window bytes
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%d", spy_WndClassEx.cbWndExtra);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%d", g_WndClassEx.cbWndExtra);
 
     SetDlgItemTextEx(hwndDlg, IDC_WINDOWBYTES, ach);
 
@@ -440,14 +440,14 @@ void SetClassInfo(HWND hwnd)
 
     // Window procedure
 
-    if (spy_WndProc == 0)
+    if (g_WndProc == 0)
     {
         wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
     }
     else
     {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndProc);
-        if (spy_WndProc != spy_WndClassEx.lpfnWndProc)
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
+        if (g_WndProc != g_WndClassEx.lpfnWndProc)
             wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
     }
 
@@ -457,13 +457,13 @@ void SetClassInfo(HWND hwnd)
 
     // Class window procedure
 
-    if (spy_WndClassEx.lpfnWndProc == 0)
+    if (g_WndClassEx.lpfnWndProc == 0)
     {
         wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
     }
     else
     {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.lpfnWndProc);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndClassEx.lpfnWndProc);
     }
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASSPROC, ach);
@@ -471,7 +471,7 @@ void SetClassInfo(HWND hwnd)
 
     // Instance handle
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%p", spy_WndClassEx.hInstance);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndClassEx.hInstance);
 
     SetDlgItemTextEx(hwndDlg, IDC_INSTANCEHANDLE, ach);
 
@@ -482,7 +482,7 @@ void SetClassInfo(HWND hwnd)
 
     for (i = 0; i < NUM_CLASS_STYLES; i++)
     {
-        if (spy_WndClassEx.style & ClassLookup[i].value)
+        if (g_WndClassEx.style & ClassLookup[i].value)
         {
             SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
                 (LPARAM)ClassLookup[i].szName);
@@ -497,7 +497,7 @@ void SetClassInfo(HWND hwnd)
 
     // Fill combo box with class extra bytes
 
-    classbytes = spy_WndClassEx.cbClsExtra;
+    classbytes = g_WndClassEx.cbClsExtra;
 
     FillBytesList(hwndDlg, hwnd, classbytes, GetClassWord, (LONG (WINAPI *)(HWND, int))GetClassLong, (LONG_PTR (WINAPI *)(HWND, int))GetClassLongPtr);
 }

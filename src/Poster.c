@@ -564,10 +564,10 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
 {
-    if (IsWindow(spy_hCurWnd))
+    if (IsWindow(g_hCurWnd))
     {
         DialogBoxParam(
-            hInst,
+            g_hInst,
             MAKEINTRESOURCE(IDD_POSTER),
             hwndParent,
             PosterDlgProc,
@@ -588,7 +588,7 @@ void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
 void ShowBroadcasterDlg(HWND hwndParent)
 {
     DialogBoxParam(
-        hInst,
+        g_hInst,
         MAKEINTRESOURCE(IDD_POSTER),
         hwndParent,
         PosterDlgProc,

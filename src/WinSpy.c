@@ -17,21 +17,21 @@
 #include "BitmapButton.h"
 #include "Utils.h"
 
-HWND        g_hwndMain;     // Main winspy window
-HWND        hwndPin;        // Toolbar with pin bitmap
-HWND        hwndSizer;      // Sizing grip for bottom-right corner
-HWND        hwndToolTip;    // tooltip for main window controls only
-HINSTANCE   hInst;          // Current application instance
+HWND       g_hwndMain;       // Main winspy window
+HWND       g_hwndPin;        // Toolbar with pin bitmap
+HWND       g_hwndSizer;      // Sizing grip for bottom-right corner
+HWND       g_hwndToolTip;    // tooltip for main window controls only
+HINSTANCE  g_hInst;          // Current application instance
 
 //
 //  Current window being spied on
 //
-HWND       spy_hCurWnd = 0;
-WNDCLASSEX spy_WndClassEx;
-WNDPROC    spy_WndProc;
-BOOL       spy_fPassword = FALSE;   // is it a password (edit) control?
-WCHAR      spy_szPassword[200];
-WCHAR      spy_szClassName[70];
+HWND       g_hCurWnd = 0;
+WNDCLASSEX g_WndClassEx;
+WNDPROC    g_WndProc;
+BOOL       g_fPassword = FALSE;     // is it a password (edit) control?
+WCHAR      g_szPassword[200];
+WCHAR      g_szClassName[70];
 DWORD      g_dwSelectedPID;         // Set only when a process node is selected in the treeview
 BOOL       g_fShowClientRectAsMargins = FALSE;
 
@@ -64,34 +64,34 @@ static int nCurrentTab = 0;
 //
 void GetRemoteInfo(HWND hwnd)
 {
-    ZeroMemory(&spy_WndClassEx, sizeof(WNDCLASSEX));
-    spy_WndClassEx.cbSize = sizeof(WNDCLASSEX);
+    ZeroMemory(&g_WndClassEx, sizeof(WNDCLASSEX));
+    g_WndClassEx.cbSize = sizeof(WNDCLASSEX);
 
     if (!hwnd)
         return;
 
-    BOOL success = GetClassInfoEx(0, spy_szClassName, &spy_WndClassEx);
+    BOOL success = GetClassInfoEx(0, g_szClassName, &g_WndClassEx);
 
     //try to use the standard methods to get the window procedure
     //and class information. If that fails, then we have to inject
     //a remote thread into the window's process and call the functions
     //from there.
-    if (spy_WndProc == 0 || !success || spy_fPassword)
+    if (g_WndProc == 0 || !success || g_fPassword)
     {
         if (ProcessArchMatches(hwnd))
         {
-            GetRemoteWindowInfo(hwnd, success ? NULL : &spy_WndClassEx, spy_WndProc ? NULL : &spy_WndProc, spy_szPassword, ARRAYSIZE(spy_szPassword));
+            GetRemoteWindowInfo(hwnd, success ? NULL : &g_WndClassEx, g_WndProc ? NULL : &g_WndProc, g_szPassword, ARRAYSIZE(g_szPassword));
         }
         else
         {
-            SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(spy_szPassword), (LPARAM)spy_szPassword);
+            SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(g_szPassword), (LPARAM)g_szPassword);
         }
     }
 }
 
 void UpdateTabs(BOOL fForceClassUpdate)
 {
-    HWND hwnd = spy_hCurWnd;
+    HWND hwnd = g_hCurWnd;
 
     // do classinfo first, so we can get the window procedure
 
@@ -134,43 +134,43 @@ void UpdateTabs(BOOL fForceClassUpdate)
 //
 void DisplayWindowInfo(HWND hwnd)
 {
-    spy_hCurWnd = hwnd;
+    g_hCurWnd = hwnd;
 
-    spy_szClassName[0] = '\0';
-    spy_WndProc = NULL;
-    spy_fPassword = FALSE;
+    g_szClassName[0] = '\0';
+    g_WndProc = NULL;
+    g_fPassword = FALSE;
 
     UpdateMainWindowText();
 
     if (hwnd)
     {
-        if (!GetClassName(hwnd, spy_szClassName, 70))
-            *spy_szClassName = 0;
+        if (!GetClassName(hwnd, g_szClassName, 70))
+            *g_szClassName = 0;
 
-        spy_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
+        g_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
 
         // If a password-edit control, then we can
         // inject our thread to get the password text!
-        if (lstrcmpi(spy_szClassName, L"Edit") == 0)
+        if (lstrcmpi(g_szClassName, L"Edit") == 0)
         {
             // If a password control
             DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
 
             if (dwStyle & ES_PASSWORD)
-                spy_fPassword = TRUE;
+                g_fPassword = TRUE;
             else
-                spy_fPassword = FALSE;
+                g_fPassword = FALSE;
         }
         else
-            spy_fPassword = FALSE;
+            g_fPassword = FALSE;
     }
 
-    UpdateTabs(spy_fPassword);
+    UpdateTabs(g_fPassword);
 }
 
 void UpdateMainWindowText()
 {
-    HWND hwnd = spy_hCurWnd;
+    HWND hwnd = g_hCurWnd;
 
     if (hwnd && g_opts.fShowInCaption)
     {
@@ -218,7 +218,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
     case WFN_BEGIN:
 
-        hwndLastTarget = spy_hCurWnd;
+        hwndLastTarget = g_hCurWnd;
 
         fWasMinimized = g_opts.fMinimizeWinSpy;
         if (fWasMinimized)
@@ -236,7 +236,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
         fCanceled = TRUE;
         // Restore the current window + Fall through!
-        spy_hCurWnd = hwndLastTarget;
+        g_hCurWnd = hwndLastTarget;
 
     case WFN_END:
 
@@ -251,7 +251,7 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
             SetWindowLayout(hwndMain, WINSPY_LASTMAX);
         }
 
-        DisplayWindowInfo(spy_hCurWnd);
+        DisplayWindowInfo(g_hCurWnd);
 
         g_opts.fShowHidden = fOldShowHidden;
         break;
@@ -351,7 +351,7 @@ HWND CreateSizeGrip(HWND hwndDlg)
         WS_VISIBLE | WS_CHILD | SBS_SIZEGRIP |
         SBS_SIZEBOXBOTTOMRIGHTALIGN | WS_CLIPSIBLINGS,
         0, 0, 20, 20,
-        hwndDlg, 0, hInst, 0);
+        hwndDlg, 0, g_hInst, 0);
 
     return hwndSizeGrip;
 }
@@ -406,7 +406,7 @@ HWND CreateTooltip(HWND hwndDlg)
         CW_USEDEFAULT,
         hwndDlg,
         NULL,
-        hInst,
+        g_hInst,
         NULL
     );
 
@@ -426,7 +426,7 @@ HWND CreateTooltip(HWND hwndDlg)
         ti.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
         ti.hwnd = hwnd;
         ti.uId = (UINT_PTR)GetDlgItem(hwnd, CtrlTips[i].uCtrlId);
-        ti.hinst = hInst;
+        ti.hinst = g_hInst;
         ti.lpszText = CtrlTips[i].szText;
         ti.lParam = 0;
 
@@ -453,7 +453,7 @@ HWND CreatePinToolbar(HWND hwndDlg)
         TOOLBAR_PIN_STYLES,             //,
         IDC_PIN_TOOLBAR,                //toolbar ID (don't need)
         2,                              //number of button images
-        hInst,                          //where the bitmap is
+        g_hInst,                          //where the bitmap is
         IDB_PIN_BITMAP,                 //bitmap resource name
         tbbPin,                         //TBBUTTON structure
         ARRAYSIZE(tbbPin),
@@ -498,8 +498,8 @@ BOOL WinSpy_InitDlg(HWND hwnd)
     // Make the More>> button into a bitmap
     MakeDlgBitmapButton(hwnd, IDC_EXPAND, IDI_MORE);
 
-    hwndSizer = CreateSizeGrip(hwnd);
-    hwndPin = CreatePinToolbar(hwnd);
+    g_hwndSizer = CreateSizeGrip(hwnd);
+    g_hwndPin = CreatePinToolbar(hwnd);
 
     // Load image lists etc
     WindowTree_Initialize(GetDlgItem(hwnd, IDC_TREE1));
@@ -513,7 +513,7 @@ BOOL WinSpy_InitDlg(HWND hwnd)
         tcitem.pszText = (PWSTR)WinSpyTab[i].szText;
 
         // Create the dialog pane
-        WinSpyTab[i].hwnd = CreateDialog(hInst,
+        WinSpyTab[i].hwnd = CreateDialog(g_hInst,
             MAKEINTRESOURCE(WinSpyTab[i].id), hwnd, WinSpyTab[i].dlgproc);
 
         // Create the corresponding tab
@@ -582,20 +582,20 @@ BOOL WinSpy_InitDlg(HWND hwnd)
         L"&Toggle Layout\tF3");
 
     // Change the bitmaps for the Maximize item
-    hBmp1 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_CHECK1));
-    hBmp2 = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_CHECK2));
+    hBmp1 = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_CHECK1));
+    hBmp2 = LoadBitmap(g_hInst, MAKEINTRESOURCE(IDB_CHECK2));
     SetMenuItemBitmaps(hSysMenu, SC_MAXIMIZE, MF_BYCOMMAND, hBmp1, hBmp2);
 
     // Set the dialog's Small Icon
-    hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, 0);
+    hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 16, 16, 0);
     SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
 
     // Set the dialog's Large Icon
-    hIcon = (HICON)LoadImage(hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 32, 32, 0);
+    hIcon = (HICON)LoadImage(g_hInst, MAKEINTRESOURCE(IDI_APP), IMAGE_ICON, 32, 32, 0);
     SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 
     // Create tooltips after all other windows
-    hwndToolTip = CreateTooltip(hwnd);
+    g_hwndToolTip = CreateTooltip(hwnd);
 
     ForceVisibleDisplay(hwnd);
 
@@ -660,9 +660,9 @@ BOOL WinSpyDlg_SysColorChange(HWND hwnd)
     TreeView_SetBkColor(GetDlgItem(hwnd, IDC_TREE1), GetSysColor(COLOR_WINDOW));
 
     // Recreate toolbar, so it uses new color scheme
-    DestroyWindow(hwndPin);
+    DestroyWindow(g_hwndPin);
 
-    hwndPin = CreatePinToolbar(hwnd);
+    g_hwndPin = CreatePinToolbar(hwnd);
 
     // Send a WM_SIZE so that the pin toolbar gets repositioned
     SetWindowPos(hwnd, 0, 0, 0, 0, 0,
@@ -829,7 +829,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     INITCOMMONCONTROLSEX ice;
-    hInst = hInstance;
+    g_hInst = hInstance;
 
     ice.dwSize = sizeof ice;
     ice.dwICC = ICC_BAR_CLASSES | ICC_TREEVIEW_CLASSES |

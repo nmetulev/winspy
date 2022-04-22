@@ -138,10 +138,10 @@ INT_PTR CALLBACK EditSizeDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 
 void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget)
 {
-    if (IsWindow(spy_hCurWnd))
+    if (IsWindow(g_hCurWnd))
     {
         DialogBoxParam(
-            hInst,
+            g_hInst,
             MAKEINTRESOURCE(IDD_ADJUSTWINPOS),
             hwndParent,
             EditSizeDlgProc,

@@ -292,7 +292,7 @@ void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND
     UINT  uCmd;
     DWORD dwFlags;
 
-    hMenu  = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_PROCESS));
+    hMenu  = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU_PROCESS));
     hPopup = GetSubMenu(hMenu, 0);
 
     if (hwnd)

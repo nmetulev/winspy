@@ -204,7 +204,7 @@ BOOL GeneralDlg_OnDoubleClick(HWND hwnd, LPARAM lParam)
     if (hwndHit == GetDlgItem(hwnd, IDC_CLIENTRECT_LABEL))
     {
         g_fShowClientRectAsMargins = !g_fShowClientRectAsMargins;
-        DisplayWindowInfo(spy_hCurWnd);
+        DisplayWindowInfo(g_hCurWnd);
         return TRUE;
     }
 
@@ -259,7 +259,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
                 ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
             }
 
-            hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_BYTES));
+            hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU_BYTES));
 
             // Show the menu
             uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
@@ -285,22 +285,22 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         case IDC_WINDOWPROC:
             ShowDlgItem(hwnd, IDC_WINDOWPROC, SW_HIDE);
             ShowDlgItem(hwnd, IDC_WINDOWPROC2, SW_SHOW);
-            GetRemoteInfo(spy_hCurWnd);
-            SetClassInfo(spy_hCurWnd);
+            GetRemoteInfo(g_hCurWnd);
+            SetClassInfo(g_hCurWnd);
             return TRUE;
 
         case IDC_EDITSIZE:
 
             // Display the edit-size dialog
-            ShowEditSizeDlg(hwnd, spy_hCurWnd);
+            ShowEditSizeDlg(hwnd, g_hCurWnd);
             return TRUE;
 
         case IDC_HANDLE_MENU:
 
             // Show our popup menu under this button
-            hCtrl = spy_hCurWnd;
+            hCtrl = g_hCurWnd;
 
-            hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_ONTAB));
+            hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU_WINDOW_ONTAB));
             hPopup = GetSubMenu(hMenu, 0);
 
             GetWindowRect((HWND)lParam, &rect);
@@ -335,7 +335,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
                 SetFocus(hwndEdit2);
             }
 
-            hCtrl = (HWND)spy_hCurWnd;
+            hCtrl = (HWND)g_hCurWnd;
 
             // get the original text and add it to the combo list
             GetWindowText(hCtrl, ach, ARRAYSIZE(ach));
@@ -415,11 +415,11 @@ INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
         switch (LOWORD(wParam))
         {
         case IDC_EDITSTYLE:
-            ShowWindowStyleEditor(hwnd, spy_hCurWnd, FALSE);
+            ShowWindowStyleEditor(hwnd, g_hCurWnd, FALSE);
             return TRUE;
 
         case IDC_EDITSTYLEEX:
-            ShowWindowStyleEditor(hwnd, spy_hCurWnd, TRUE);
+            ShowWindowStyleEditor(hwnd, g_hCurWnd, TRUE);
             return TRUE;
 
         default:
@@ -604,7 +604,7 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
                 ClientToScreen(hwndList1, &pt);
             }
 
-            hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_PROPERTY));
+            hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU_PROPERTY));
 
             // Show the menu
             uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
@@ -613,12 +613,12 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
             switch (uCmd)
             {
             case IDM_PROPERTY_ADD:
-                ShowWindowPropertyEditor(hwnd, spy_hCurWnd, TRUE);
+                ShowWindowPropertyEditor(hwnd, g_hCurWnd, TRUE);
                 break;
 
             case IDM_PROPERTY_EDIT:
                 if (selected != -1)
-                    ShowWindowPropertyEditor(hwnd, spy_hCurWnd, FALSE);
+                    ShowWindowPropertyEditor(hwnd, g_hCurWnd, FALSE);
                 break;
 
             case IDM_PROPERTY_REMOVE:
@@ -632,7 +632,7 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
 
                     ListView_GetItem(hwndList1, &lvitem);
 
-                    if (RemoveProp(spy_hCurWnd, lvitem.lParam ? MAKEINTATOM(lvitem.lParam) : lvitem.pszText))
+                    if (RemoveProp(g_hCurWnd, lvitem.lParam ? MAKEINTATOM(lvitem.lParam) : lvitem.pszText))
                         ListView_DeleteItem(hwndList1, selected);
                 }
                 break;
@@ -650,7 +650,7 @@ INT_PTR CALLBACK PropertyDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPa
             switch (((NMHDR *)lParam)->code)
             {
             case NM_DBLCLK:
-                ShowWindowPropertyEditor(hwnd, spy_hCurWnd, FALSE);
+                ShowWindowPropertyEditor(hwnd, g_hCurWnd, FALSE);
                 break;
             }
         }
@@ -717,7 +717,7 @@ INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
                 ClientToScreen(GetDlgItem(hwnd, IDC_BYTESLIST), &pt);
             }
 
-            hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU_BYTES));
+            hMenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_MENU_BYTES));
 
             // Show the menu
             uCmd = TrackPopupMenu(GetSubMenu(hMenu, 0), TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, 0);
@@ -766,7 +766,7 @@ INT_PTR CALLBACK ProcessDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
                 rect.right,
                 rect.bottom,
                 TRUE,
-                spy_hCurWnd,
+                g_hCurWnd,
                 g_dwSelectedPID);
 
             return TRUE;

@@ -13,8 +13,6 @@
 
 Options g_opts;
 
-extern HWND hwndToolTip;
-
 #define REG_BASESTR  L"Software\\Catch22\\WinSpy++ 1.5"
 
 static WCHAR szRegLoc[] = REG_BASESTR;
@@ -154,9 +152,9 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
 
 void ShowOptionsDlg(HWND hwndParent)
 {
-    DialogBox(hInst, MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
+    DialogBox(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
 
     UpdateMainWindowText();
 
-    SendMessage(hwndToolTip, TTM_ACTIVATE, g_opts.fEnableToolTips, 0);
+    SendMessage(g_hwndToolTip, TTM_ACTIVATE, g_opts.fEnableToolTips, 0);
 }

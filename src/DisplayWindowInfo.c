@@ -22,7 +22,7 @@ static BOOL CALLBACK ChildWindowProc(HWND hwnd, LPARAM lParam)
 
     //only display 1st generation (1-deep) children -
     //(don't display child windows of child windows)
-    if (GetRealParent(hwnd) == spy_hCurWnd)
+    if (GetRealParent(hwnd) == g_hCurWnd)
     {
         GetClassName(hwnd, cname, ARRAYSIZE(cname));
         GetWindowText(hwnd, wname, ARRAYSIZE(wname));
@@ -51,7 +51,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
     LVITEM lvitem;
 
     //sibling windows must share the same parent
-    if (spy_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(spy_hCurWnd))
+    if (g_hCurWnd != hwnd && GetRealParent(hwnd) == GetRealParent(g_hCurWnd))
     {
         GetClassName(hwnd, cname, ARRAYSIZE(cname));
         GetWindowText(hwnd, wname, ARRAYSIZE(wname));
