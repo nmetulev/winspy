@@ -178,7 +178,7 @@ void UpdateMainWindowText()
         WCHAR ach[100] = { 0 };
 
         if (IsWindow(hwnd))
-        {                               
+        {
             GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
         }
         else

@@ -399,11 +399,12 @@ void SetClassInfo(HWND hwnd)
 
     SetDlgItemTextEx(hwndDlg, IDC_WINDOWBYTES, ach);
 
-    // Menu (not implemented)
+    // Menu
 
-    // swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetClassLongPtr(hwnd, GCLP_MENUNAME));
+    handle = GetClassLongPtr(hwnd, GCLP_MENUNAME);
+    FormatHandle(ach, ARRAYSIZE(ach), NULL, 0, handle);
 
-    SetDlgItemTextEx(hwndDlg, IDC_MENUHANDLE, L"(None)");
+    SetDlgItemTextEx(hwndDlg, IDC_MENUHANDLE, ach);
 
     // Cursor handle
 
