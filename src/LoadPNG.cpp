@@ -21,9 +21,9 @@ IStream * CreateStreamOnResource(PCWSTR lpName, PCWSTR lpType)
     HRSRC hRes = FindResource(NULL, lpName, lpType);
     DWORD dwResourceSize;
     HGLOBAL hglbImage;
-    LPVOID pvSourceResourceData;
+    PVOID pvSourceResourceData;
     HGLOBAL hgblResourceData;
-    LPVOID pvResourceData;
+    PVOID pvResourceData;
 
     if (hRes == NULL)
         goto Return;

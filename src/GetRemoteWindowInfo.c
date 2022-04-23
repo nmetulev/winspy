@@ -20,7 +20,7 @@
 #include <psapi.h>
 #include "InjectThread.h"
 
-typedef BOOL(WINAPI *PROCGETCLASSINFOEXW)(HINSTANCE, LPCWSTR, WNDCLASSEXW*);
+typedef BOOL(WINAPI *PROCGETCLASSINFOEXW)(HINSTANCE, PCWSTR, WNDCLASSEXW*);
 typedef LONG_PTR(WINAPI *PROCGETWINDOWLONGPTR)(HWND, int);
 typedef LRESULT(WINAPI *PROCSENDMESSAGETO)(HWND, UINT, WPARAM, LPARAM, UINT, UINT, PDWORD_PTR);
 
@@ -70,7 +70,7 @@ __declspec(code_seg(".inject$a"))
 // - window procedure
 // - window class
 // - text
-static DWORD WINAPI GetDataProc(LPVOID pParam)
+static DWORD WINAPI GetDataProc(PVOID pParam)
 {
     INJDATA *pInjData = (INJDATA *)pParam;
     BOOL    fRet = TRUE;
@@ -106,9 +106,9 @@ static void AfterGetDataProc(void) { }
 #pragma check_stack
 #pragma runtime_checks("", restore)
 
-BOOL IsInsideModule(MODULEINFO *pModuleInfo, LPVOID fn)
+BOOL IsInsideModule(MODULEINFO *pModuleInfo, PVOID fn)
 {
-    return !fn || (pModuleInfo->lpBaseOfDll <= fn && (LPVOID)((BYTE*)pModuleInfo->lpBaseOfDll + pModuleInfo->SizeOfImage) > fn);
+    return !fn || (pModuleInfo->lpBaseOfDll <= fn && (PVOID)((BYTE*)pModuleInfo->lpBaseOfDll + pModuleInfo->SizeOfImage) > fn);
 }
 
 BOOL IsInjectionDataValid(INJDATA *pInjData)
@@ -124,9 +124,9 @@ BOOL IsInjectionDataValid(INJDATA *pInjData)
     if (!GetModuleInformation(GetCurrentProcess(), hModUser32, &moduleInfo, sizeof(moduleInfo)))
         return FALSE;
 
-    return (IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnSendMessageTimeout) &&
-        IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnGetWindowLongPtr) &&
-        IsInsideModule(&moduleInfo, (LPVOID)(intptr_t)pInjData->fnGetClassInfoEx));
+    return (IsInsideModule(&moduleInfo, (PVOID)(intptr_t)pInjData->fnSendMessageTimeout) &&
+        IsInsideModule(&moduleInfo, (PVOID)(intptr_t)pInjData->fnGetWindowLongPtr) &&
+        IsInsideModule(&moduleInfo, (PVOID)(intptr_t)pInjData->fnGetClassInfoEx));
 }
 
 BOOL GetRemoteWindowInfo(HWND hwnd, WNDCLASSEX *pClass, WNDPROC *pProc, WCHAR *pszText, int nTextLen)

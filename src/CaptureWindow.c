@@ -27,7 +27,7 @@
 #define PALVERSION   0x300
 
 /* DIB macros */
-#define IS_WIN30_DIB(lpbi)  ((*(LPDWORD)(lpbi)) == sizeof(BITMAPINFOHEADER))
+#define IS_WIN30_DIB(lpbi)  ((*(PDWORD)(lpbi)) == sizeof(BITMAPINFOHEADER))
 #define WIDTHBYTES(bits)    (((bits) + 31) / 32 * 4)
 
 static WORD PalEntriesOnDevice(HDC hdc)
@@ -83,7 +83,7 @@ static HPALETTE GetSystemPalette(HDC hdc)
     return hPal;
 }
 
-static WORD DIBNumColors(LPSTR lpDIB)
+static WORD DIBNumColors(PSTR lpDIB)
 {
     WORD wBitCount;  // DIB bit count
 
@@ -114,7 +114,7 @@ static WORD DIBNumColors(LPSTR lpDIB)
     }
 }
 
-static WORD PaletteSize(LPSTR lpDIB)
+static WORD PaletteSize(PSTR lpDIB)
 {
     /* calculate the size required by the palette */
     if (IS_WIN30_DIB(lpDIB))
@@ -139,7 +139,7 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
         return NULL;
 
     /* fill in BITMAP structure, return NULL if it didn't work */
-    if (!GetObject(hBitmap, sizeof(bm), (LPSTR)&bm))
+    if (!GetObject(hBitmap, sizeof(bm), (PSTR)&bm))
         return NULL;
 
     /* if no palette is specified, use default palette */
@@ -173,7 +173,7 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
     bi.biClrImportant = 0;
 
     /* calculate size of memory block required to store BITMAPINFO */
-    dwLen = bi.biSize + PaletteSize((LPSTR)&bi);
+    dwLen = bi.biSize + PaletteSize((PSTR)&bi);
 
     /* get a DC */
     hDC = GetDC(NULL);
@@ -216,7 +216,7 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
         bi.biSizeImage = WIDTHBYTES((DWORD)bm.bmWidth * biBits) * bm.bmHeight;
 
     /* realloc the buffer big enough to hold all the bits */
-    dwLen = bi.biSize + PaletteSize((LPSTR)&bi) + bi.biSizeImage;
+    dwLen = bi.biSize + PaletteSize((PSTR)&bi) + bi.biSizeImage;
     h = GlobalReAlloc(hDIB, dwLen, 0);
     if (h)
         hDIB = h;
@@ -237,8 +237,8 @@ static HANDLE BitmapToDIB(HBITMAP hBitmap, HPALETTE hPal)
     /*  call GetDIBits with a NON-NULL lpBits param, and actualy get the
      *  bits this time
      */
-    if (GetDIBits(hDC, hBitmap, 0, (WORD)bi.biHeight, (LPSTR)lpbi + (WORD)lpbi
-        ->biSize + PaletteSize((LPSTR)lpbi), (LPBITMAPINFO)lpbi,
+    if (GetDIBits(hDC, hBitmap, 0, (WORD)bi.biHeight, (PSTR)lpbi + (WORD)lpbi
+        ->biSize + PaletteSize((PSTR)lpbi), (LPBITMAPINFO)lpbi,
         DIB_RGB_COLORS) == 0)
     {
         /* clean up and return NULL */

@@ -178,7 +178,7 @@ void UpdateMainWindowText()
         WCHAR ach[100] = { 0 };
 
         if (IsWindow(hwnd))
-        {
+        {                               
             GetClassName(hwnd, szClass, ARRAYSIZE(szClass));
         }
         else
@@ -814,7 +814,7 @@ BOOL ProcessCommandLine(PCSTR pcszCmdLine)
 //
 //  This is where the fun begins
 //
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nShowCmd)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);

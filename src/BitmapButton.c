@@ -26,7 +26,7 @@
 
 BOOL    g_fThemeApiAvailable = FALSE;
 
-HTHEME _OpenThemeData(HWND hwnd, LPCWSTR pszClassList)
+HTHEME _OpenThemeData(HWND hwnd, PCWSTR pszClassList)
 {
     if (g_fThemeApiAvailable)
         return OpenThemeData(hwnd, pszClassList);

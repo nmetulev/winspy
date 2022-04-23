@@ -292,7 +292,7 @@ WCHAR *GetVersionString(WCHAR *szFileName, WCHAR *szValue, WCHAR *szBuffer, ULON
 
     if (GetFileVersionInfo(szFileName, 0, len, ver))
     {
-        if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), (LPVOID *)&codepage, &len))
+        if (VerQueryValue(ver, TEXT("\\VarFileInfo\\Translation"), (PVOID *)&codepage, &len))
         {
             swprintf_s(fmt, ARRAYSIZE(fmt), TEXT("\\StringFileInfo\\%04x%04x\\%s"), (*codepage) & 0xFFFF,
                 (*codepage) >> 16, szValue);

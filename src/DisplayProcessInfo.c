@@ -20,7 +20,7 @@
 void DescribeProcessDpiAwareness(DWORD dwProcessId, PSTR pszAwareness, size_t cchAwareness, PSTR pszDpi, size_t cchDpi);
 BOOL IsGetSystemDpiForProcessPresent();
 
-typedef BOOL(WINAPI * EnumProcessModulesProc)(HANDLE, HMODULE *, DWORD, LPDWORD);
+typedef BOOL(WINAPI * EnumProcessModulesProc)(HANDLE, HMODULE *, DWORD, PDWORD);
 typedef DWORD(WINAPI * GetModuleBaseNameProc)(HANDLE, HMODULE, PWSTR, DWORD);
 typedef DWORD(WINAPI * GetModuleFileNameExProc)(HANDLE, HMODULE, PWSTR, DWORD);
 

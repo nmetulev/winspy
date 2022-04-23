@@ -16,8 +16,8 @@
 
 #define INJECT_ACCESS (PROCESS_CREATE_THREAD|PROCESS_QUERY_INFORMATION|PROCESS_VM_OPERATION|PROCESS_VM_READ|PROCESS_VM_WRITE)
 
-typedef PVOID(WINAPI * VA_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD, DWORD);
-typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
+typedef PVOID(WINAPI * VA_EX_PROC)(HANDLE, PVOID, SIZE_T, DWORD, DWORD);
+typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, PVOID, SIZE_T, DWORD);
 
 //
 //  Inject a thread into the process which owns the specified window.
@@ -32,7 +32,7 @@ typedef PVOID(WINAPI * VF_EX_PROC)(HANDLE, LPVOID, SIZE_T, DWORD);
 //  The user-defined structure is also injected into the target process' address space.
 //  When the thread terminates, the structure is read back from the process.
 //
-DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbCodeSize, LPVOID lpData, DWORD cbDataSize, DWORD cbInput)
+DWORD InjectRemoteThread(HWND hwnd, LPTHREAD_START_ROUTINE lpCode, DWORD_PTR cbCodeSize, PVOID lpData, DWORD cbDataSize, DWORD cbInput)
 {
     DWORD  dwProcessId;         //id of remote process
     DWORD  dwThreadId;          //id of the thread in remote process
