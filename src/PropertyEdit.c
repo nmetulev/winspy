@@ -159,5 +159,5 @@ void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew)
     DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_PROPERTY_EDIT), hwndParent, PropertyEditProc, (LPARAM)&state);
 
     // Update the main display
-    SetPropertyInfo(hwndTarget);
+    UpdatePropertyTab(hwndTarget);
 }

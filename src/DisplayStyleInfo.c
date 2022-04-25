@@ -1034,7 +1034,7 @@ void ResetStyleTab(HWND hwnd, HWND hwndDlg)
 //  Update the Style tab with styles for specified window
 //
 
-void SetStyleInfo(HWND hwnd)
+void UpdateStyleTab(HWND hwnd)
 {
     WCHAR ach[20];
     BOOL fWindowChanged = (hwnd != s_hwndCurrent);

@@ -230,14 +230,15 @@ INT_PTR CALLBACK DpiDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 // Top-level
 void DisplayWindowInfo(HWND hwnd);
 
-void SetWindowInfo(HWND hwnd);
-void SetClassInfo(HWND hwnd);
-void SetStyleInfo(HWND hwnd);
-void SetGeneralInfo(HWND hwnd);
-void SetScrollbarInfo(HWND hwnd);
-void SetPropertyInfo(HWND hwnd);
-void SetProcessInfo(HWND hwnd, DWORD dwOverridePID);
-void SetDpiInfo(HWND hwnd);
+void UpdateWindowTab(HWND hwnd);
+void UpdateClassTab(HWND hwnd);
+void UpdateStyleTab(HWND hwnd);
+void UpdateGeneralTab(HWND hwnd);
+void UpdatePropertyTab(HWND hwnd);
+void UpdateProcessTab(HWND hwnd, DWORD dwOverridePID);
+void UpdateDpiTab(HWND hwnd);
+
+void UpdateScrollbarInfo(HWND hwnd);
 
 void ExitWinSpy(HWND hwnd, UINT uCode);
 

@@ -25,7 +25,7 @@ void FillBytesList(
     LONG_PTR WINAPI pGetLongPtr(HWND, int)
 );
 
-void SetGeneralInfo(HWND hwnd)
+void UpdateGeneralTab(HWND hwnd)
 {
     WCHAR   ach[256];
     HWND    hwndDlg = WinSpyTab[GENERAL_TAB].hwnd;

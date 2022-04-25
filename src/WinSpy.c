@@ -98,33 +98,32 @@ void UpdateTabs(BOOL fForceClassUpdate)
     if (fForceClassUpdate || nCurrentTab == CLASS_TAB)
     {
         GetRemoteInfo(hwnd);
-        SetClassInfo(hwnd);
+        UpdateClassTab(hwnd);
     }
 
     if (nCurrentTab == GENERAL_TAB)
     {
-        SetGeneralInfo(hwnd);
+        UpdateGeneralTab(hwnd);
     }
     else if (nCurrentTab == STYLE_TAB)
     {
-        SetStyleInfo(hwnd);
+        UpdateStyleTab(hwnd);
     }
     else if (nCurrentTab == PROPERTY_TAB)
     {
-        SetPropertyInfo(hwnd);
-        SetScrollbarInfo(hwnd);
+        UpdatePropertyTab(hwnd);
     }
     else if (nCurrentTab == PROCESS_TAB)
     {
-        SetProcessInfo(hwnd, g_dwSelectedPID);
+        UpdateProcessTab(hwnd, g_dwSelectedPID);
     }
     else if (nCurrentTab == WINDOW_TAB)
     {
-        SetWindowInfo(hwnd);
+        UpdateWindowTab(hwnd);
     }
     else if (nCurrentTab == DPI_TAB)
     {
-        SetDpiInfo(hwnd);
+        UpdateDpiTab(hwnd);
     }
 }
 

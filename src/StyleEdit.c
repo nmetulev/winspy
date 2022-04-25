@@ -240,6 +240,6 @@ void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
     DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
 
     // Update the main display
-    SetGeneralInfo(hwndTarget);
-    SetStyleInfo(hwndTarget);
+    UpdateGeneralTab(hwndTarget);
+    UpdateStyleTab(hwndTarget);
 }

@@ -77,7 +77,7 @@ static BOOL CALLBACK SiblingWindowProc(HWND hwnd, LPARAM lParam)
 //  Get a list of all Child + Siblings for the specified window -
 //  Update the Windows tab accordingly
 //
-void SetWindowInfo(HWND hwnd)
+void UpdateWindowTab(HWND hwnd)
 {
     HWND hParentWnd = NULL;
     WCHAR ach[10];

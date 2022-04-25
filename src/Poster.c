@@ -573,7 +573,7 @@ void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
             PosterDlgProc,
             (LPARAM)hwndTarget);
 
-        SetGeneralInfo(hwndTarget);
+        UpdateGeneralTab(hwndTarget);
     }
     else
     {

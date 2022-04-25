@@ -61,7 +61,7 @@ void SetInfo(HWND hwndDlg, HWND hwnd, BOOL fValid, BOOL fVert, PCWSTR ach, DWORD
     }
 }
 
-void SetScrollbarInfo(HWND hwnd)
+void UpdateScrollbarInfo(HWND hwnd)
 {
     DWORD dwStyle = 0;
     WCHAR  ach[256];

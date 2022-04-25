@@ -355,7 +355,7 @@ void ResetClassTab(HWND hwnd, HWND hwndDlg)
 // Set the class information on the Class Tab, for the specified window.
 // This function assumes that g_WndClassEx is completely populated.
 //
-void SetClassInfo(HWND hwnd)
+void UpdateClassTab(HWND hwnd)
 {
     WCHAR ach[256];
     int i, numstyles;

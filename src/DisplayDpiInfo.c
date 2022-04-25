@@ -220,7 +220,7 @@ void DescribeProcessDpiAwareness(DWORD dwProcessId, PSTR pszAwareness, size_t cc
 //
 // Update the DPI tab for the specified window
 //
-void SetDpiInfo(HWND hwnd)
+void UpdateDpiTab(HWND hwnd)
 {
     HWND hwndDlg = WinSpyTab[DPI_TAB].hwnd;
     CHAR szTemp[100];

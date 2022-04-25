@@ -186,7 +186,7 @@ BOOL GetProcessNameByPid(DWORD dwProcessId, WCHAR szName[], DWORD nNameSize, WCH
 //
 //  Update the Process tab for the specified window
 //
-void SetProcessInfo(HWND hwnd, DWORD dwOverridePID)
+void UpdateProcessTab(HWND hwnd, DWORD dwOverridePID)
 {
     DWORD dwProcessId = 0;
     DWORD dwThreadId = 0;

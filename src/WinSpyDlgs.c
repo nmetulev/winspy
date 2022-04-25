@@ -286,7 +286,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
             ShowDlgItem(hwnd, IDC_WINDOWPROC, SW_HIDE);
             ShowDlgItem(hwnd, IDC_WINDOWPROC2, SW_SHOW);
             GetRemoteInfo(g_hCurWnd);
-            SetClassInfo(g_hCurWnd);
+            UpdateClassTab(g_hCurWnd);
             return TRUE;
 
         case IDC_EDITSIZE:
@@ -311,7 +311,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
                 rect.right, rect.bottom, 0, hwnd, 0);
 
             WinSpy_PopupCommandHandler(hwnd, uCmd, hCtrl);
-            SetGeneralInfo(hCtrl);
+            UpdateGeneralTab(hCtrl);
 
             DestroyMenu(hMenu);
 

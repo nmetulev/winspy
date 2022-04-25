@@ -60,8 +60,10 @@ void EnumWindowProps(HWND hwnd, HWND hwndList)
     EnumPropsEx(hwnd, PropEnumProcEx, (ULONG_PTR)hwndList);
 }
 
-void SetPropertyInfo(HWND hwnd)
+void UpdatePropertyTab(HWND hwnd)
 {
     EnumWindowProps(hwnd, GetDlgItem(WinSpyTab[PROPERTY_TAB].hwnd, IDC_LIST1));
+
+    UpdateScrollbarInfo(hwnd);
 }
 

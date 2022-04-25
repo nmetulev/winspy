@@ -147,7 +147,7 @@ void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget)
             EditSizeDlgProc,
             (LPARAM)hwndTarget);
 
-        SetGeneralInfo(hwndTarget);
+        UpdateGeneralTab(hwndTarget);
     }
     else
     {
