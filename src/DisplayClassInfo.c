@@ -358,7 +358,7 @@ void ResetClassTab(HWND hwnd, HWND hwndDlg)
 void SetClassInfo(HWND hwnd)
 {
     WCHAR ach[256];
-    int i, numstyles, classbytes;
+    int i, numstyles;
     HWND hwndDlg = WinSpyTab[CLASS_TAB].hwnd;
     UINT_PTR handle;
 
@@ -368,34 +368,40 @@ void SetClassInfo(HWND hwnd)
         return;
     }
 
+    DWORD dwStyle    = (DWORD)GetClassLong(hwnd, GCL_STYLE);
+    WORD  wAtom      = (WORD)GetClassLong(hwnd, GCW_ATOM);
+    DWORD cbClsExtra = (DWORD)GetClassLong(hwnd, GCL_CBCLSEXTRA);
+    DWORD cbWndExtra = (DWORD)GetClassLong(hwnd, GCL_CBWNDEXTRA);
+    PVOID hModule    = (PVOID)GetClassLongPtr(hwnd, GCLP_HMODULE);
+
     // Class name
 
     GetClassName(hwnd, ach, ARRAYSIZE(ach));
-    VerboseClassName(ach, ARRAYSIZE(ach), (WORD)GetClassLong(hwnd, GCW_ATOM));
+    VerboseClassName(ach, ARRAYSIZE(ach), wAtom);
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASSNAME, ach);
 
     // Class style
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", g_WndClassEx.style);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwStyle);
 
     SetDlgItemTextEx(hwndDlg, IDC_STYLE, ach);
 
     // Atom
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%04X", GetClassLong(hwnd, GCW_ATOM));
+    swprintf_s(ach, ARRAYSIZE(ach), L"%04X", wAtom);
 
     SetDlgItemTextEx(hwndDlg, IDC_ATOM, ach);
 
     // Extra class bytes
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%d", g_WndClassEx.cbClsExtra);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%d", cbClsExtra);
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASSBYTES, ach);
 
     // Extra window bytes
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%d", g_WndClassEx.cbWndExtra);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%d", cbWndExtra);
 
     SetDlgItemTextEx(hwndDlg, IDC_WINDOWBYTES, ach);
 
@@ -448,6 +454,7 @@ void SetClassInfo(HWND hwnd)
     else
     {
         swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
+
         if (g_WndProc != g_WndClassEx.lpfnWndProc)
             wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
     }
@@ -472,7 +479,7 @@ void SetClassInfo(HWND hwnd)
 
     // Instance handle
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndClassEx.hInstance);
+    swprintf_s(ach, ARRAYSIZE(ach), L"%p", hModule);
 
     SetDlgItemTextEx(hwndDlg, IDC_INSTANCEHANDLE, ach);
 
@@ -483,7 +490,7 @@ void SetClassInfo(HWND hwnd)
 
     for (i = 0; i < NUM_CLASS_STYLES; i++)
     {
-        if (g_WndClassEx.style & ClassLookup[i].value)
+        if (dwStyle & ClassLookup[i].value)
         {
             SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_ADDSTRING, 0,
                 (LPARAM)ClassLookup[i].szName);
@@ -498,8 +505,6 @@ void SetClassInfo(HWND hwnd)
 
     // Fill combo box with class extra bytes
 
-    classbytes = g_WndClassEx.cbClsExtra;
-
-    FillBytesList(hwndDlg, hwnd, classbytes, GetClassWord, (LONG (WINAPI *)(HWND, int))GetClassLong, (LONG_PTR (WINAPI *)(HWND, int))GetClassLongPtr);
+    FillBytesList(hwndDlg, hwnd, cbClsExtra, GetClassWord, (LONG (WINAPI *)(HWND, int))GetClassLong, (LONG_PTR (WINAPI *)(HWND, int))GetClassLongPtr);
 }
 

@@ -82,7 +82,7 @@ void GetRemoteInfo(HWND hwnd)
         {
             GetRemoteWindowInfo(hwnd, success ? NULL : &g_WndClassEx, g_WndProc ? NULL : &g_WndProc, g_szPassword, ARRAYSIZE(g_szPassword));
         }
-        else
+        else if (g_fPassword)
         {
             SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(g_szPassword), (LPARAM)g_szPassword);
         }
