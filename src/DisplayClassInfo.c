@@ -461,7 +461,7 @@ void UpdateClassTab(HWND hwnd)
 
     SetDlgItemTextEx(hwndDlg, IDC_WNDPROC, ach);
 
-    SetDlgItemTextEx(WinSpyTab[GENERAL_TAB].hwnd, IDC_WINDOWPROC2, ach);
+    SetDlgItemTextEx(WinSpyTab[GENERAL_TAB].hwnd, IDC_WNDPROC, ach);
 
     // Class window procedure
 

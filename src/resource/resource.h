@@ -55,7 +55,7 @@
 #define IDC_STYLE                       1007
 #define IDC_RECTANGLE                   1008
 #define IDC_CLIENTRECT                  1010
-#define IDC_WINDOWPROC2                 1011
+#define IDC_WNDPROC                     1011
 #define IDC_INSTANCE                    1012
 #define IDC_CONTROLID                   1013
 #define IDC_USERDATA                    1014
@@ -76,7 +76,7 @@
 #define IDC_CURSORHANDLE                1024
 #define IDC_BKGNDBRUSH                  1025
 #define IDC_INSTANCEHANDLE              1026
-#define IDC_WNDPROC                     1027
+#define IDC_WNDPROC_LINK                1027
 #define IDC_CLASSPROC                   1028
 #define IDC_PARENT                      1029
 #define IDC_OWNER                       1030
@@ -137,7 +137,6 @@
 #define IDC_PROCESSPATH                 1068
 #define IDC_HANDLE_MENU                 1069
 #define IDC_EXPAND                      1070
-#define IDC_WINDOWPROC                  1070
 #define IDC_CLEAR                       1071
 #define IDC_AUTOUPDATE                  1072
 #define IDC_RADIO_NAME                  1073

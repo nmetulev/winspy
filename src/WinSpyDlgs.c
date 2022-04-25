@@ -233,7 +233,7 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         MakeDlgBitmapButton(hwnd, IDC_EDITSIZE, IDI_DOTS);
         MakeDlgBitmapButton(hwnd, IDC_SETCAPTION, IDI_ENTER);
 
-        MakeHyperlink(hwnd, IDC_WINDOWPROC, RGB(0, 0, 255));
+        MakeHyperlink(hwnd, IDC_WNDPROC_LINK, RGB(0, 0, 255));
 
         return TRUE;
 
@@ -282,9 +282,9 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         switch (LOWORD(wParam))
         {
             // added in 1.6: windowproc URL control
-        case IDC_WINDOWPROC:
-            ShowDlgItem(hwnd, IDC_WINDOWPROC, SW_HIDE);
-            ShowDlgItem(hwnd, IDC_WINDOWPROC2, SW_SHOW);
+        case IDC_WNDPROC_LINK:
+            ShowDlgItem(hwnd, IDC_WNDPROC_LINK, SW_HIDE);
+            ShowDlgItem(hwnd, IDC_WNDPROC, SW_SHOW);
             GetRemoteInfo(g_hCurWnd);
             UpdateClassTab(g_hCurWnd);
             return TRUE;

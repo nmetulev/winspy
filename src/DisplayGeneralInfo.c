@@ -181,10 +181,10 @@ void UpdateGeneralTab(HWND hwnd)
             swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
         }
     }
-    ShowDlgItem(hwndDlg, IDC_WINDOWPROC, (!fValid || g_WndProc) ? SW_HIDE : SW_SHOW);
-    ShowDlgItem(hwndDlg, IDC_WINDOWPROC2, (!fValid || g_WndProc) ? SW_SHOW : SW_HIDE);
-    SetDlgItemTextEx(hwndDlg, IDC_WINDOWPROC, ach);
-    SetDlgItemTextEx(hwndDlg, IDC_WINDOWPROC2, ach);
+    ShowDlgItem(hwndDlg, IDC_WNDPROC_LINK, (!fValid || g_WndProc) ? SW_HIDE : SW_SHOW);
+    ShowDlgItem(hwndDlg, IDC_WNDPROC, (!fValid || g_WndProc) ? SW_SHOW : SW_HIDE);
+    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC_LINK, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC, ach);
 
     //instance handle
     if (fValid)
