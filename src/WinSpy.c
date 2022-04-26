@@ -27,7 +27,6 @@ HINSTANCE  g_hInst;          // Current application instance
 //  Current window being spied on
 //
 HWND       g_hCurWnd = 0;
-WNDCLASSEX g_WndClassEx;
 WNDPROC    g_WndProc;
 BOOL       g_fPassword = FALSE;     // is it a password (edit) control?
 WCHAR      g_szPassword[200];
@@ -58,29 +57,31 @@ DialogTab WinSpyTab[NUMTABCONTROLITEMS] =
 static int nCurrentTab = 0;
 
 //
-//  Try to get class information normally - if
-//  it's a private application class, then we need to
-//  do this remotely
+// This function tries to get additional data about the current window by
+// injecting a thread into the process that owns the window.
+// Currently, this is used for two things:
 //
+// 1. The window procedure.  There seems to be no way to query the window
+//    procedure for a window from outside the process that owns the window.
+//
+// 2. Edit controls with the ES_PASSWORD style.
+//
+// Note that this can fail for various reasons:
+// - The other process if of a different bitness than winspy (32 vs. 64)
+// - The other process could be suspend or sitting in a debugger.
+// - We may not have sufficient rights to open a handle to the other process.
+//
+
 void GetRemoteInfo(HWND hwnd)
 {
-    ZeroMemory(&g_WndClassEx, sizeof(WNDCLASSEX));
-    g_WndClassEx.cbSize = sizeof(WNDCLASSEX);
-
     if (!hwnd)
         return;
 
-    BOOL success = GetClassInfoEx(0, g_szClassName, &g_WndClassEx);
-
-    //try to use the standard methods to get the window procedure
-    //and class information. If that fails, then we have to inject
-    //a remote thread into the window's process and call the functions
-    //from there.
-    if (g_WndProc == 0 || !success || g_fPassword)
+    if (g_WndProc == 0 || g_fPassword)
     {
         if (ProcessArchMatches(hwnd))
         {
-            GetRemoteWindowInfo(hwnd, success ? NULL : &g_WndClassEx, g_WndProc ? NULL : &g_WndProc, g_szPassword, ARRAYSIZE(g_szPassword));
+            GetRemoteWindowInfo(hwnd, NULL, g_WndProc ? NULL : &g_WndProc, g_szPassword, ARRAYSIZE(g_szPassword));
         }
         else if (g_fPassword)
         {

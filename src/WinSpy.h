@@ -337,7 +337,6 @@ extern HWND  g_hwndToolTip;   // tooltip for main window controls only
 //
 //
 extern HWND       g_hCurWnd;
-extern WNDCLASSEX g_WndClassEx;
 extern WNDPROC    g_WndProc;
 extern BOOL       g_fPassword;
 extern WCHAR      g_szPassword[];

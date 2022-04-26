@@ -58,6 +58,7 @@ void ResetGeneralTab(HWND hwnd, HWND hwndDlg)
     ShowDlgItem(hwndDlg, IDC_WNDPROC, SW_SHOW);
 
     SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_RESETCONTENT, 0, 0);
+    EnableDlgItem(hwndDlg, IDC_BYTESLIST, FALSE);
 }
 
 
@@ -123,7 +124,7 @@ void UpdateGeneralTab(HWND hwnd)
     if (IsWindowUnicode(hwnd))
     {
         wcscat_s(ach, ARRAYSIZE(ach), L"  (Unicode)");
-    }        
+    }
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASS, ach);
 

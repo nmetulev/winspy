@@ -373,6 +373,7 @@ void UpdateClassTab(HWND hwnd)
     DWORD cbClsExtra = (DWORD)GetClassLong(hwnd, GCL_CBCLSEXTRA);
     DWORD cbWndExtra = (DWORD)GetClassLong(hwnd, GCL_CBWNDEXTRA);
     PVOID hModule    = (PVOID)GetClassLongPtr(hwnd, GCLP_HMODULE);
+    PVOID clsproc    = (PVOID)(IsWindowUnicode(hwnd) ? GetClassLongPtrW : GetClassLongPtrA)(hwnd, GCLP_WNDPROC);
 
     // Class name
 
@@ -455,7 +456,7 @@ void UpdateClassTab(HWND hwnd)
     {
         swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
 
-        if (g_WndProc != g_WndClassEx.lpfnWndProc)
+        if (g_WndProc != clsproc)
             wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
     }
 
@@ -465,13 +466,13 @@ void UpdateClassTab(HWND hwnd)
 
     // Class window procedure
 
-    if (g_WndClassEx.lpfnWndProc == 0)
+    if (clsproc == 0)
     {
         wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
     }
     else
     {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndClassEx.lpfnWndProc);
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", clsproc);
     }
 
     SetDlgItemTextEx(hwndDlg, IDC_CLASSPROC, ach);
