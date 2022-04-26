@@ -82,7 +82,19 @@ void GetRemoteInfo()
 
     if (g_WndProc == 0 || g_fPassword)
     {
-        if (ProcessArchMatches(hwnd))
+        BOOL fAttemptInjection = ProcessArchMatches(hwnd);
+
+        // Skip console windows.  For these, the system tells us that they are
+        // owned by the associated console process (e.g cmd.exe) and that
+        // process won't necessarily have user32 loaded.  GetRemoteWindowInfo
+        // will crash the target process in that case, so don't try.
+
+        if (wcscmp(g_szClassName, L"ConsoleWindowClass") == 0)
+        {
+            fAttemptInjection = FALSE;
+        }
+
+        if (fAttemptInjection)
         {
             GetRemoteWindowInfo(hwnd, NULL, g_WndProc ? NULL : &g_WndProc, g_szPassword, ARRAYSIZE(g_szPassword));
         }
