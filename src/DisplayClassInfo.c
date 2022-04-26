@@ -448,21 +448,7 @@ void UpdateClassTab(HWND hwnd)
 
     // Window procedure
 
-    if (g_WndProc == 0)
-    {
-        wcscpy_s(ach, ARRAYSIZE(ach), L"N/A");
-    }
-    else
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
-
-        if (g_WndProc != clsproc)
-            wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
-    }
-
-    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC, ach);
-
-    SetDlgItemTextEx(WinSpyTab[GENERAL_TAB].hwnd, IDC_WNDPROC, ach);
+    UpdateWndProcControls(hwnd, hwndDlg, clsproc);
 
     // Class window procedure
 

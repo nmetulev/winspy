@@ -17,8 +17,27 @@
 
 void  MakeHyperlink(HWND hwnd, UINT staticid, COLORREF crLink);
 void  RemoveHyperlink(HWND hwnd, UINT staticid);
-void  GetRemoteInfo(HWND hwnd);
 
+
+//
+// User clicked the WndProc N/A link on either the General or Class tab.
+//
+
+VOID OnWndProcLinkClicked(HWND hwndDlg)
+{
+    // Hide the link, show the non-link peer.
+
+    ShowDlgItem(hwndDlg, IDC_WNDPROC_LINK, SW_HIDE);
+    ShowDlgItem(hwndDlg, IDC_WNDPROC, SW_SHOW);
+
+    // Attempt to fetch the extra information via thread injection.
+
+    GetRemoteInfo();
+
+    // Refresh the current tab.
+
+    UpdateActiveTab();
+}
 
 //
 // save the tree-structure to clipboard?
@@ -281,12 +300,8 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
-            // added in 1.6: windowproc URL control
         case IDC_WNDPROC_LINK:
-            ShowDlgItem(hwnd, IDC_WNDPROC_LINK, SW_HIDE);
-            ShowDlgItem(hwnd, IDC_WNDPROC, SW_SHOW);
-            GetRemoteInfo(g_hCurWnd);
-            UpdateClassTab(g_hCurWnd);
+            OnWndProcLinkClicked(hwnd);
             return TRUE;
 
         case IDC_EDITSIZE:
@@ -682,6 +697,10 @@ INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 
     switch (iMsg)
     {
+    case WM_INITDIALOG:
+        MakeHyperlink(hwnd, IDC_WNDPROC_LINK, RGB(0, 0, 255));
+        return TRUE;
+
         // Just make the class-name edit-box look normal, even
         // though it is read-only
     case WM_CTLCOLORSTATIC:
@@ -694,6 +713,16 @@ INT_PTR CALLBACK ClassDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
         }
         else
             return 0;
+
+    case WM_COMMAND:
+        switch (LOWORD(wParam))
+        {
+        case IDC_WNDPROC_LINK:
+            OnWndProcLinkClicked(hwnd);
+            return TRUE;
+        }
+
+        return FALSE;
 
     case WM_CONTEXTMENU:
         if ((HWND)wParam == GetDlgItem(hwnd, IDC_BYTESLIST))

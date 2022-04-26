@@ -26,6 +26,55 @@ void FillBytesList(
 );
 
 //
+// Three possible states:
+//
+// 1. The wndproc isn't known and we have not yet tried to get it.
+//    The "N/A" link control is shown.
+//
+// 2. We tried to fetch the wndproc via thread injection and failed.
+//    The non-link control is shown with a value of "N/A".
+//
+// 3. We know the wndproc.
+//    Show the non-link control with the value of the wndproc.
+//
+
+void UpdateWndProcControls(HWND hwnd, HWND hwndDlg, PVOID clsproc)
+{
+    WCHAR ach[100];
+
+    // If we don't know the wndproc and have not already attempted the
+    // remote thread injection, then show the link.
+
+    BOOL fShowLink = (!g_WndProc && !g_fTriedRemote);
+
+    ShowDlgItem(hwndDlg, IDC_WNDPROC_LINK, fShowLink ? SW_SHOW : SW_HIDE);
+    ShowDlgItem(hwndDlg, IDC_WNDPROC,      fShowLink ? SW_HIDE : SW_SHOW);
+
+    if (g_WndProc == 0)
+    {
+        swprintf_s(ach, ARRAYSIZE(ach), L"N/A");
+    }
+    else
+    {
+        swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
+
+        if (clsproc == NULL)
+        {
+            clsproc = (PVOID)(IsWindowUnicode(hwnd) ? GetClassLongPtrW : GetClassLongPtrA)(hwnd, GCLP_WNDPROC);
+        }
+
+        if (clsproc && (g_WndProc != clsproc))
+        {
+            wcscat_s(ach, ARRAYSIZE(ach), L" (Subclassed)");
+        }
+    }
+
+    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC_LINK, ach);
+    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC, ach);
+}
+
+
+//
 // Clears all the controls on the tab (except the handle value) because either
 // there is no current window, or the current window is invalid.
 //
@@ -97,9 +146,10 @@ void UpdateGeneralTab(HWND hwnd)
     // SendMessage is better than GetWindowText,
     // because it gets text of children in other processes
     if (g_fPassword)
-
     {
-        // In this case, the password has already been extracted by GetRemoteWindowInfo()
+        // For password edit controls, we try thread injection.
+
+        GetRemoteInfo();
         wcscpy_s(ach, ARRAYSIZE(ach), g_szPassword);
     }
     else
@@ -204,19 +254,7 @@ void UpdateGeneralTab(HWND hwnd)
 
     // Window procedure
 
-    if (g_WndProc == 0)
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"N/A");
-    }
-    else
-    {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%p", g_WndProc);
-    }
-
-    ShowDlgItem(hwndDlg, IDC_WNDPROC_LINK, g_WndProc ? SW_HIDE : SW_SHOW);
-    ShowDlgItem(hwndDlg, IDC_WNDPROC, g_WndProc ? SW_SHOW : SW_HIDE);
-    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC_LINK, ach);
-    SetDlgItemTextEx(hwndDlg, IDC_WNDPROC, ach);
+    UpdateWndProcControls(hwnd, hwndDlg, NULL);
 
     // Instance handle
 

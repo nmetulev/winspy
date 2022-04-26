@@ -230,6 +230,7 @@ INT_PTR CALLBACK DpiDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 // Top-level
 void DisplayWindowInfo(HWND hwnd);
 
+void UpdateActiveTab();
 void UpdateWindowTab(HWND hwnd);
 void UpdateClassTab(HWND hwnd);
 void UpdateStyleTab(HWND hwnd);
@@ -239,6 +240,9 @@ void UpdateProcessTab(HWND hwnd, DWORD dwOverridePID);
 void UpdateDpiTab(HWND hwnd);
 
 void UpdateScrollbarInfo(HWND hwnd);
+void UpdateWndProcControls(HWND hwnd, HWND hwndDlg, PVOID clsproc);
+
+void GetRemoteInfo();
 
 void ExitWinSpy(HWND hwnd, UINT uCode);
 
@@ -339,6 +343,7 @@ extern HWND  g_hwndToolTip;   // tooltip for main window controls only
 extern HWND       g_hCurWnd;
 extern WNDPROC    g_WndProc;
 extern BOOL       g_fPassword;
+extern BOOL       g_fTriedRemote;
 extern WCHAR      g_szPassword[];
 extern WCHAR      g_szClassName[];
 

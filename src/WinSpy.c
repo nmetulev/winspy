@@ -29,8 +29,9 @@ HINSTANCE  g_hInst;          // Current application instance
 HWND       g_hCurWnd = 0;
 WNDPROC    g_WndProc;
 BOOL       g_fPassword = FALSE;     // is it a password (edit) control?
+BOOL       g_fTriedRemote = FALSE;
 WCHAR      g_szPassword[200];
-WCHAR      g_szClassName[70];
+WCHAR      g_szClassName[MAX_PATH];
 DWORD      g_dwSelectedPID;         // Set only when a process node is selected in the treeview
 BOOL       g_fShowClientRectAsMargins = FALSE;
 
@@ -72,9 +73,11 @@ static int nCurrentTab = 0;
 // - We may not have sufficient rights to open a handle to the other process.
 //
 
-void GetRemoteInfo(HWND hwnd)
+void GetRemoteInfo()
 {
-    if (!hwnd)
+    HWND hwnd = g_hCurWnd;
+
+    if (!hwnd || g_fTriedRemote)
         return;
 
     if (g_WndProc == 0 || g_fPassword)
@@ -88,23 +91,21 @@ void GetRemoteInfo(HWND hwnd)
             SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(g_szPassword), (LPARAM)g_szPassword);
         }
     }
+
+    g_fTriedRemote = TRUE;
 }
 
-void UpdateTabs(BOOL fForceClassUpdate)
+void UpdateActiveTab()
 {
     HWND hwnd = g_hCurWnd;
-
-    // do classinfo first, so we can get the window procedure
-
-    if (fForceClassUpdate || nCurrentTab == CLASS_TAB)
-    {
-        GetRemoteInfo(hwnd);
-        UpdateClassTab(hwnd);
-    }
 
     if (nCurrentTab == GENERAL_TAB)
     {
         UpdateGeneralTab(hwnd);
+    }
+    else if (nCurrentTab == CLASS_TAB)
+    {
+        UpdateClassTab(hwnd);
     }
     else if (nCurrentTab == STYLE_TAB)
     {
@@ -134,38 +135,47 @@ void UpdateTabs(BOOL fForceClassUpdate)
 //
 void DisplayWindowInfo(HWND hwnd)
 {
-    g_hCurWnd = hwnd;
+    // These globals are updated only when the selected window changes.
 
-    g_szClassName[0] = '\0';
-    g_WndProc = NULL;
-    g_fPassword = FALSE;
+    if (hwnd != g_hCurWnd)
+    {
+        g_hCurWnd        = hwnd;
+        g_szClassName[0] = '\0';
+        g_WndProc        = NULL;
+        g_fPassword      = FALSE;
+        g_fTriedRemote   = FALSE;
+
+        if (hwnd)
+        {
+            if (!GetClassName(hwnd, g_szClassName, ARRAYSIZE(g_szClassName)))
+            {
+                g_szClassName[0] = '\0';
+            }
+
+            // Attempt to query the window proc.  Note that this only works
+            // in-proc, so this is really just handling the edge case where
+            // you are looking at a window within winspy itself.  In all
+            // other cases the wndproc isn't available without the thread
+            // injection.
+
+            g_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
+
+            // If a password-edit control, then we must inject a thread into
+            // the other process to query the window text.
+
+            if (lstrcmpi(g_szClassName, L"Edit") == 0)
+            {
+                DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+
+                if (dwStyle & ES_PASSWORD)
+                    g_fPassword = TRUE;
+            }
+        }
+    }
 
     UpdateMainWindowText();
 
-    if (hwnd)
-    {
-        if (!GetClassName(hwnd, g_szClassName, 70))
-            *g_szClassName = 0;
-
-        g_WndProc = (WNDPROC)(IsWindowUnicode(hwnd) ? GetWindowLongPtrW : GetWindowLongPtrA)(hwnd, GWLP_WNDPROC);
-
-        // If a password-edit control, then we can
-        // inject our thread to get the password text!
-        if (lstrcmpi(g_szClassName, L"Edit") == 0)
-        {
-            // If a password control
-            DWORD dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-
-            if (dwStyle & ES_PASSWORD)
-                g_fPassword = TRUE;
-            else
-                g_fPassword = FALSE;
-        }
-        else
-            g_fPassword = FALSE;
-    }
-
-    UpdateTabs(g_fPassword);
+    UpdateActiveTab();
 }
 
 void UpdateMainWindowText()
@@ -368,9 +378,9 @@ HWND CreateTooltip(HWND hwndDlg)
 
     struct CtrlTipsTag
     {
-        int  uDlgId;   // -1 for main window, 0 through n for tab dialogs
+        int   uDlgId;   // -1 for main window, 0 through n for tab dialogs
         UINT  uCtrlId;
-        WCHAR szText[50];
+        PWSTR szText;
 
     } CtrlTips[] =
     {
@@ -388,6 +398,8 @@ HWND CreateTooltip(HWND hwndDlg)
         GENERAL_TAB, IDC_HANDLE_MENU,  L"Window Commands",
         GENERAL_TAB, IDC_SETCAPTION,   L"Set Window Caption",
         GENERAL_TAB, IDC_EDITSIZE,     L"Adjust Window Position",
+        GENERAL_TAB, IDC_WNDPROC_LINK, L"Not Available.  Click to try injecting code into owning process.",
+        CLASS_TAB,   IDC_WNDPROC_LINK, L"Not Available.  Click to try injecting code into owning process.",
         STYLE_TAB,   IDC_EDITSTYLE,    L"Edit Styles",
         STYLE_TAB,   IDC_EDITSTYLEEX,  L"Edit Extended Styles",
         PROCESS_TAB, IDC_PROCESS_MENU, L"Process Commands",
@@ -619,7 +631,7 @@ UINT WinSpyDlg_NotifyHandler(HWND hwnd, NMHDR *hdr)
 
         SetWindowPos(WinSpyTab[nCurrentTab].hwnd, HWND_TOP, 0, 0, 0, 0, SWP_SHOWONLY);
 
-        UpdateTabs(FALSE);
+        UpdateActiveTab();
 
         return TRUE;
 
