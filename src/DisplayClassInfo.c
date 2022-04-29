@@ -342,12 +342,15 @@ void ResetClassTab(HWND hwnd, HWND hwndDlg)
     SetDlgItemTextEx(hwndDlg, IDC_STYLE,          L"");
     SetDlgItemTextEx(hwndDlg, IDC_CLASSBYTES,     L"");
 
-    // Clear the lists.
+    // Reset controls to default states.
 
     SendDlgItemMessage(hwndDlg, IDC_STYLELIST, CB_RESETCONTENT, 0, 0);
     SendDlgItemMessage(hwndDlg, IDC_BYTESLIST, CB_RESETCONTENT, 0, 0);
     EnableDlgItem(hwndDlg, IDC_STYLELIST, FALSE);
     EnableDlgItem(hwndDlg, IDC_BYTESLIST, FALSE);
+
+    ShowDlgItem(hwndDlg, IDC_WNDPROC_LINK, SW_HIDE);
+    ShowDlgItem(hwndDlg, IDC_WNDPROC, SW_SHOW);
 }
 
 
