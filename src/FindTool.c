@@ -73,9 +73,9 @@ static BOOL    g_fDragging;
 static HWND    g_hwndFinder;    // The active finder tool window
 static HWND    g_hwndOverlay;   // The overlay/highlight window
 static HWND    g_hwndCurrent;   // The currently selected window
+static HWND    g_hwndOldFocus;  // Who had focus before we took it
 static POINT   g_ptLast;        // Position of last mouse move
 static HCURSOR g_hOldCursor;
-static HHOOK   g_draghook;
 static BOOL    g_fAltDown;      // Is the alt key pressed?
 
 
@@ -155,85 +155,6 @@ void FindTool_UpdateSelectionFromPoint(POINT pt)
     }
 }
 
-// Keyboard hook for the Finder Tool.
-// This hook just monitors the ESCAPE key
-static LRESULT CALLBACK draghookproc(int code, WPARAM wParam, LPARAM lParam)
-{
-    BOOL newStateReleased = (ULONG)lParam & (1 << 31);
-    BOOL previousStateDown = (ULONG)lParam & (1 << 30);
-    static int count;
-
-    if (code != HC_ACTION)
-        return CallNextHookEx(g_draghook, code, wParam, lParam);
-
-    switch (wParam)
-    {
-    case VK_ESCAPE:
-
-        if (!newStateReleased)
-        {
-            //don't let the current window procedure process a VK_ESCAPE,
-            //because we want it to cancel the mouse capture
-            PostMessage(g_hwndFinder, WM_CANCELMODE, 0, 0);
-            return -1;
-        }
-
-        break;
-
-    case VK_SHIFT:
-
-        if (newStateReleased)
-        {
-            FindTool_FireNotify(WFN_SHIFT_UP, 0);
-        }
-        else if (!previousStateDown)
-        {
-            FindTool_FireNotify(WFN_SHIFT_DOWN, 0);
-        }
-
-        return -1;
-
-    case VK_CONTROL:
-
-        if (newStateReleased)
-        {
-            FindTool_FireNotify(WFN_CTRL_UP, 0);
-        }
-        else if (!previousStateDown)
-        {
-            FindTool_FireNotify(WFN_CTRL_DOWN, 0);
-        }
-
-        return -1;
-
-    case VK_MENU: // Alt Key
-
-        g_fAltDown = !newStateReleased;
-
-        // Re-evaluate the window under the cursor.
-        FindTool_UpdateSelectionFromPoint(g_ptLast);
-
-        return -1;
-    }
-
-    // Test to see if a key is pressed for first time
-    if (!(newStateReleased || previousStateDown))
-    {
-        // Find ASCII character
-        UINT ch = MapVirtualKey((UINT)wParam, 2);
-
-        if (ch == 'c' || ch == 'C')
-        {
-            FindTool_RemoveOverlay();
-            CaptureWindow(GetParent(g_hwndFinder), g_hwndCurrent);
-            FindTool_ShowOverlay();
-            return -1;
-        }
-    }
-
-    return CallNextHookEx(g_draghook, code, wParam, lParam);
-}
-
 void FindTool_BeginDrag(HWND hwnd, LPARAM lParam)
 {
     g_ptLast.x = (short)LOWORD(lParam);
@@ -250,14 +171,8 @@ void FindTool_BeginDrag(HWND hwnd, LPARAM lParam)
         SendMessage(hwnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag2);
 
         SetCapture(hwnd);
+        g_hwndOldFocus = SetFocus(hwnd);
         g_hOldCursor = SetCursor(hCursor);
-
-        // Install keyboard hook to trap ESCAPE key
-        // I don't see how our window can get the mouse capture
-        // without also getting the keyboard focus,
-        // but attempting to install a desktop-wide hook will definitely fail,
-        // so let's install our keyboard hook for this thread only - at least that works
-        g_draghook = SetWindowsHookEx(WH_KEYBOARD, draghookproc, g_hInst, GetCurrentThreadId());
 
         // Select initial window.
         g_hwndCurrent = NULL;
@@ -273,10 +188,8 @@ LRESULT FindTool_EndDrag(UINT uCode)
 {
     FindTool_RemoveOverlay();
     ReleaseCapture();
+    SetFocus(g_hwndOldFocus);
     SetCursor(g_hOldCursor);
-
-    // Remove keyboard hook. This is done even if the user presses ESC
-    UnhookWindowsHookEx(g_draghook);
 
     g_fDragging = FALSE;
     SendMessage(g_hwndFinder, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
@@ -327,15 +240,57 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         return 0;
 
-        // Sent from the keyboard hook
-    case WM_CANCELMODE:
-
-        // User has pressed ESCAPE, so cancel the find-tool
-        if (g_fDragging)
+    case WM_GETDLGCODE:
+        if (wParam == VK_ESCAPE)
         {
-            FindTool_EndDrag(WFN_CANCELLED);
+            return DLGC_WANTALLKEYS;
         }
-        return 0;
+        break;
+
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYDOWN:
+    case WM_SYSKEYUP:
+
+        BOOL newStateReleased  = (ULONG)lParam & (1 << 31);
+        BOOL previousStateDown = (ULONG)lParam & (1 << 30);
+
+        if (wParam == VK_ESCAPE)
+        {
+            if (!newStateReleased)
+            {
+                FindTool_EndDrag(WFN_CANCELLED);
+            }
+        }
+        else if (wParam == VK_SHIFT)
+        {
+            if (newStateReleased)
+            {
+                FindTool_FireNotify(WFN_SHIFT_UP, 0);
+            }
+            else if (!previousStateDown)
+            {
+                FindTool_FireNotify(WFN_SHIFT_DOWN, 0);
+            }
+        }
+        else if (wParam == VK_CONTROL)
+        {
+            if (newStateReleased)
+            {
+                FindTool_FireNotify(WFN_CTRL_UP, 0);
+            }
+            else if (!previousStateDown)
+            {
+                FindTool_FireNotify(WFN_CTRL_DOWN, 0);
+            }
+        }
+        else if (wParam == VK_MENU) // Alt Key
+        {
+            g_fAltDown = !newStateReleased;
+            FindTool_UpdateSelectionFromPoint(g_ptLast);
+        }
+
+        break;
 
     case WM_NCDESTROY:
 
