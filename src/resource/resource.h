@@ -156,6 +156,13 @@
 #define IDC_PROCESS_SYSTEM_DPI_LABEL    1087
 #define IDC_PROCESS_SYSTEM_DPI          1088
 #define IDC_CLIENTRECT_LABEL            1089
+#define IDM_GOTO_TAB_GENERAL            3001
+#define IDM_GOTO_TAB_STYLES             3002
+#define IDM_GOTO_TAB_PROPERTIES         3003
+#define IDM_GOTO_TAB_CLASS              3004
+#define IDM_GOTO_TAB_WINDOWS            3005
+#define IDM_GOTO_TAB_PROCESS            3006
+#define IDM_GOTO_TAB_DPI                3007
 #define IDM_GENERAL_ONTOP               40003
 #define IDM_GENERAL_VISIBLE             40004
 #define IDM_GENERAL_ENABLED             40005
@@ -164,12 +171,6 @@
 #define IDM_WINSPY_MINIMIZE             40008
 #define IDM_WINSPY_NORMAL               40009
 #define IDM_WINSPY_EXPANDED             40010
-#define IDM_WINSPY_GENERAL              40011
-#define IDM_WINSPY_STYLES               40012
-#define IDM_WINSPY_PROPERTIES           40013
-#define IDM_WINSPY_CLASS                40014
-#define IDM_WINSPY_WINDOWS              40015
-#define IDM_WINSPY_SCROLLBARS           40016
 #define IDM_WINSPY_TERMINATE            40018
 #define IDM_WINSPY_POSTQUIT             40019
 #define IDM_WINSPY_MOVE                 40020

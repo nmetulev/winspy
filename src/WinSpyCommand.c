@@ -120,19 +120,20 @@ UINT WinSpyDlg_CommandHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
         g_opts.fMinimizeWinSpy = IsDlgButtonChecked(hwnd, IDC_MINIMIZE);
         return TRUE;
 
-    case IDM_WINSPY_GENERAL:
-    case IDM_WINSPY_STYLES:
-    case IDM_WINSPY_PROPERTIES:
-    case IDM_WINSPY_CLASS:
-    case IDM_WINSPY_WINDOWS:
-    case IDM_WINSPY_SCROLLBARS:
+    case IDM_GOTO_TAB_GENERAL:
+    case IDM_GOTO_TAB_STYLES:
+    case IDM_GOTO_TAB_PROPERTIES:
+    case IDM_GOTO_TAB_CLASS:
+    case IDM_GOTO_TAB_WINDOWS:
+    case IDM_GOTO_TAB_PROCESS:
+    case IDM_GOTO_TAB_DPI:
 
         // Simulate the tab-control being clicked
         hdr.hwndFrom = GetDlgItem(hwnd, IDC_TAB1);
         hdr.idFrom = IDC_TAB1;
         hdr.code = TCN_SELCHANGE;
 
-        TabCtrl_SetCurSel(hdr.hwndFrom, LOWORD(wParam) - IDM_WINSPY_GENERAL);
+        TabCtrl_SetCurSel(hdr.hwndFrom, LOWORD(wParam) - IDM_GOTO_TAB_GENERAL);
 
         SendMessage(hwnd, WM_NOTIFY, 0, (LPARAM)&hdr);
 
