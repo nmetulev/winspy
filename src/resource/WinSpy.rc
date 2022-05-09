@@ -70,7 +70,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Poster",                     IDM_POPUP_POSTER
         MENUITEM SEPARATOR
-        MENUITEM "Capture to Clip&board",       IDM_POPUP_COPY
+        MENUITEM "Capture to Clip&board",       IDM_POPUP_CAPTURE
         MENUITEM "&Adjust Position...",         IDM_POPUP_SETPOS
         MENUITEM SEPARATOR
         MENUITEM "&Bring To Front",             IDM_POPUP_TOFRONT

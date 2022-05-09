@@ -40,38 +40,6 @@ VOID OnWndProcLinkClicked(HWND hwndDlg)
 }
 
 //
-// save the tree-structure to clipboard?
-//
-
-//
-//  Destroy specified window
-//
-/*BOOL RemoteDestroyWindow(HWND hwnd)
-{
-    DWORD pid, tid;
-    HANDLE hThread;
-    DWORD exitcode = FALSE;
-    PVOID proc = GetProcAddress(GetModuleHandle(L"user32.dll"), "DestroyWindow");
-    int (WINAPI * ZwAlertResumeThread)(HANDLE, DWORD*);
-
-    ZwAlertResumeThread = (PVOID)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwAlertResumeThread");
-
-    tid = GetWindowThreadProcessId(hwnd, &pid);
-
-    hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, tid);
-
-    SuspendThread(hThread);
-    //QueueUserAPC((PAPCFUNC)DestroyWindow, hThread, (ULONG_PTR)hwnd);
-    QueueUserAPC((PAPCFUNC)proc, hThread, (ULONG_PTR)hwnd);
-    ZwAlertResumeThread(hThread, 0);
-
-    CloseHandle(hThread);
-
-
-    return exitcode;
-}*/
-
-//
 //
 //
 UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
@@ -141,17 +109,9 @@ UINT WinSpy_PopupCommandHandler(HWND hwndDlg, UINT uCmdId, HWND hwndTarget)
         PostMessage(hwndTarget, WM_CLOSE, 0, 0);
         return 0;
 
-        //case IDM_POPUP_DESTROY:
-        //  RemoteDestroyWindow(hwndTarget);
-        //  return 0;
-
         // new for 1.6
-    case IDM_POPUP_COPY:
+    case IDM_POPUP_CAPTURE:
         CaptureWindow(hwndDlg, hwndTarget);
-        return 0;
-
-    case IDM_POPUP_SAVE:
-        //  SaveTreeStructure(hwndDlg, hwndTarget);
         return 0;
 
     default:

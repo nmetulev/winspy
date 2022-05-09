@@ -12,10 +12,8 @@
 #define IDD_TAB_WINDOWS                 109
 #define IDD_TAB_SCROLLBARS              110
 #define IDD_MAIN                        111
-#define IDB_BITMAP2                     113
 #define IDB_WINDOW_INVISIBLE            113
 #define IDB_DRAGTOOL2                   116
-#define IDB_BITMAP3                     117
 #define IDB_WINDOW_VISIBLE              117
 #define IDD_STYLE_EDIT                  118
 #define IDI_DOTS                        119
@@ -32,10 +30,7 @@
 #define IDD_TAB_PROCESS                 145
 #define IDR_MENU_PROCESS                146
 #define IDR_MENU_WINDOW_INTREE          149
-#define IDB_BITMAP4                     152
 #define IDB_PIN_BITMAP                  153
-#define IDR_RT_MANIFEST1                159
-#define IDB_PNG1                        162
 #define IDB_SELBOX                      162
 #define IDR_MENU_PROPERTY               163
 #define IDD_PROPERTY_EDIT               164
@@ -91,7 +86,6 @@
 #define IDC_TAB2                        1042
 #define IDC_LOCATE                      1044
 #define IDC_REFRESH                     1045
-#define IDC_DELETE                      1045
 #define IDC_RESET                       1045
 #define IDC_PROCESS_MENU                1045
 #define IDC_FLASH                       1046
@@ -104,20 +98,11 @@
 #define IDC_VPAGE                       1051
 #define IDC_CHECK1                      1051
 #define IDC_OPTIONS_SAVEPOS             1051
-#define IDC_CHECK2                      1052
-#define IDC_OPTIONS_AUTOEXPAND          1052
-#define IDC_CHECK4                      1054
 #define IDC_OPTIONS_SHOWINCAPTION       1054
-#define IDC_CHECK6                      1056
-#define IDC_CHECK7                      1057
 #define IDC_OPTIONS_SHOWHIDDEN          1057
-#define IDC_CHECK8                      1058
-#define IDC_CHECK3                      1059
 #define IDC_OPTIONS_INCHANDLE           1059
-#define IDC_CHECK9                      1060
 #define IDC_OPTIONS_INCCLASS            1060
 #define IDC_EDITSIZE                    1061
-#define IDC_CHECK10                     1061
 #define IDC_OPTIONS_FULLDRAG            1061
 #define IDC_SETCAPTION                  1062
 #define IDC_ADJUST                      1062
@@ -133,7 +118,6 @@
 #define IDC_OPTIONS_LIST_SHOWHIDDEN     1066
 #define IDC_SPINH                       1067
 #define IDC_PROCESSNAME                 1067
-#define IDC_PROCESSNAME2                1068
 #define IDC_PROCESSPATH                 1068
 #define IDC_HANDLE_MENU                 1069
 #define IDC_EXPAND                      1070
@@ -163,19 +147,10 @@
 #define IDM_GOTO_TAB_WINDOWS            3005
 #define IDM_GOTO_TAB_PROCESS            3006
 #define IDM_GOTO_TAB_DPI                3007
-#define IDM_GENERAL_ONTOP               40003
-#define IDM_GENERAL_VISIBLE             40004
-#define IDM_GENERAL_ENABLED             40005
-#define IDM_GENERAL_DELETE              40006
 #define IDM_WINSPY_REFRESH              40007
-#define IDM_WINSPY_MINIMIZE             40008
-#define IDM_WINSPY_NORMAL               40009
-#define IDM_WINSPY_EXPANDED             40010
 #define IDM_WINSPY_TERMINATE            40018
 #define IDM_WINSPY_POSTQUIT             40019
-#define IDM_WINSPY_MOVE                 40020
 #define IDM_POPUP_SETPOS                40020
-#define IDM_WINSPY_KILLPROC             40021
 #define IDM_POPUP_VISIBLE               40023
 #define IDM_POPUP_ENABLED               40024
 #define IDM_POPUP_ONTOP                 40025
@@ -183,7 +158,6 @@
 #define IDM_POPUP_TOFRONT               40027
 #define IDM_POPUP_TOBACK                40028
 #define IDM_WINSPY_PIN                  40029
-#define IDM_WINSPY_HELP                 40031
 #define IDM_WINSPY_TOGGLE               40032
 #define IDM_WINSPY_TOGGLEEXP            40033
 #define IDM_WINSPY_OPTIONS              40034
@@ -194,9 +168,6 @@
 #define IDM_WINSPY_ZOOMBL               40039
 #define IDM_WINSPY_FINDEXE              40040
 #define IDM_POPUP_CAPTURE               40041
-#define IDM_POPUP_COPY                  40041
-#define IDM_POPUP_SAVE                  40042
-#define IDM_POPUP_DESTROY               40043
 #define IDM_PROPERTY_ADD                40044
 #define IDM_PROPERTY_EDIT               40045
 #define IDM_PROPERTY_REMOVE             40046
@@ -205,7 +176,7 @@
 #define IDM_WINSPY_BROADCASTER          40049
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
