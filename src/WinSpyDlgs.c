@@ -285,8 +285,11 @@ INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
             uCmd = TrackPopupMenu(hPopup, TPM_RIGHTALIGN | TPM_TOPALIGN | TPM_RETURNCMD,
                 rect.right, rect.bottom, 0, hwnd, 0);
 
-            WinSpy_PopupCommandHandler(hwnd, uCmd, hCtrl);
-            UpdateGeneralTab(hCtrl);
+            if (uCmd)
+            {
+                WinSpy_PopupCommandHandler(hwnd, uCmd, hCtrl);
+                UpdateActiveTab();
+            }
 
             DestroyMenu(hMenu);
 

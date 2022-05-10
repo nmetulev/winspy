@@ -374,6 +374,7 @@ void WindowTree_OnRightClick(NMHDR *pnm);
 void WindowTree_OnSelectionChanged(NMHDR *pnm);
 void WindowTree_Locate(HWND hwnd);
 HWND WindowTree_GetSelectedWindow();
+void WindowTree_RefreshWindowNode(HWND hwnd);
 
 
 //

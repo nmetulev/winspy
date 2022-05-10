@@ -139,6 +139,8 @@ void UpdateActiveTab()
     {
         UpdateDpiTab(hwnd);
     }
+
+    WindowTree_RefreshWindowNode(hwnd);
 }
 
 //

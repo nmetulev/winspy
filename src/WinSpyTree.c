@@ -24,12 +24,13 @@ static HIMAGELIST g_hImgList = 0;
 //  Treeview image indices
 //
 #define DESKTOP_IMAGE     0         // general images indices
-#define WINDOW_IMAGE      1
-#define DIALOG_IMAGE      2
-#define CHILD_IMAGE       3
-#define POPUP_IMAGE       4
-#define CONTROL_START     5         // where the control images start
-#define NUM_CLASS_BITMAPS 35        // (35 for visible, another 35 for invisible windows)
+#define INVALID_IMAGE     1         // invalid HWND case
+#define WINDOW_IMAGE      2
+#define DIALOG_IMAGE      3
+#define CHILD_IMAGE       4
+#define POPUP_IMAGE       5
+#define CONTROL_START     6         // where the control images start
+#define NUM_CLASS_BITMAPS 36
 
 
 //
@@ -182,6 +183,11 @@ int IconFromClassName(PCWSTR pszName, DWORD dwStyle)
     int i = 0;
     WCHAR szCopy[200];
 
+    if (wcscmp(pszName, L"#32769") == 0)
+    {
+        return DESKTOP_IMAGE;
+    }
+
     if (IsWindowsFormsClassName(pszName))
     {
         wcscpy_s(szCopy, ARRAYSIZE(szCopy), pszName);
@@ -227,15 +233,20 @@ int IconFromClassName(PCWSTR pszName, DWORD dwStyle)
 #define MIN_FORMAT_LEN  (32 + MAX_VERBOSE_LEN + MAX_CLASS_LEN + MAX_WINTEXT_LEN)
 
 //
-//  szTotal must be MIN_FORMAT_LEN characters
+// Computes the treeview item text and icon index for the specified window.
 //
-int FormatWindowText(HWND hwnd, DWORD dwCloaked, WCHAR szTotal[], int cchTotal)
+// Return value is the image index.
+// szTotal must be MIN_FORMAT_LEN characters
+//
+int CalcNodeTextAndIcon(HWND hwnd, BOOL fIsVisible, DWORD dwStyle, WCHAR szTotal[], int cchTotal)
 {
     //ASSERT(cchTotal >= MIN_FORMAT_LEN);
     static WCHAR szClass[MAX_CLASS_LEN + MAX_VERBOSE_LEN];
-    int idx;
+    int iImage;
     WCHAR *pszCaption;
-    DWORD dwStyle;
+
+    DWORD dwCloaked = 0;
+    DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &dwCloaked, sizeof(dwCloaked));
 
     //
     // Window handle in hex format
@@ -255,7 +266,7 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, WCHAR szTotal[], int cchTotal)
     GetClassName(hwnd, szClass, MAX_CLASS_LEN);
 
     dwStyle = GetWindowLong(hwnd, GWL_STYLE);
-    idx = IconFromClassName(szClass, dwStyle);
+    iImage = IconFromClassName(szClass, dwStyle);
 
     if (g_opts.uTreeInclude & WINLIST_INCLUDE_CLASS)
     {
@@ -317,7 +328,50 @@ int FormatWindowText(HWND hwnd, DWORD dwCloaked, WCHAR szTotal[], int cchTotal)
         wcscat_s(szTotal, cchTotal, L" [cloaked]");
     }
 
-    return idx;
+    // Pick default images, if we didn't already pick a class specific one.
+
+    if (iImage == -1)
+    {
+        if (dwStyle & WS_CHILD)
+        {
+            // child windows (edit boxes, list boxes etc)
+            iImage = CHILD_IMAGE;
+        }
+        else if ((dwStyle & WS_POPUPWINDOW) == WS_POPUPWINDOW)
+        {
+            // dialog boxes
+            iImage = DIALOG_IMAGE;
+        }
+        else if (dwStyle & WS_POPUP)
+        {
+            // popup windows (tooltips etc)
+            iImage = POPUP_IMAGE;
+        }
+        else
+        {
+            // anything else must be a top-level window
+            iImage = WINDOW_IMAGE;
+        }
+    }
+
+    // Adjust icon index for hidden/cloaked windows.
+    // The imagelist starts with NUM_CLASS_BITMAPS images to be used for
+    // visible windows, followed by an alternate set to be used for hidden
+    // windows, then a third set for cloaked windows.
+
+    if (g_opts.fShowDimmed)
+    {
+        if (dwCloaked != 0)
+        {
+            iImage += (2 * NUM_CLASS_BITMAPS);
+        }
+        else if (!fIsVisible)
+        {
+            iImage += NUM_CLASS_BITMAPS;
+        }
+    }
+
+    return iImage;
 }
 
 //
@@ -444,16 +498,13 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     HWND hwndTree = (HWND)lParam;
     BOOL fIsVisible = IsWindowVisible(hwnd);
 
-    DWORD dwCloaked = 0;
-    DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &dwCloaked, sizeof(dwCloaked));
-
     // Ignore it if it is hidden and we are omitting hidden windows from the list.
     if (!fIsVisible && !g_opts.fShowHiddenInList)
         return TRUE;
 
     static WCHAR szTotal[MIN_FORMAT_LEN];
 
-    int i, idx;
+    int i;
 
     // Style is used to decide which bitmap to display in the tree
     UINT uStyle = GetWindowLong(hwnd, GWL_STYLE);
@@ -488,9 +539,6 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     WinProc *winProc = GetProcessWindowStack(hwndTree, hwnd);
     WinStackType *WindowStack = winProc->windowStack;
 
-
-    idx = FormatWindowText(hwnd, dwCloaked, szTotal, ARRAYSIZE(szTotal));
-
     // Prepare the TVINSERTSTRUCT object
     ZeroMemory(&tv, sizeof(tv));
     tv.hParent = winProc->hRoot;
@@ -500,51 +548,30 @@ BOOL CALLBACK AllWindowProc(HWND hwnd, LPARAM lParam)
     tv.item.cchTextMax = ARRAYSIZE(szTotal);
     tv.item.lParam = (LPARAM)nodeIndex;
 
+    tv.item.iImage = CalcNodeTextAndIcon(hwnd, fIsVisible, uStyle, szTotal, ARRAYSIZE(szTotal));
+
     //
-    // set the image, depending on what type of window we have
+    // Insertion position depends on type of window.
     //
     if (uStyle & WS_CHILD)
     {
         // child windows (edit boxes, list boxes etc)
-        tv.item.iImage = CHILD_IMAGE;
         tv.hInsertAfter = TVI_LAST;
     }
     else if ((uStyle & WS_POPUPWINDOW) == WS_POPUPWINDOW)
     {
         // dialog boxes
-        tv.item.iImage = DIALOG_IMAGE;
         tv.hInsertAfter = TVI_FIRST;
     }
     else if (uStyle & WS_POPUP)
     {
         // popup windows (tooltips etc)
-        tv.item.iImage = POPUP_IMAGE;
         tv.hInsertAfter = TVI_LAST;
     }
     else
     {
         // anything else must be a top-level window
-        tv.item.iImage = WINDOW_IMAGE;
         tv.hInsertAfter = TVI_FIRST;
-    }
-
-    if (idx != -1)
-        tv.item.iImage = idx;
-
-    // Adjust icon index for hidden/cloaked windows.
-    // The imagelist starts with NUM_CLASS_BITMAPS images to be used for
-    // visible windows, followed by an alternate set to be used for hidden
-    // windows, then a third set for cloaked windows.
-    if (g_opts.fShowDimmed && hwnd != hwndTree)
-    {
-        if (dwCloaked != 0)
-        {
-            tv.item.iImage += (2 * NUM_CLASS_BITMAPS);
-        }
-        else if (!fIsVisible)
-        {
-            tv.item.iImage += NUM_CLASS_BITMAPS;
-        }
     }
 
     //set the selected bitmap to be the same
@@ -619,7 +646,7 @@ void FillGlobalWindowTree(HWND hwndTree)
         TVINSERTSTRUCT tv;
         WCHAR ach[MIN_FORMAT_LEN];
 
-        FormatWindowText(hwndDesktop, 0, ach, ARRAYSIZE(ach));
+        CalcNodeTextAndIcon(hwndDesktop, TRUE, 0, ach, ARRAYSIZE(ach));
 
         TREENODE *pNode = NULL;
         ptrdiff_t nodeIndex = AllocateTreeNode();
@@ -845,7 +872,28 @@ void WindowTree_OnRightClick(NMHDR *pnm)
             uCmd = TrackPopupMenu(hPopup, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, hwndDialog, 0);
 
             // Act accordingly
-            WinSpy_PopupCommandHandler(hwndDialog, uCmd, pNode->hwnd);
+            if (uCmd)
+            {
+                WinSpy_PopupCommandHandler(hwndDialog, uCmd, pNode->hwnd);
+
+                // If this window is the primary window (aka g_hCurWnd) then refresh
+                // the active tab.  This will cause, for example, the visible/hidden
+                // status shown on the General tab to update if the user toggled
+                // the window visibility.  Note that this will also cause the
+                // treeview node to refresh.
+                //
+                // Otherwise, if this isn't the primary window, then just refresh
+                // the treeview node.
+
+                if (pNode->hwnd == g_hCurWnd)
+                {
+                    UpdateActiveTab();
+                }
+                else
+                {
+                    WindowTree_RefreshWindowNode(pNode->hwnd);
+                }
+            }
 
             DestroyMenu(hMenu);
         }
@@ -921,5 +969,76 @@ HWND WindowTree_GetSelectedWindow()
     }
 
     return hwnd;
+}
+
+
+//
+// Refreshes the text and icon of the treeview node that correpondes to the
+// specified window (if one exists).
+//
+
+void WindowTree_RefreshWindowNode(HWND hwnd)
+{
+    // The tree is manually refreshed, so it can be the case that there is
+    // no node in the tree for the live window.
+
+    HTREEITEM hti = FindTreeItemByHwnd(hwnd);
+
+    if (!hti)
+    {
+        return;
+    }
+
+    WCHAR szOld[MIN_FORMAT_LEN];
+    WCHAR szNew[MIN_FORMAT_LEN];
+    int   iImage;
+
+    // Fetch existing text/icon.
+
+    TVITEM item;
+    ZeroMemory(&item, sizeof(item));
+
+    item.mask       = TVIF_HANDLE | TVIF_IMAGE | TVIF_TEXT;
+    item.hItem      = hti;
+    item.pszText    = szOld;
+    item.cchTextMax = ARRAYSIZE(szOld);
+
+    if (!TreeView_GetItem(g_hwndTree, &item))
+    {
+        return;
+    }
+
+    // Compute new text/icon.
+    //
+    // If the widow is no longer valid then replace the icon with a red X
+    // icon to indicate that state, but leave the text alone so that you can
+    // tell what it had been.
+
+    if (!IsWindow(hwnd))
+    {
+        iImage = INVALID_IMAGE;
+        wcscpy_s(szNew, ARRAYSIZE(szNew), szOld);
+    }
+    else
+    {
+        BOOL fIsVisible = IsWindowVisible(hwnd);
+        UINT dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+
+        iImage = CalcNodeTextAndIcon(hwnd, fIsVisible, dwStyle, szNew, ARRAYSIZE(szNew));
+    }
+
+    // If they are different, then update.
+
+    if (iImage != item.iImage || (wcscmp(szOld, szNew) != 0))
+    {
+        item.mask           = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT;
+        item.hItem          = hti;
+        item.iImage         = iImage;
+        item.iSelectedImage = iImage;
+        item.pszText        = szNew;
+        item.cchTextMax     = ARRAYSIZE(szNew);
+
+        TreeView_SetItem(g_hwndTree, &item);
+    }
 }
 
