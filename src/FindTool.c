@@ -184,24 +184,26 @@ void FindTool_BeginDrag(HWND hwnd, LPARAM lParam)
     }
 }
 
-LRESULT FindTool_EndDrag(UINT uCode)
+void FindTool_EndDrag(UINT uCode)
 {
-    FindTool_RemoveOverlay();
-    ReleaseCapture();
-    SetFocus(g_hwndOldFocus);
-    SetCursor(g_hOldCursor);
+    if (g_fDragging)
+    {
+        g_fDragging = FALSE;
 
-    g_fDragging = FALSE;
-    SendMessage(g_hwndFinder, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
+        FindTool_RemoveOverlay();
+        ReleaseCapture();
+        SetFocus(g_hwndOldFocus);
+        SetCursor(g_hOldCursor);
 
-    // Final notification.
-    HWND hwndForNotify = (uCode == WFN_END) ? g_hwndCurrent : NULL;
+        SendMessage(g_hwndFinder, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmapDrag1);
 
-    g_hwndCurrent = NULL;
+        // Final notification.
+        HWND hwndForNotify = (uCode == WFN_END) ? g_hwndCurrent : NULL;
 
-    FindTool_FireNotify(uCode, hwndForNotify);
+        g_hwndCurrent = NULL;
 
-    return 0;
+        FindTool_FireNotify(uCode, hwndForNotify);
+    }
 }
 
 LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -234,10 +236,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_LBUTTONUP:
 
         // Mouse has been released, so end the find-tool
-        if (g_fDragging)
-        {
-            FindTool_EndDrag(WFN_END);
-        }
+        FindTool_EndDrag(WFN_END);
         return 0;
 
     case WM_GETDLGCODE:
@@ -294,11 +293,7 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_KILLFOCUS:
     {
-        if (g_fDragging)
-        {
-            FindTool_EndDrag(WFN_CANCELLED);
-        }
-
+        FindTool_EndDrag(WFN_CANCELLED);
         break;
     }
 
