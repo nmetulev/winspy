@@ -94,7 +94,7 @@ IWICBitmapSource * LoadBitmapFromStream(IStream * ipImageStream)
     IWICBitmapDecoder * ipDecoder = NULL;
     IID i = IID_IWICBitmapDecoder;
 
-    if (FAILED(CoCreateInstance(CLSID_WICPngDecoder, NULL, CLSCTX_INPROC_SERVER,
+    if (FAILED(CoCreateInstance(CLSID_WICPngDecoder1, NULL, CLSCTX_INPROC_SERVER,
         i,//__uuidof(ipDecoder)
 
         (void **)&ipDecoder)))

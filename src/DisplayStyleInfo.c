@@ -38,7 +38,12 @@
 #include "WinSpy.h"
 
 #include "Utils.h"
+
+#pragma warning(push)
+#pragma warning(disable:4201) // nonstandard extension used: nameless struct/union
 #include <richedit.h>
+#pragma warning(pop)
+
 #include "resource.h"
 
 StyleLookupEx WindowStyles[] =
