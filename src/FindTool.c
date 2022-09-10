@@ -292,6 +292,16 @@ LRESULT CALLBACK StaticProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
         break;
 
+    case WM_KILLFOCUS:
+    {
+        if (g_fDragging)
+        {
+            FindTool_EndDrag(WFN_CANCELLED);
+        }
+
+        break;
+    }
+
     case WM_NCDESTROY:
 
         // When the last finder tool has been destroyed, free
