@@ -113,11 +113,13 @@
 #define IDC_OPTIONS_DESKTOPROOT         1064
 #define IDC_SPINY                       1065
 #define IDC_APPLY                       1065
+#define IDC_OPTIONS_ENABLE_HOTKEY       1065
 #define IDC_SPINW                       1066
 #define IDC_CAPTION1                    1066
 #define IDC_OPTIONS_LIST_SHOWHIDDEN     1066
 #define IDC_SPINH                       1067
 #define IDC_PROCESSNAME                 1067
+#define IDC_OPTIONS_WIN_LABEL           1067
 #define IDC_PROCESSPATH                 1068
 #define IDC_HANDLE_MENU                 1069
 #define IDC_EXPAND                      1070
@@ -140,6 +142,7 @@
 #define IDC_PROCESS_SYSTEM_DPI_LABEL    1087
 #define IDC_PROCESS_SYSTEM_DPI          1088
 #define IDC_CLIENTRECT_LABEL            1089
+#define IDC_HOTKEY                      1089
 #define IDM_GOTO_TAB_GENERAL            3001
 #define IDM_GOTO_TAB_STYLES             3002
 #define IDM_GOTO_TAB_PROPERTIES         3003
@@ -182,7 +185,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        168
 #define _APS_NEXT_COMMAND_VALUE         40050
-#define _APS_NEXT_CONTROL_VALUE         1089
+#define _APS_NEXT_CONTROL_VALUE         1090
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

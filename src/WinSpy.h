@@ -182,6 +182,7 @@ void SetWindowLayout(HWND hwnd, UINT uLayout);
 UINT GetWindowLayout(HWND hwnd);
 void ForceVisibleDisplay(HWND hwnd);
 void UpdateMainWindowText();
+void UpdateGlobalHotkey();
 
 #define WINSPY_LAYOUT_NO 0
 #define WINSPY_MINIMIZED 1
@@ -298,6 +299,12 @@ void SetPinState(BOOL fPinned);
 #define PINNED_BOTTOM       2
 
 //
+// Hotkey IDs
+//
+#define HOTKEY_ID_SELECT_WINDOW_UNDER_CURSOR    1001
+
+
+//
 //  Global variables!! These just control WinSpy behavior
 //
 typedef struct
@@ -315,6 +322,8 @@ typedef struct
     BOOL  fShowDesktopRoot;
     UINT  uTreeInclude;
     BOOL  fShowHiddenInList;
+    BOOL  fEnableHotkey;
+    WORD  wHotkey;               // Encoded as per HKM_GETHOTKEY
 
     // These two variables help us to position WinSpy++ intelligently when it resizes.
     POINT ptPinPos;
@@ -349,6 +358,8 @@ extern WCHAR      g_szClassName[];
 
 extern DWORD      g_dwSelectedPID;
 extern BOOL       g_fShowClientRectAsMargins;
+extern BOOL       g_fFirstInstance;
+
 
 //
 //  Useful SetWindowPos constants (saves space!)

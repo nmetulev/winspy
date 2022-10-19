@@ -16,12 +16,15 @@
 #include "CaptureWindow.h"
 #include "BitmapButton.h"
 #include "Utils.h"
+#include "WindowFromPointEx.h"
+
 
 HWND       g_hwndMain;       // Main winspy window
 HWND       g_hwndPin;        // Toolbar with pin bitmap
 HWND       g_hwndSizer;      // Sizing grip for bottom-right corner
 HWND       g_hwndToolTip;    // tooltip for main window controls only
 HINSTANCE  g_hInst;          // Current application instance
+BOOL       g_fFirstInstance;
 
 //
 //  Current window being spied on
@@ -699,6 +702,39 @@ BOOL WinSpyDlg_SysColorChange(HWND hwnd)
     return TRUE;
 }
 
+
+//
+// WM_HOTKEY handler
+//
+BOOL WinSpyDlg_OnHotKey(WPARAM id)
+{
+    if (id == HOTKEY_ID_SELECT_WINDOW_UNDER_CURSOR)
+    {
+        HWND hwnd;
+        POINT pt;
+
+        if (GetCursorPos(&pt))
+        {
+            // Open the window if collapsed.
+
+            UINT layout = GetWindowLayout(g_hwndMain);
+
+            if (layout == WINSPY_MINIMIZED)
+            {
+                SetWindowLayout(g_hwndMain, WINSPY_LASTMAX);
+            }
+
+            // Switch to the window under the mouse cursor.
+
+            hwnd = WindowFromPointEx(pt, FALSE, FALSE);
+            DisplayWindowInfo(hwnd);
+        }
+    }
+
+    return TRUE;
+}
+
+
 #ifdef _DEBUG
 void DumpRect(HWND hwnd)
 {
@@ -739,6 +775,9 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
         return WinSpyDlg_CommandHandler(hwnd, wParam, lParam);
+
+    case WM_HOTKEY:
+        return WinSpyDlg_OnHotKey(wParam);
 
     case WM_TIMER:
         return WinSpyDlg_TimerHandler(wParam);
@@ -781,6 +820,83 @@ INT_PTR WINAPI DialogProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     return FALSE;
 }
+
+//
+// UpdateGlobalHotkey
+//
+
+BOOL g_fHotkeyRegistered = FALSE;
+UINT g_hotkeyModifiers   = 0;
+UINT g_hotkeyVKey        = 0;
+
+void UpdateGlobalHotkey()
+{
+    // We can't have multiple instances of winspy registering for the same
+    // global hotkey.  So, we only attempt anything related to the hotkey
+    // in the first instance running.
+
+    if (!g_fFirstInstance)
+    {
+        return;
+    }
+
+    UINT vkey      = 0;
+    UINT modifiers = 0;
+
+    // If enabled, sort out vkey and modifiers to use.
+
+    if (g_opts.fEnableHotkey)
+    {
+        vkey = LOBYTE(g_opts.wHotkey);
+
+        modifiers = MOD_WIN;
+
+        if (HIBYTE(g_opts.wHotkey) & HOTKEYF_CONTROL)
+            modifiers |= MOD_CONTROL;
+
+        if (HIBYTE(g_opts.wHotkey) & HOTKEYF_ALT)
+            modifiers |= MOD_ALT;
+
+        if (HIBYTE(g_opts.wHotkey) & HOTKEYF_SHIFT)
+            modifiers |= MOD_SHIFT;
+    }
+
+    // Has the configuration changed?
+
+    BOOL fChanged = (g_opts.fEnableHotkey != g_fHotkeyRegistered) ||
+                    (vkey != g_hotkeyVKey) ||
+                    (modifiers != g_hotkeyModifiers);
+
+
+    // Unregister the old one, if necessary.
+
+    if (fChanged && g_fHotkeyRegistered)
+    {
+        UnregisterHotKey(g_hwndMain, HOTKEY_ID_SELECT_WINDOW_UNDER_CURSOR);
+
+        g_fHotkeyRegistered = FALSE;
+        g_hotkeyModifiers   = 0;
+        g_hotkeyVKey        = 0;
+    }
+
+    // Register the new one, if necessary.
+
+    if (fChanged && g_opts.fEnableHotkey)
+    {
+        if (RegisterHotKey(g_hwndMain, HOTKEY_ID_SELECT_WINDOW_UNDER_CURSOR, modifiers, vkey))
+        {
+            g_fHotkeyRegistered = TRUE;
+            g_hotkeyModifiers   = modifiers;
+            g_hotkeyVKey        = vkey;
+        }
+        else
+        {
+            g_opts.fEnableHotkey = FALSE;
+            MessageBox(g_hwndMain, L"Failed to register hotkey.", szAppName, MB_OK | MB_ICONWARNING);
+        }
+    }
+}
+
 
 //
 //  The only reason I do this is to "obfuscate" the main
@@ -868,6 +984,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
     RegisterDialogClass(L"WinSpy");
     RegisterDialogClass(L"WinSpyPane");
 
+    // Remember if we are the first instance of winspy running.
+
+    g_fFirstInstance = (FindWindow(L"WinSpy", NULL) == NULL);
+
     LoadSettings();
 
     //DialogBox(hInstance, MAKEINTRESOURCE(IDD_MAIN), 0, DialogProc);
@@ -876,6 +996,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 
     //Initialise the keyboard accelerators
     hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
+
+    UpdateGlobalHotkey();
 
     //
     // UPDATED (fix for Matrox CenterPOPUP feature :)

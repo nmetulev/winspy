@@ -10,6 +10,7 @@
 #include "WinSpy.h"
 #include "RegHelper.h"
 #include "resource.h"
+#include "utils.h"
 
 Options g_opts;
 
@@ -36,11 +37,24 @@ void LoadSettings(void)
     g_opts.fShowDesktopRoot = GetSettingBool(hkey, L"ShowDesktopRoot", FALSE);
     g_opts.uTreeInclude = GetSettingInt(hkey, L"TreeItems", WINLIST_INCLUDE_ALL);
     g_opts.fShowHiddenInList = GetSettingBool(hkey, L"List_ShowHidden", TRUE);
+    g_opts.fEnableHotkey = GetSettingBool(hkey, L"EnableHotkey", FALSE);
 
     g_opts.uPinnedCorner = GetSettingInt(hkey, L"PinCorner", 0);
 
     g_opts.ptPinPos.x = GetSettingInt(hkey, L"xpos", CW_USEDEFAULT);
     g_opts.ptPinPos.y = GetSettingInt(hkey, L"ypos", CW_USEDEFAULT);
+
+    // If the hotkey value isn't there, or is invalid, default to tilde '~'
+
+    int value = GetSettingInt(hkey, L"Hotkey", 0);
+
+    if ((value > 0xFFFF) || (value <= 0))
+    {
+        g_opts.fEnableHotkey = FALSE;
+        value = VK_OEM_3;
+    }
+
+    g_opts.wHotkey = (WORD)value;
 
     // Ignore the saved window position if it no longer lies within the
     // bounds of a monitor.
@@ -81,8 +95,32 @@ void SaveSettings(void)
     WriteSettingInt(hkey, L"xpos", g_opts.ptPinPos.x);
     WriteSettingInt(hkey, L"ypos", g_opts.ptPinPos.y);
 
+    if (g_fFirstInstance)
+    {
+        WriteSettingBool(hkey, L"EnableHotkey", g_opts.fEnableHotkey);
+        WriteSettingInt(hkey, L"Hotkey", g_opts.wHotkey);
+    }
+
     RegCloseKey(hkey);
 }
+
+void OptionsDlg_UpdateHotkeyControls(HWND hwndDlg)
+{
+    if (!g_fFirstInstance)
+    {
+        EnableDlgItem(hwndDlg, IDC_OPTIONS_WIN_LABEL, FALSE);
+        EnableDlgItem(hwndDlg, IDC_OPTIONS_ENABLE_HOTKEY, FALSE);
+        EnableDlgItem(hwndDlg, IDC_HOTKEY, FALSE);
+    }
+    else
+    {
+        BOOL fEnabled = IsDlgButtonChecked(hwndDlg, IDC_OPTIONS_ENABLE_HOTKEY);
+
+        EnableDlgItem(hwndDlg, IDC_OPTIONS_WIN_LABEL, fEnabled);
+        EnableDlgItem(hwndDlg, IDC_HOTKEY, fEnabled);
+    }
+}
+
 
 INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -100,12 +138,17 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
         CheckDlgButton(hwnd, IDC_OPTIONS_TOOLTIPS, g_opts.fEnableToolTips);
         CheckDlgButton(hwnd, IDC_OPTIONS_DESKTOPROOT, g_opts.fShowDesktopRoot);
         CheckDlgButton(hwnd, IDC_OPTIONS_LIST_SHOWHIDDEN, g_opts.fShowHiddenInList);
+        CheckDlgButton(hwnd, IDC_OPTIONS_ENABLE_HOTKEY, g_opts.fEnableHotkey);
 
         CheckDlgButton(hwnd, IDC_OPTIONS_INCHANDLE,
             (g_opts.uTreeInclude & WINLIST_INCLUDE_HANDLE) ? TRUE : FALSE);
 
         CheckDlgButton(hwnd, IDC_OPTIONS_INCCLASS,
             (g_opts.uTreeInclude & WINLIST_INCLUDE_CLASS) ? TRUE : FALSE);
+
+        OptionsDlg_UpdateHotkeyControls(hwnd);
+
+        SendDlgItemMessage(hwnd, IDC_HOTKEY, HKM_SETHOTKEY, g_opts.wHotkey, 0);
 
         return TRUE;
 
@@ -116,6 +159,10 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
+        case IDC_OPTIONS_ENABLE_HOTKEY:
+            OptionsDlg_UpdateHotkeyControls(hwnd);
+            return TRUE;
+
         case IDOK:
 
             g_opts.fSaveWinPos = IsDlgButtonChecked(hwnd, IDC_OPTIONS_SAVEPOS);
@@ -126,6 +173,8 @@ INT_PTR CALLBACK OptionsDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPar
             g_opts.fEnableToolTips = IsDlgButtonChecked(hwnd, IDC_OPTIONS_TOOLTIPS);
             g_opts.fShowDesktopRoot = IsDlgButtonChecked(hwnd, IDC_OPTIONS_DESKTOPROOT);
             g_opts.fShowHiddenInList = IsDlgButtonChecked(hwnd, IDC_OPTIONS_LIST_SHOWHIDDEN);
+            g_opts.fEnableHotkey = IsDlgButtonChecked(hwnd, IDC_OPTIONS_ENABLE_HOTKEY);
+            g_opts.wHotkey = (WORD)SendDlgItemMessage(hwnd, IDC_HOTKEY, HKM_GETHOTKEY, 0, 0);
 
             g_opts.uTreeInclude = 0;
 
@@ -155,6 +204,8 @@ void ShowOptionsDlg(HWND hwndParent)
     DialogBox(g_hInst, MAKEINTRESOURCE(IDD_OPTIONS), hwndParent, OptionsDlgProc);
 
     UpdateMainWindowText();
+
+    UpdateGlobalHotkey();
 
     SendMessage(g_hwndToolTip, TTM_ACTIVATE, g_opts.fEnableToolTips, 0);
 }
