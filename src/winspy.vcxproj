@@ -172,25 +172,28 @@
     <ResourceCompile Include="resource\WinSpy.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="resource\bitmap1.bmp" />
-    <None Include="resource\bitmap2.bmp" />
-    <None Include="resource\bitmap3.bmp" />
-    <None Include="resource\bitmap4.bmp" />
-    <None Include="resource\bitmap5.bmp" />
-    <None Include="resource\bitmap6.bmp" />
-    <None Include="resource\bitmap7.bmp" />
     <None Include="resource\cursor1.cur" />
-    <None Include="resource\icon1.ico" />
-    <None Include="resource\icon2.ico" />
-    <None Include="resource\icon3.ico" />
-    <None Include="resource\icon4.ico" />
-    <None Include="resource\icon5.ico" />
-    <None Include="resource\icon6.ico" />
     <None Include="resource\selbox.png" />
     <None Include="resource\selbox2.png" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="resource\winspy.exe.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\app.ico" />
+    <Image Include="resource\check1.bmp" />
+    <Image Include="resource\check2.bmp" />
+    <Image Include="resource\dots.ico" />
+    <Image Include="resource\down.ico" />
+    <Image Include="resource\dragtool1.bmp" />
+    <Image Include="resource\dragtool2.bmp" />
+    <Image Include="resource\enter.ico" />
+    <Image Include="resource\less.ico" />
+    <Image Include="resource\more.ico" />
+    <Image Include="resource\thumbtack.bmp" />
+    <Image Include="resource\treeicons-cloaked.bmp" />
+    <Image Include="resource\treeicons-hidden.bmp" />
+    <Image Include="resource\treeicons.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

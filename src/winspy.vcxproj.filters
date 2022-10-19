@@ -147,46 +147,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resource\bitmap1.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\bitmap2.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\bitmap3.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\bitmap4.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\bitmap5.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\bitmap6.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\bitmap7.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="resource\cursor1.cur">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\icon1.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\icon2.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\icon3.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\icon4.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\icon5.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="resource\icon6.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="resource\selbox.png">
@@ -200,5 +161,49 @@
     <Manifest Include="resource\winspy.exe.manifest">
       <Filter>Resource Files</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\treeicons.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\treeicons-hidden.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\treeicons-cloaked.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\dragtool1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\dragtool2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\check1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\check2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\thumbtack.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\app.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\dots.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\down.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\enter.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\more.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\less.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
