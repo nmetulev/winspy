@@ -87,6 +87,7 @@
       <PrecompiledHeaderFile>WinSpy.h</PrecompiledHeaderFile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalOptions Condition="'$(WINSPY_GITHUB_FORK)'!=''">/DWINSPY_GITHUB_FORK="$(WINSPY_GITHUB_FORK)"</AdditionalOptions>
+      <AdditionalOptions Condition="'$(WINSPY_GITHUB_COMMIT)'!=''">/DWINSPY_GITHUB_COMMIT="$(WINSPY_GITHUB_COMMIT)"</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

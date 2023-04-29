@@ -20,6 +20,8 @@ env:
   # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
   BUILD_CONFIGURATION: Release
 
+  WINSPY_GITHUB_COMMIT: ${{ github.sha }}
+
 permissions:
   contents: read
 

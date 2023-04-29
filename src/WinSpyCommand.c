@@ -302,10 +302,14 @@ void ShowAboutDlg(HWND hwndParent)
         "\n"
         "Forked and improved by various contributors:\n"
         "    github.com/m417z/winspy\n"
-#ifdef WINSPY_GITHUB_FORK
         "\n"
-        "This binary was built from this fork:\n"
-        "    " STRINGIZE(WINSPY_GITHUB_FORK) " (on " __DATE__ ")"
+        "Build details:\n"
+        "    Time: " __DATE__ " " __TIME__
+#ifdef WINSPY_GITHUB_FORK
+        "\n    Repository: " STRINGIZE(WINSPY_GITHUB_FORK)
+#endif
+#ifdef WINSPY_GITHUB_COMMIT
+        "\n    Commit: " STRINGIZE(WINSPY_GITHUB_COMMIT)
 #endif
         "",
         szAppName, szVersion);
