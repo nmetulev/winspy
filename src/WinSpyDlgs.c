@@ -804,4 +804,3 @@ INT_PTR CALLBACK DpiDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
     return FALSE;
 }
-

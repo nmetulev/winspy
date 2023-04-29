@@ -66,4 +66,3 @@ void UpdatePropertyTab(HWND hwnd)
 
     UpdateScrollbarInfo(hwnd);
 }
-

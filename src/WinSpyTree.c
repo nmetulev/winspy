@@ -1041,4 +1041,3 @@ void WindowTree_RefreshWindowNode(HWND hwnd)
         TreeView_SetItem(g_hwndTree, &item);
     }
 }
-

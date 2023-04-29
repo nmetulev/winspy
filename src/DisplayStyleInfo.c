@@ -1085,4 +1085,3 @@ void UpdateStyleTab(HWND hwnd)
 
     s_hwndCurrent = hwnd;
 }
-

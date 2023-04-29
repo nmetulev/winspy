@@ -157,4 +157,3 @@ void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget)
             MB_OK | MB_ICONEXCLAMATION);
     }
 }
-

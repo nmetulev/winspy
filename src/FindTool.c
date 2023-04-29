@@ -349,4 +349,3 @@ BOOL MakeFinderTool(HWND hwnd, WNDFINDPROC wfp)
 
     return TRUE;
 }
-

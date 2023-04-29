@@ -318,4 +318,3 @@ BOOL CaptureWindow(HWND hwndOwner, HWND hwnd)
 
     return TRUE;
 }
-

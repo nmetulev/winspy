@@ -318,4 +318,3 @@ void ShowAboutDlg(HWND hwndParent)
 
     MessageBoxA(hwndParent, szText, szTitle, MB_OK | MB_ICONINFORMATION);
 }
-

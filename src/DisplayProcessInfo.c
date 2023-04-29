@@ -377,4 +377,3 @@ void ShowProcessContextMenu(HWND hwndParent, INT x, INT y, BOOL fForButton, HWND
 
     DestroyMenu(hMenu);
 }
-

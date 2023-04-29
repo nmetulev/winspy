@@ -117,4 +117,3 @@ void FlashWindowBorder(HWND hwnd)
         MessageBeep(NULL);
     }
 }
-

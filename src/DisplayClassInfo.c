@@ -497,4 +497,3 @@ void UpdateClassTab(HWND hwnd)
 
     FillBytesList(hwndDlg, hwnd, cbClsExtra, GetClassWord, (LONG (WINAPI *)(HWND, int))GetClassLong, (LONG_PTR (WINAPI *)(HWND, int))GetClassLongPtr);
 }
-

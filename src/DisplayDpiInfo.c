@@ -327,4 +327,3 @@ int DPIScale(HWND hwnd, int value)
 
     return MulDiv(value, dpi, 96);
 }
-

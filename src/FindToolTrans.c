@@ -100,4 +100,3 @@ HWND CreateOverlayWindow(HWND hwndToCover)
 
     return hwnd;
 }
-

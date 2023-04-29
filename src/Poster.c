@@ -594,4 +594,3 @@ void ShowBroadcasterDlg(HWND hwndParent)
         PosterDlgProc,
         (LPARAM)HWND_BROADCAST);
 }
-

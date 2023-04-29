@@ -158,4 +158,3 @@ HWND WindowFromPointEx(POINT pt, BOOL fTopLevel, BOOL fAllowHidden)
 
     return hWndPoint;
 }
-

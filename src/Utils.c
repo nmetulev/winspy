@@ -656,4 +656,3 @@ void ExtractWindowsFormsInnerClassName(PWSTR pszName)
         }
     }
 }
-
