@@ -17,6 +17,7 @@
 #include "BitmapButton.h"
 #include "Utils.h"
 #include "WindowFromPointEx.h"
+#include "Poster.h"
 
 
 HWND       g_hwndMain;       // Main winspy window
@@ -1015,7 +1016,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
         if (!TranslateAccelerator(hwndMain, hAccelTable, &msg))
         {
             // Let IsDialogMessage process TAB etc
-            if (!IsDialogMessage(hwndMain, &msg))
+            if (!IsDialogMessage(hwndMain, &msg) && !IsPosterMessage(&msg))
             {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);

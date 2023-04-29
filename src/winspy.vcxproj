@@ -163,6 +163,7 @@
     <ClInclude Include="CaptureWindow.h" />
     <ClInclude Include="FindTool.h" />
     <ClInclude Include="InjectThread.h" />
+    <ClInclude Include="Poster.h" />
     <ClInclude Include="RegHelper.h" />
     <ClInclude Include="resource\resource.h" />
     <ClInclude Include="Utils.h" />

@@ -10,6 +10,7 @@
 
 #include "WinSpy.h"
 
+#include "Poster.h"
 #include "resource.h"
 #include "Utils.h"
 
@@ -409,6 +410,8 @@ static const MessageLookup WindowMessages[] = {
     NULL, 0
 };
 
+static HWND g_hwndPosterDlg;
+
 //
 // Checks if window is valid for Poster
 //
@@ -434,6 +437,14 @@ static void SetInitialGuiInfo(HWND hwnd, HWND hwndTarget)
             SendMessage(hwndMsgsCombo, CB_SETITEMDATA, index, WindowMessages[i].uMsgValue);
         }
     }
+}
+
+static void UpdateTargetWindow(HWND hwnd, HWND hwndTarget)
+{
+    WCHAR    ach[256];
+
+    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", (UINT)(UINT_PTR)hwndTarget);
+    SetDlgItemText(hwnd, IDC_POSTER_HANDLE, ach);
 }
 
 static void GetGuiInfo(HWND hwnd, HWND *phwndTarget, UINT *puMsg, WPARAM *pwParam, LPARAM *plParam)
@@ -537,7 +548,7 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
         return TRUE;
 
     case WM_CLOSE:
-        EndDialog(hwnd, 0);
+        DestroyWindow(hwnd);
         return TRUE;
 
     case WM_COMMAND:
@@ -552,10 +563,14 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
             return TRUE;
 
         case IDCANCEL:
-            EndDialog(hwnd, 0);
+            DestroyWindow(hwnd);
             return TRUE;
         }
         return FALSE;
+
+    case WM_NCDESTROY:
+        g_hwndPosterDlg = NULL;
+        break;
     }
 
     return FALSE;
@@ -564,33 +579,31 @@ INT_PTR CALLBACK PosterDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 void ShowPosterDlg(HWND hwndParent, HWND hwndTarget)
 {
-    if (IsWindow(g_hCurWnd))
+    if (g_hwndPosterDlg)
     {
-        DialogBoxParam(
-            g_hInst,
-            MAKEINTRESOURCE(IDD_POSTER),
-            hwndParent,
-            PosterDlgProc,
-            (LPARAM)hwndTarget);
+        SetForegroundWindow(g_hwndPosterDlg);
+        UpdateTargetWindow(g_hwndPosterDlg, hwndTarget);
+        return;
+    }
 
-        UpdateGeneralTab(hwndTarget);
-    }
-    else
-    {
-        MessageBox(hwndParent,
-            L"Not a valid window",
-            szAppName,
-            MB_OK | MB_ICONEXCLAMATION);
-    }
+    g_hwndPosterDlg = CreateDialogParam(
+        g_hInst,
+        MAKEINTRESOURCE(IDD_POSTER),
+        hwndParent,
+        PosterDlgProc,
+        (LPARAM)hwndTarget);
+
+    ShowWindow(g_hwndPosterDlg, SW_SHOW);
 }
 
 
 void ShowBroadcasterDlg(HWND hwndParent)
 {
-    DialogBoxParam(
-        g_hInst,
-        MAKEINTRESOURCE(IDD_POSTER),
-        hwndParent,
-        PosterDlgProc,
-        (LPARAM)HWND_BROADCAST);
+    ShowPosterDlg(hwndParent, HWND_BROADCAST);
+}
+
+
+BOOL IsPosterMessage(LPMSG lpMsg)
+{
+    return g_hwndPosterDlg && IsDialogMessage(g_hwndPosterDlg, lpMsg);
 }
