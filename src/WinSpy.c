@@ -105,6 +105,10 @@ void GetRemoteInfo()
         else if (g_fPassword)
         {
             SendMessage(hwnd, WM_GETTEXT, ARRAYSIZE(g_szPassword), (LPARAM)g_szPassword);
+
+            // WM_GETTEXT does not guarantee null termination.
+
+            g_szPassword[ARRAYSIZE(g_szPassword) - 1] = '\0';
         }
     }
 

@@ -161,6 +161,10 @@ void UpdateGeneralTab(HWND hwnd)
         {
             GetWindowText(hwnd, ach, ARRAYSIZE(ach));
         }
+
+        // WM_GETTEXT does not guarantee null termination.
+
+        ach[ARRAYSIZE(ach) - 1] = '\0';
     }
 
     SetDlgItemTextEx(hwndDlg, IDC_CAPTION1, ach); // edit box

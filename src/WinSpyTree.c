@@ -300,6 +300,10 @@ int CalcNodeTextAndIcon(HWND hwnd, BOOL fIsVisible, DWORD dwStyle, WCHAR szTotal
         GetWindowText(hwnd, pszCaption, (int)cchCaption);
     }
 
+    // WM_GETTEXT does not guarantee null termination.
+
+    pszCaption[cchCaption - 1] = '\0';
+
     // If the caption is empty, then remove the leading quote.
     // Otherwise, add the closing quote.
 
