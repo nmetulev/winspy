@@ -29,6 +29,29 @@ void VerboseClassName(WCHAR ach[], size_t cch, WORD atom)
 }
 
 //
+//  Simple const value lookup.
+//  Used for class styles and predefined color and brush values.
+//
+typedef struct
+{
+    PCWSTR szName;
+    UINT value;
+} ConstLookupType;
+
+//
+//  Handle-lookup
+//
+typedef struct
+{
+    PCWSTR szName;
+    HANDLE handle;
+} HandleLookupType;
+
+
+#define HANDLE_(handle) L###handle, (HANDLE)handle
+
+
+//
 //  Class styles lookup table
 //
 ConstLookupType ClassLookup[] =
@@ -387,27 +410,19 @@ void UpdateClassTab(HWND hwnd)
 
     // Class style
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dwStyle);
-
-    SetDlgItemTextEx(hwndDlg, IDC_STYLE, ach);
+    FormatDlgItemText(hwndDlg, IDC_STYLE, L"%08X", dwStyle);
 
     // Atom
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%04X", wAtom);
-
-    SetDlgItemTextEx(hwndDlg, IDC_ATOM, ach);
+    FormatDlgItemText(hwndDlg, IDC_ATOM, L"%04X", wAtom);
 
     // Extra class bytes
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%d", cbClsExtra);
-
-    SetDlgItemTextEx(hwndDlg, IDC_CLASSBYTES, ach);
+    FormatDlgItemText(hwndDlg, IDC_CLASSBYTES, L"%d", cbClsExtra);
 
     // Extra window bytes
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%d", cbWndExtra);
-
-    SetDlgItemTextEx(hwndDlg, IDC_WINDOWBYTES, ach);
+    FormatDlgItemText(hwndDlg, IDC_WINDOWBYTES, L"%d", cbWndExtra);
 
     // Menu
 
@@ -469,9 +484,7 @@ void UpdateClassTab(HWND hwnd)
 
     // Instance handle
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%p", hModule);
-
-    SetDlgItemTextEx(hwndDlg, IDC_INSTANCEHANDLE, ach);
+    FormatDlgItemText(hwndDlg, IDC_INSTANCEHANDLE, L"%p", hModule);
 
     // Fill the combo box with the class styles
 

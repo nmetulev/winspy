@@ -219,8 +219,7 @@ void UpdateProcessTab(HWND hwnd, DWORD dwOverridePID)
 
     if (dwProcessId)
     {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwProcessId, dwProcessId);
-        SetDlgItemTextEx(hwndDlg, IDC_PID, ach);
+        FormatDlgItemText(hwndDlg, IDC_PID, L"%08X  (%u)", dwProcessId, dwProcessId);
     }
     else
     {
@@ -232,8 +231,7 @@ void UpdateProcessTab(HWND hwnd, DWORD dwOverridePID)
 
     if (fValid)
     {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%08X  (%u)", dwThreadId, dwThreadId);
-        SetDlgItemTextEx(hwndDlg, IDC_TID, ach);
+        FormatDlgItemText(hwndDlg, IDC_TID, L"%08X  (%u)", dwThreadId, dwThreadId);
     }
     else
     {

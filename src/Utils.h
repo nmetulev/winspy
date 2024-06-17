@@ -16,6 +16,8 @@ BOOL ShowDlgItem(HWND hwnd, UINT nCtrlId, DWORD dwShowCmd);
 void SetDlgItemTextEx(HWND hwndDlg, UINT nCtrlId, PCWSTR pcsz);
 void SetDlgItemTextExA(HWND hwndDlg, UINT nCtrlId, PCSTR pcsz);
 
+void FormatDlgItemText(HWND hwndDlg, UINT id, _Printf_format_string_ PCWSTR pcszFormat, ...);
+
 int WINAPI GetRectHeight(RECT *rect);
 int WINAPI GetRectWidth(RECT *rect);
 

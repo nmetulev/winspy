@@ -210,11 +210,11 @@ void UpdateGeneralTab(HWND hwnd)
     int x1 = rect.left;
     int y1 = rect.top;
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"(%d,%d) - (%d,%d)  -  %dx%d",
+    FormatDlgItemText(
+        hwndDlg, IDC_RECTANGLE,
+        L"(%d,%d) - (%d,%d)  -  %dx%d",
         rect.left, rect.top, rect.right, rect.bottom,
         GetRectWidth(&rect), GetRectHeight(&rect));
-
-    SetDlgItemTextEx(hwndDlg, IDC_RECTANGLE, ach);
 
     // Client rect
 
@@ -262,15 +262,15 @@ void UpdateGeneralTab(HWND hwnd)
 
     // Instance handle
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_HINSTANCE));
+    LONG_PTR lp = GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
 
-    SetDlgItemTextEx(hwndDlg, IDC_INSTANCE, ach);
+    FormatDlgItemText(hwndDlg, IDC_INSTANCE, L"%p", (void*)lp);
 
     // User data
 
-    swprintf_s(ach, ARRAYSIZE(ach), L"%p", (void*)GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    lp = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-    SetDlgItemTextEx(hwndDlg, IDC_USERDATA, ach);
+    FormatDlgItemText(hwndDlg, IDC_USERDATA, L"%p", (void*)lp);
 
     // Control ID
     //
@@ -278,10 +278,9 @@ void UpdateGeneralTab(HWND hwnd)
     // it would only work properly in WM_COMMAND if it was a WORD,
     // as it is passed in LOWORD(wParam)
 
-    LONG_PTR lp = GetWindowLongPtr(hwnd, GWLP_ID);
-    swprintf_s(ach, ARRAYSIZE(ach), L"%04IX  (%Id)", lp, lp);
+    lp = GetWindowLongPtr(hwnd, GWLP_ID);
 
-    SetDlgItemTextEx(hwndDlg, IDC_CONTROLID, ach);
+    FormatDlgItemText(hwndDlg, IDC_CONTROLID, L"%04IX  (%Id)", lp, lp);
 
     // Extra window bytes
 

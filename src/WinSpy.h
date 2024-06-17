@@ -54,25 +54,6 @@ extern DialogTab WinSpyTab[];
 #define MAX_STYLE_NAME_CCH 60
 
 //
-//  Simple const value lookup.
-//  Used for class styles and predefined color and brush values.
-//
-typedef struct
-{
-    PCWSTR szName;
-    UINT value;
-} ConstLookupType;
-
-//
-//  Handle-lookup
-//
-typedef struct
-{
-    PCWSTR szName;
-    HANDLE handle;
-} HandleLookupType;
-
-//
 //  Extended Style table. 1 per window class
 //
 
@@ -119,42 +100,18 @@ typedef struct
     DWORD dependencyExtraMask;
 } StyleLookupEx;
 
-inline BOOL StyleApplicableAndPresent(DWORD value, StyleLookupEx *pStyle)
-{
-    if (((pStyle->dependencyValue | pStyle->dependencyExtraMask) & value) != pStyle->dependencyValue)
-        return FALSE;
-    return ((pStyle->value | pStyle->extraMask) & value) == pStyle->value;
-}
-
 // Because static_assert is a statement which is not an expression, it cannot be used where an expression is expected.
 // Therefore, we define an expression loosely equivalent to a static_assert here
 // which would cause a compilation error if the condition is false.
 #define value_with_static_assert(value, condition) 1 ? (value) : (sizeof(int[condition]), (value))
 
-#define HANDLE_(handle) L###handle, (HANDLE)handle
-
-//
-//  Use these helper macros to fill in the style structures.
-//
 #define CHECKEDNAMEANDVALUE_(name, value) L##name, value_with_static_assert((UINT)(value), ARRAYSIZE(name) < MAX_STYLE_NAME_CCH)
 #define NAMEANDVALUE_(value) CHECKEDNAMEANDVALUE_(#value, value)
-
-#define STYLE_MASK_DEPENDS(style, extraMask, dependencyStyle, dependencyExtraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, dependencyStyle, dependencyExtraMask
-#define STYLE_SIMPLE_DEPENDS(style, dependencyStyle) CHECKEDNAMEANDVALUE_(#style, style), 0, dependencyStyle, 0
-#define STYLE_MASK(style, extraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, 0, 0
-#define STYLE_SIMPLE(style) CHECKEDNAMEANDVALUE_(#style, style), 0, 0, 0
-#define STYLE_COMBINATION(style) CHECKEDNAMEANDVALUE_(#style, style), 0, 0, 0
-#define STYLE_COMBINATION_MASK(style, extraMask) CHECKEDNAMEANDVALUE_(#style, style), extraMask, 0, 0
 
 //
 // Define some masks that are not defined in the Windows headers
 //
-#define WS_OVERLAPPED_MASK WS_OVERLAPPED | WS_POPUP | WS_CHILD // 0xC0000000
-#define BS_TEXT_MASK BS_TEXT | BS_ICON | BS_BITMAP // 0x00C0
-#define CBS_TYPE_MASK CBS_SIMPLE | CBS_DROPDOWN | CBS_DROPDOWNLIST //0x0003
 #define SBS_DIR_MASK SBS_HORZ | SBS_VERT //0x0001
-#define CCS_TOP_MASK 0x0003
-#define DTS_FORMAT_MASK 0x000C
 
 //
 //  Use this structure to list each window class with its

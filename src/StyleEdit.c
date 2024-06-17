@@ -24,10 +24,10 @@ typedef struct
     BOOL   fExtended;   // Extended (TRUE) or Normal (FALSE)
 
     DWORD  dwStyles;    // original styles; not currently used, but could be used to reset the dialog
+}
+StyleEditState;
 
-} StyleEditState;
-
-static StyleEditState state;
+static StyleEditState g_state;
 
 void FillStyleLists(HWND hwndTarget, HWND hwndStyleList,
     BOOL fAllStyles, DWORD dwStyles);
@@ -49,9 +49,9 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
     case WFN_END:
         hwndDlg = GetParent(hwndTool);
 
-        if (GetClassLong(state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
+        if (GetClassLong(g_state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
         {
-            if (state.fExtended)
+            if (g_state.fExtended)
                 dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             else
                 dwStyle = GetWindowLong(hwnd, GWL_STYLE);
@@ -74,8 +74,6 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
 INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-    static StyleEditState *pState;
-
     HWND hwndList;
 
     DWORD dwStyles;
@@ -88,16 +86,12 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
     {
     case WM_INITDIALOG:
 
-        // Passed through in call to DialogBoxParam
-        pState = (StyleEditState *)lParam;
-
-        if (pState->fExtended)
-            dwStyles = GetWindowLong(pState->hwndTarget, GWL_EXSTYLE);
+        if (g_state.fExtended)
+            dwStyles = GetWindowLong(g_state.hwndTarget, GWL_EXSTYLE);
         else
-            dwStyles = GetWindowLong(pState->hwndTarget, GWL_STYLE);
+            dwStyles = GetWindowLong(g_state.hwndTarget, GWL_STYLE);
 
-        swprintf_s(szText, ARRAYSIZE(szText), L"%08X", dwStyles);
-        SetDlgItemText(hwnd, IDC_EDIT1, szText);
+        FormatDlgItemText(hwnd, IDC_EDIT1, L"%08X", dwStyles);
 
         MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
 
@@ -134,10 +128,10 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
                 topindex = (int)SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
                 caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 
-                if (pState->fExtended)
-                    FillExStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles, FALSE);
+                if (g_state.fExtended)
+                    FillExStyleLists(g_state.hwndTarget, hwndList, TRUE, dwStyles, FALSE);
                 else
-                    FillStyleLists(pState->hwndTarget, hwndList, TRUE, dwStyles);
+                    FillStyleLists(g_state.hwndTarget, hwndList, TRUE, dwStyles);
 
                 SendMessage(hwndList, LB_SETCARETINDEX, caretindex, 0);
                 SendMessage(hwndList, LB_SETTOPINDEX, topindex, 0);
@@ -151,17 +145,17 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
             dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
 
-            if (pState->fExtended)
-                SetWindowLong(pState->hwndTarget, GWL_EXSTYLE, dwStyles);
+            if (g_state.fExtended)
+                SetWindowLong(g_state.hwndTarget, GWL_EXSTYLE, dwStyles);
             else
-                SetWindowLong(pState->hwndTarget, GWL_STYLE, dwStyles);
+                SetWindowLong(g_state.hwndTarget, GWL_STYLE, dwStyles);
 
-            SetWindowPos(pState->hwndTarget, 0,
+            SetWindowPos(g_state.hwndTarget, 0,
                 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
                 SWP_NOACTIVATE | SWP_DRAWFRAME);
 
-            InvalidateRect(pState->hwndTarget, 0, TRUE);
+            InvalidateRect(g_state.hwndTarget, 0, TRUE);
 
             return TRUE;
 
@@ -216,8 +210,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
                     dwStyles &= ~style;
                 }
 
-                swprintf_s(szText, ARRAYSIZE(szText), L"%08X", dwStyles);
-                SetDlgItemText(hwnd, IDC_EDIT1, szText);
+                FormatDlgItemText(hwnd, IDC_EDIT1, L"%08X", dwStyles);
 
                 return TRUE;
             }
@@ -233,11 +226,11 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 
 void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
 {
-    state.hwndTarget = hwndTarget;
-    state.dwStyles = 0;
-    state.fExtended = fExtended;
+    g_state.hwndTarget = hwndTarget;
+    g_state.dwStyles = 0;
+    g_state.fExtended = fExtended;
 
-    DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, (LPARAM)&state);
+    DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, 0);
 
     // Update the main display
     UpdateGeneralTab(hwndTarget);

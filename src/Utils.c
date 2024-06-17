@@ -133,6 +133,18 @@ void SetDlgItemTextExA(HWND hwndDlg, UINT id, PCSTR pcszNew)
     }
 }
 
+void FormatDlgItemText(HWND hwndDlg, UINT id, _Printf_format_string_ PCWSTR pcszFormat, ...)
+{
+    WCHAR szBuffer[256];
+
+    va_list args;
+    va_start(args, pcszFormat);
+    StringCchVPrintfW(szBuffer, sizeof(szBuffer), pcszFormat, args);
+    va_end(args);
+
+    SetDlgItemTextEx(hwndDlg, id, szBuffer);
+}
+
 int WINAPI GetRectHeight(RECT *rect)
 {
     return rect->bottom - rect->top;
