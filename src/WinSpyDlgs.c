@@ -364,6 +364,7 @@ INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
 
         MakeDlgBitmapButton(hwnd, IDC_EDITSTYLE, IDI_DOTS);
         MakeDlgBitmapButton(hwnd, IDC_EDITSTYLEEX, IDI_DOTS);
+        MakeDlgBitmapButton(hwnd, IDC_EDITSTYLEEXT, IDI_DOTS);
 
         return TRUE;
 
@@ -378,7 +379,7 @@ INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
             SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FunkyList_DrawItem(hwnd, (UINT)wParam, (DRAWITEMSTRUCT *)lParam));
             return TRUE;
         }
-        else if (wParam == IDC_EDITSTYLE || wParam == IDC_EDITSTYLEEX)
+        else if (wParam == IDC_EDITSTYLE || wParam == IDC_EDITSTYLEEX || wParam == IDC_EDITSTYLEEXT)
         {
             SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DrawBitmapButton((DRAWITEMSTRUCT *)lParam));
             return TRUE;
@@ -393,11 +394,15 @@ INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam
         switch (LOWORD(wParam))
         {
         case IDC_EDITSTYLE:
-            ShowWindowStyleEditor(hwnd, g_hCurWnd, FALSE);
+            ShowWindowStyleEditor(hwnd, g_hCurWnd, STYLE_FLAVOR_REGULAR);
             return TRUE;
 
         case IDC_EDITSTYLEEX:
-            ShowWindowStyleEditor(hwnd, g_hCurWnd, TRUE);
+            ShowWindowStyleEditor(hwnd, g_hCurWnd, STYLE_FLAVOR_EX);
+            return TRUE;
+
+        case IDC_EDITSTYLEEXT:
+            ShowWindowStyleEditor(hwnd, g_hCurWnd, STYLE_FLAVOR_EXTRA);
             return TRUE;
 
         default:

@@ -155,6 +155,33 @@ int WINAPI GetRectWidth(RECT *rect)
     return rect->right - rect->left;
 }
 
+//
+// Return the window position of a control, in coordinates relative to the
+// client area of the parent window.
+//
+
+RECT GetControlRect(HWND hwndParent, HWND hwnd)
+{
+    RECT rc;
+    GetWindowRect(hwnd, &rc);
+
+    ScreenToClient(hwndParent, (POINT *)&rc.left);
+    ScreenToClient(hwndParent, (POINT *)&rc.right);
+
+    return rc;
+}
+
+void SetControlRect(HWND hwnd, RECT* prc)
+{
+    SetWindowPos(
+        hwnd,
+        NULL,
+        prc->left,
+        prc->top,
+        prc->right - prc->left,
+        prc->bottom - prc->top,
+        SWP_NOACTIVATE | SWP_NOZORDER);
+}
 
 //
 //  Convert the specified string

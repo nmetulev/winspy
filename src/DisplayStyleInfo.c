@@ -3,37 +3,6 @@
 //  Copyright (c) 2002 by J Brown
 //  Freeware
 //
-//  void SetStyleInfo(HWND hwnd)
-//
-//   Fill the style-tab-pane with style info for the
-//   specified window
-//
-//  void FillStyleLists(HWND hwndTarget, HWND hwndStyleList,
-//                  BOOL fAllStyles, DWORD dwStyles)
-//
-//  void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
-//                  BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl)
-//
-//   Fill the listbox with the appropriate style strings
-//   based on dw[Ex]Styles for the specified target window.
-//
-//   hwndTarget      - window to find styles for
-//   hwndStyleList   - listbox to receive standard styles
-//   hwndExStyleList - listbox to receive extended styles
-//
-//   fAllStyles      - FALSE - just adds the styles that are both applicable and present in dw[Ex]Styles
-//                     TRUE  - adds ALL possible styles, but
-//                             only selects those that are applicable and present
-//
-//   dw[Ex]Styles    - the styles value
-//
-//   fExtControl     - include control-specific extended styles
-//                     (e.g. LVS_EX_xxx styles), not present in
-//                     dwStyleEx
-//
-//
-//  v1.6.1 - fixed small bug thanks to Holger Stenger
-//
 
 #include "WinSpy.h"
 
@@ -758,94 +727,69 @@ StyleLookupEx RichedEventMask[] =
 //
 //  Lookup table which matches window classnames to style-lists
 //
-ClassStyleLookup StandardControls[] =
+ClassStyleInfo ClassStyleInfos[] =
 {
-    L"#32770",               DialogStyles,       0,
-    L"Button",               ButtonStyles,       0,
-    L"ComboBox",             ComboStyles,        0,
-    L"Edit",                 EditStyles,         0,
-    L"ListBox",              ListBoxStyles,      0,
-    L"ComboLBox",            ListBoxStyles,      0,
+    { L"#32770",               DialogStyles,       FALSE  },
+    { L"Button",               ButtonStyles,       FALSE  },
+    { L"ComboBox",             ComboStyles,        FALSE, ComboBoxExStyles,  CBEM_GETEXTENDEDSTYLE,         CBEM_SETEXTENDEDSTYLE        },
+    { L"Edit",                 EditStyles,         FALSE  },
+    { L"ListBox",              ListBoxStyles,      FALSE  },
+    { L"ComboLBox",            ListBoxStyles,      FALSE  },
 
-    L"RICHEDIT",             RichedStyles,       0,
-    L"RichEdit20A",          RichedStyles,       0,
-    L"RichEdit20W",          RichedStyles,       0,
-    L"RICHEDIT50W",          RichedStyles,       0,
+    { L"RICHEDIT",             RichedStyles,       FALSE, RichedEventMask,   EM_GETEVENTMASK,               EM_SETEVENTMASK              },
+    { L"RichEdit20A",          RichedStyles,       FALSE, RichedEventMask,   EM_GETEVENTMASK,               EM_SETEVENTMASK              },
+    { L"RichEdit20W",          RichedStyles,       FALSE, RichedEventMask,   EM_GETEVENTMASK,               EM_SETEVENTMASK              },
+    { L"RICHEDIT50W",          RichedStyles,       FALSE, RichedEventMask,   EM_GETEVENTMASK,               EM_SETEVENTMASK              },
 
-    L"Scrollbar",            ScrollbarStyles,    0,
-    L"Static",               StaticStyles,       0,
+    { L"Scrollbar",            ScrollbarStyles,    FALSE  },
+    { L"Static",               StaticStyles,       FALSE  },
 
-    L"SysAnimate32",         AnimateStyles,      0,
-    L"ComboBoxEx",           ComboStyles,        0,  //(Just a normal combobox)
-    L"SysDateTimePick32",    DateTimeStyles,     0,
-    L"DragList",             ListBoxStyles,      0,  //(Just a normal list)
-    L"SysHeader32",          HeaderStyles,       0,
-    //"SysIPAddress32",         IPAddressStyles,    0,  (NO STYLES)
-    L"SysListView32",        ListViewStyles,     0,
-    L"SysMonthCal32",        MonthCalStyles,     0,
-    L"SysPager",             PagerStyles,        0,
-    L"msctls_progress32",    ProgressStyles,     0,
-    L"RebarWindow32",        RebarStyles,        0,
-    L"msctls_statusbar32",   StatusBarStyles,    0,
-    //"SysLink",                SysLinkStyles,      0,  (DO IT!)
-    L"SysTabControl32",      TabStyles,          0,
-    L"ToolbarWindow32",      ToolbarStyles,      0,
-    L"tooltips_class32",     ToolTipStyles,      0,
-    L"msctls_trackbar32",    TrackbarStyles,     0,
-    L"SysTreeView32",        TreeViewStyles,     0,
-    L"msctls_updown32",      UpDownStyles,       0,
-
-    NULL
+    { L"SysAnimate32",         AnimateStyles,      FALSE  },
+    { L"ComboBoxEx",           ComboStyles,        FALSE  },  //(Just a normal combobox)
+    { L"SysDateTimePick32",    DateTimeStyles,     FALSE  },
+    { L"DragList",             ListBoxStyles,      FALSE  },  //(Just a normal list)
+    { L"SysHeader32",          HeaderStyles,       TRUE,  },
+    // "SysIPAddress32",       IPAddressStyles,    FALSE,  (NO STYLES)
+    { L"SysListView32",        ListViewStyles,     FALSE, ListViewExStyles,  LVM_GETEXTENDEDLISTVIEWSTYLE,  LVM_SETEXTENDEDLISTVIEWSTYLE },
+    { L"SysMonthCal32",        MonthCalStyles,     FALSE  },
+    { L"SysPager",             PagerStyles,        FALSE  },
+    { L"msctls_progress32",    ProgressStyles,     FALSE  },
+    { L"RebarWindow32",        RebarStyles,        TRUE   },
+    { L"msctls_statusbar32",   StatusBarStyles,    TRUE   },
+    // "SysLink",              SysLinkStyles,      FALSE,  (DO IT!)
+    { L"SysTabControl32",      TabStyles,          FALSE, TabCtrlExStyles,   TCM_GETEXTENDEDSTYLE,          TCM_SETEXTENDEDSTYLE         },
+    { L"ToolbarWindow32",      ToolbarStyles,      TRUE,  ToolBarExStyles,   TB_GETEXTENDEDSTYLE,           TB_SETEXTENDEDSTYLE          },
+    { L"tooltips_class32",     ToolTipStyles,      FALSE  },
+    { L"msctls_trackbar32",    TrackbarStyles,     FALSE  },
+    { L"SysTreeView32",        TreeViewStyles,     FALSE  },
+    { L"msctls_updown32",      UpDownStyles,       FALSE  },
 };
 
-// Classes which use the CCS_xxx styles
-ClassStyleLookup CustomControls[] =
+
+//
+// Find the ClassStyleInfo for the class of a window.
+//
+
+ClassStyleInfo* FindClassStyleInfo(HWND hwnd)
 {
-    L"msctls_statusbar32",   CommCtrlList,       0,
-    L"RebarWindow32",        CommCtrlList,       0,
-    L"ToolbarWindow32",      CommCtrlList,       0,
-    L"SysHeader32",          CommCtrlList,       0,
+    WCHAR szClassName[256];
 
-    NULL
-};
+    GetClassName(hwnd, szClassName, ARRAYSIZE(szClassName));
 
-// Classes which have extended window styles
-ClassStyleLookup ExtendedControls[] =
-{
-    L"SysTabControl32",      TabCtrlExStyles,    TCM_GETEXTENDEDSTYLE,
-    L"ToolbarWindow32",      ToolBarExStyles,    TB_GETEXTENDEDSTYLE,
-    L"ComboBox",             ComboBoxExStyles,   CBEM_GETEXTENDEDSTYLE,
-    L"SysListView32",        ListViewExStyles,   LVM_GETEXTENDEDLISTVIEWSTYLE,
-    L"RICHEDIT",             RichedEventMask,    EM_GETEVENTMASK,
-    L"RichEdit20A",          RichedEventMask,    EM_GETEVENTMASK,
-    L"RichEdit20W",          RichedEventMask,    EM_GETEVENTMASK,
+    // Adjust the name for winforms.
+    ExtractWindowsFormsInnerClassName(szClassName);
 
-    NULL
-};
-
-//
-// Match the window classname to a StyleLookupEx instance in a ClassStyleLookup table
-//
-// pClassList - a lookup table of classname / matching stylelist
-//
-//
-StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, WCHAR *szClassName, DWORD *pdwMessage)
-{
-    int i;
-
-    for (i = 0; pClassList[i].stylelist; i++)
+    for (INT i = 0; i < ARRAYSIZE(ClassStyleInfos); i++)
     {
-        if (lstrcmpi(szClassName, pClassList[i].szClassName) == 0)
+        if (_wcsicmp(szClassName, ClassStyleInfos[i].ClassName) == 0)
         {
-            if (pdwMessage) *pdwMessage = pClassList[i].dwMessage;
-            return pClassList[i].stylelist;
+            return &ClassStyleInfos[i];
         }
     }
 
-    return 0;
+    return NULL;
 }
 
-#define NUM_CLASS_STYLELISTS ARRAYSIZE(ClassStyleList)
 
 //
 //  Find all the styles that match from the specified list
@@ -856,7 +800,7 @@ StyleLookupEx *FindStyleList(ClassStyleLookup *pClassList, WCHAR *szClassName, D
 //  fAllStyles - when true, add all known styles and select those present in the dwStyles value;
 //               otherwise, only add the ones that are both applicable and present
 //
-DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyles, BOOL fAllStyles)
+DWORD AddStylesToList(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyles, BOOL fAllStyles)
 {
     // Remember what the dwStyles was before we start modifying it
     DWORD dwOrig = dwStyles;
@@ -897,46 +841,37 @@ DWORD EnumStyles(StyleLookupEx *StyleList, HWND hwndList, DWORD dwStyles, BOOL f
     return dwStyles;
 }
 
+
 //
-//  This function takes HWND of a ListBox, which we will fill
-//  with the style strings based on dwStyles
+// Resets the contents of the listbox for the regular (WS_) styles.
 //
-void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyles)
+
+void FillRegularStyleList(ClassStyleInfo* pClassInfo, HWND hwndStyleList, BOOL fAllStyles, DWORD dwStyles)
 {
     // Empty the list
     SendMessage(hwndStyleList, LB_RESETCONTENT, 0, 0);
 
-    if (!hwndTarget)
-        return;
-
     SendMessage(hwndStyleList, WM_SETREDRAW, FALSE, 0);
-
-    WCHAR szClassName[256];
-    StyleLookupEx *StyleList;
-
-    //window class
-    GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
-
-    // Adjust the name for winforms.
-    ExtractWindowsFormsInnerClassName(szClassName);
 
     // enumerate the standard window styles, for any window no
     // matter what class it might be
-    DWORD remainingStyles = EnumStyles(WindowStyles, hwndStyleList, dwStyles, fAllStyles);
+    DWORD remainingStyles = AddStylesToList(WindowStyles, hwndStyleList, dwStyles, fAllStyles);
 
     // if the window class is one we know about, then see if we
     // can decode any more style bits
     // enumerate the custom control styles
-    StyleList = FindStyleList(StandardControls, szClassName, 0);
-    if (StyleList != 0)
+    if (pClassInfo && pClassInfo->Styles)
+    {
         // There are cases where specific control styles override the standard window styles (e.g., ES_SELECTIONBAR),
         // so pass the original styles value in
-        remainingStyles &= EnumStyles(StyleList, hwndStyleList, dwStyles, fAllStyles);
+        remainingStyles &= AddStylesToList(pClassInfo->Styles, hwndStyleList, dwStyles, fAllStyles);
+    }
 
     // does the window support the CCS_xxx styles (custom control styles)?
-    StyleList = FindStyleList(CustomControls, szClassName, 0);
-    if (StyleList != 0)
-        remainingStyles = EnumStyles(StyleList, hwndStyleList, remainingStyles, fAllStyles);
+    if (pClassInfo && pClassInfo->UsesComctlStyles)
+    {
+        remainingStyles = AddStylesToList(CommCtrlList, hwndStyleList, remainingStyles, fAllStyles);
+    }
 
     // if there are still style bits set in the window style,
     // then there is something that we can't decode. Just display
@@ -960,73 +895,122 @@ void FillStyleLists(HWND hwndTarget, HWND hwndStyleList, BOOL fAllStyles, DWORD 
     SendMessage(hwndStyleList, WM_SETREDRAW, TRUE, 0);
 }
 
+
 //
-//  This function takes HWND of a ListBox, which we will fill
-//  with the extended style strings based on dwExStyles
+// Populates a listbox with all values for one of the style flavors.
+// This is used by the style editing dialog.
 //
-void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl)
+
+void FillStyleListForEditing(HWND hwndTarget, HWND hwndList, UINT flavor, DWORD dwStyles)
 {
-    // Empty the list
-    SendMessage(hwndExStyleList, LB_RESETCONTENT, 0, 0);
-
     if (!hwndTarget)
-        return;
-
-    SendMessage(hwndExStyleList, WM_SETREDRAW, FALSE, 0);
-
-    WCHAR szClassName[256];
-    DWORD dwMessage;
-    StyleLookupEx *StyleList;
-
-    //window class
-    GetClassName(hwndTarget, szClassName, ARRAYSIZE(szClassName));
-
-    // Adjust the name for winforms.
-    ExtractWindowsFormsInnerClassName(szClassName);
-
-    EnumStyles(StyleExList, hwndExStyleList, dwExStyles, fAllStyles);
-
-    // Does this window use any custom control extended styles???
-    // If it does, then dwMessage will contain the message identifier to send
-    // to the window to retrieve them
-    if (fExtControl)
     {
-        StyleList = FindStyleList(ExtendedControls, szClassName, &dwMessage);
-
-        // Add them if required
-        if (StyleList != 0)
-        {
-            // Use SendMessageTimeout to prevent winspy from hanging if the
-            // process/thread owning the window isn't responding.  For example,
-            // when the other application is broken into a debugger.
-            LRESULT lr;
-            DWORD_PTR result;
-
-            lr = SendMessageTimeout(
-                   hwndTarget,
-                   dwMessage,
-                   0, 0,
-                   SMTO_BLOCK | SMTO_ERRORONEXIT,
-                   250, // 1/4 second
-                   &result);
-
-            if (lr)
-            {
-                dwExStyles = (DWORD)result;
-                EnumStyles(StyleList, hwndExStyleList, dwExStyles, fAllStyles);
-            }
-            else
-            {
-                // Failed to send the message, we don't have a great place to
-                // indicate a failure, appending an error message to the end
-                // of the style listbox works.
-                int idx = (int)SendMessage(hwndExStyleList, LB_ADDSTRING, 0, (LPARAM)L"<Error: Failed to query custom styles>");
-                SendMessage(hwndExStyleList, LB_SETITEMDATA, idx, 0);
-            }
-        }
+        SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+        return;
     }
 
-    SendMessage(hwndExStyleList, WM_SETREDRAW, TRUE, 0);
+    ClassStyleInfo* pClassInfo = FindClassStyleInfo(hwndTarget);
+
+    if (flavor == STYLE_FLAVOR_REGULAR)
+    {
+        FillRegularStyleList(pClassInfo, hwndList, TRUE, dwStyles);
+    }
+    else
+    {
+        SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+        SendMessage(hwndList, WM_SETREDRAW, FALSE, 0);
+
+        if (flavor == STYLE_FLAVOR_EX)
+        {
+            AddStylesToList(StyleExList, hwndList, dwStyles, TRUE);
+        }
+        else if (pClassInfo && pClassInfo->StylesExtra)
+        {
+            AddStylesToList(pClassInfo->StylesExtra, hwndList, dwStyles, TRUE);
+        }
+
+        SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
+    }
+}
+
+
+//
+// Queries the 'extra' styles that a few specific controls support.
+//
+// We use SendMessageTimeout to prevent winspy from hanging if the process
+// or thread owning the window isn't responding.  For example, when the
+// other application is broken into a debugger.
+//
+// The return value is a the error/status code.  The out param is the
+// styles value.
+//
+
+DWORD GetWindowExtraStyles(HWND hwnd, ClassStyleInfo* pClassInfo, DWORD* pdw)
+{
+    LRESULT lr;
+    DWORD_PTR result;
+    DWORD dwErr;
+
+    lr = SendMessageTimeout(
+           hwnd,
+           pClassInfo->GetMessage,
+           0, 0,
+           SMTO_BLOCK | SMTO_ERRORONEXIT,
+           100, // 1/10 second
+           &result);
+
+    if (lr)
+    {
+        *pdw = (DWORD)result;
+        dwErr = ERROR_SUCCESS;
+    }
+    else
+    {
+        dwErr = GetLastError();
+
+        // If it failed, but last error indicates success, then replace with
+        // some error.
+
+        if (dwErr == ERROR_SUCCESS)
+            dwErr = ERROR_INVALID_OPERATION;
+
+        *pdw = 0;
+    }
+
+    return dwErr;
+}
+
+
+//
+// Hides or shows the labels and button used for the 'extra' styles.
+//
+// If these are needed, then the ID_LIST2 listbox is shortened to make
+// space for these extra controls.
+//
+
+static UINT  s_yInitialList2Pos;
+
+void ShowExtraStyleControls(HWND hwndDlg, BOOL fShowExtras)
+{
+    ShowDlgItem(hwndDlg, IDC_STYLEEXT_LABEL, fShowExtras ? SW_SHOW : SW_HIDE);
+    ShowDlgItem(hwndDlg, IDC_STYLEEXT,       fShowExtras ? SW_SHOW : SW_HIDE);
+    ShowDlgItem(hwndDlg, IDC_EDITSTYLEEXT,   fShowExtras ? SW_SHOW : SW_HIDE);
+
+    // Recompute position of the list.
+
+    HWND hwndLabel = GetDlgItem(hwndDlg, IDC_STYLEEXT_LABEL);
+    HWND hwndList  = GetDlgItem(hwndDlg, IDC_LIST2);
+    RECT rcLabel   = GetControlRect(hwndDlg, hwndLabel);
+    RECT rcList    = GetControlRect(hwndDlg, hwndList);
+
+    if (s_yInitialList2Pos == 0)
+    {
+        s_yInitialList2Pos = rcList.top;
+    }
+
+    rcList.top = fShowExtras ? s_yInitialList2Pos : rcLabel.top;
+
+    SetControlRect(hwndList, &rcList);
 }
 
 
@@ -1037,6 +1021,8 @@ void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList, BOOL fAllStyles, DW
 static HWND  s_hwndCurrent;
 static DWORD s_dwStyleCurrent;
 static DWORD s_dwExStyleCurrent;
+static DWORD s_dwExtraCurrent;
+
 
 //
 // Clears all the controls on the style tab because either there is no
@@ -1049,8 +1035,9 @@ void ResetStyleTab(HWND hwnd, HWND hwndDlg)
 
     PCWSTR pszMessage = hwnd ? szInvalidWindow : L"";
 
-    SetDlgItemText(hwndDlg, IDC_STYLE,   pszMessage);
-    SetDlgItemText(hwndDlg, IDC_STYLEEX, pszMessage);
+    SetDlgItemText(hwndDlg, IDC_STYLE,    pszMessage);
+    SetDlgItemText(hwndDlg, IDC_STYLEEX,  pszMessage);
+    SetDlgItemText(hwndDlg, IDC_STYLEEXT, pszMessage);
 
     // Clear the listboxes.
 
@@ -1059,22 +1046,28 @@ void ResetStyleTab(HWND hwnd, HWND hwndDlg)
 
     // Reset cached state
 
-    s_hwndCurrent      = NULL;
-    s_dwStyleCurrent   = 0;
-    s_dwExStyleCurrent = 0;
+    s_hwndCurrent       = NULL;
+    s_dwStyleCurrent    = 0;
+    s_dwExStyleCurrent  = 0;
+    s_dwExtraCurrent = 0;
+
+    ShowExtraStyleControls(hwndDlg, FALSE);
 }
 
+
 //
-//  Update the Style tab with styles for specified window
+// Update the Style tab with styles values for the specified window.
 //
 
 void UpdateStyleTab(HWND hwnd)
 {
-    WCHAR ach[20];
     BOOL fWindowChanged = (hwnd != s_hwndCurrent);
     HWND hwndDlg = WinSpyTab[STYLE_TAB].hwnd;
     HWND hwndCtrl;
-    DWORD dw = 0;
+
+    DWORD dwStyle   = 0;
+    DWORD dwStyleEx = 0;
+    DWORD dwExtra   = 0;
 
     if (!hwnd || !IsWindow(hwnd))
     {
@@ -1082,34 +1075,99 @@ void UpdateStyleTab(HWND hwnd)
         return;
     }
 
-    // Update the styles controls.
+    ClassStyleInfo* pClassInfo = FindClassStyleInfo(hwnd);
 
-    dw = GetWindowLong(hwnd, GWL_STYLE);
+    // Hide/show the controls for the 'extra' styles depending on whether
+    // or not this class type has extra styles.
 
-    if (fWindowChanged || (dw != s_dwStyleCurrent))
+    BOOL fHasExtraStyles = (pClassInfo && pClassInfo->StylesExtra);
+
+    ShowExtraStyleControls(hwndDlg, fHasExtraStyles);
+
+    // If it changed, update the numeric value and list for GWL_STYLE.
+
+    dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+
+    if (fWindowChanged || (dwStyle != s_dwStyleCurrent))
     {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dw);
-        SetDlgItemText(hwndDlg, IDC_STYLE, ach);
+        FormatDlgItemText(hwndDlg, IDC_STYLE, L"%08X", dwStyle);
 
         hwndCtrl = GetDlgItem(hwndDlg, IDC_LIST1);
-        FillStyleLists(hwnd, hwndCtrl, FALSE, dw);
+        FillRegularStyleList(pClassInfo, hwndCtrl, FALSE, dwStyle);
 
-        s_dwStyleCurrent = dw;
+        s_dwStyleCurrent = dwStyle;
     }
 
-    // Update the EX styles controls.
+    // If it changed, update the numeric value for GWL_EXSTYLE.
 
-    dw = GetWindowLong(hwnd, GWL_EXSTYLE);
+    BOOL fUpdateList = FALSE;
 
-    if (fWindowChanged || (dw != s_dwExStyleCurrent))
+    dwStyleEx = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+    if (fWindowChanged || (dwStyleEx != s_dwExStyleCurrent))
     {
-        swprintf_s(ach, ARRAYSIZE(ach), L"%08X", dw);
-        SetDlgItemText(hwndDlg, IDC_STYLEEX, ach);
+        FormatDlgItemText(hwndDlg, IDC_STYLEEX, L"%08X", dwStyleEx);
 
-        hwndCtrl = GetDlgItem(hwndDlg, IDC_LIST2);
-        FillExStyleLists(hwnd, hwndCtrl, FALSE, dw, TRUE);
+        s_dwExStyleCurrent = dwStyleEx;
+        fUpdateList = TRUE;
+    }
 
-        s_dwExStyleCurrent = dw;
+    // Query the extra styles if applicable and update the numeric value.
+    // This may fail, in which case we report an error indicator instead of
+    // the numeric value.
+
+    if (fHasExtraStyles)
+    {
+        DWORD dwStatus = GetWindowExtraStyles(hwnd, pClassInfo, &dwExtra);
+
+        if (dwStatus != ERROR_SUCCESS)
+        {
+            if (dwStatus == ERROR_ACCESS_DENIED)
+            {
+                SetDlgItemTextEx(hwndDlg, IDC_STYLEEXT, L"<access-denied>");
+            }
+            else if (dwStatus == ERROR_TIMEOUT)
+            {
+                SetDlgItemTextEx(hwndDlg, IDC_STYLEEXT, L"<timeout>");
+            }
+            else
+            {
+                SetDlgItemTextEx(hwndDlg, IDC_STYLEEXT, L"<failed>");
+            }
+
+            fUpdateList = TRUE;
+        }
+        else if (fWindowChanged || (dwExtra != s_dwExtraCurrent))
+        {
+            FormatDlgItemText(hwndDlg, IDC_STYLEEXT, L"%08X", dwExtra);
+
+            s_dwExtraCurrent = dwExtra;
+            fUpdateList = TRUE;
+        }
+    }
+
+    // If either of the EX or extra styles changes, reset the contents of
+    // the second list.
+
+    if (fUpdateList)
+    {
+        HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST2);
+
+        SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+        SendMessage(hwndList, WM_SETREDRAW, FALSE, 0);
+
+        // Add the EX styles, these are the same for all classes.
+
+        AddStylesToList(StyleExList, hwndList, dwStyleEx, FALSE);
+
+        // Add the per-class extra styles.
+
+        if (fHasExtraStyles)
+        {
+            AddStylesToList(pClassInfo->StylesExtra, hwndList, dwExtra, FALSE);
+        }
+
+        SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
     }
 
     s_hwndCurrent = hwnd;

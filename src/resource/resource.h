@@ -143,6 +143,9 @@
 #define IDC_PROCESS_SYSTEM_DPI          1088
 #define IDC_CLIENTRECT_LABEL            1089
 #define IDC_HOTKEY                      1089
+#define IDC_STYLEEXT_LABEL              1090
+#define IDC_STYLEEXT                    1091
+#define IDC_EDITSTYLEEXT                1092
 #define IDM_GOTO_TAB_GENERAL            3001
 #define IDM_GOTO_TAB_STYLES             3002
 #define IDM_GOTO_TAB_PROPERTIES         3003

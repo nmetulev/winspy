@@ -120,10 +120,24 @@ typedef struct
 //
 typedef struct
 {
-    PCWSTR          szClassName;
-    StyleLookupEx  *stylelist;
-    DWORD           dwMessage;
-} ClassStyleLookup;
+    PCWSTR          ClassName;
+    StyleLookupEx  *Styles;
+    BOOL            UsesComctlStyles;
+    StyleLookupEx  *StylesExtra;
+    DWORD           GetMessage;
+    DWORD           SetMessage;
+}
+ClassStyleInfo;
+
+#define STYLE_FLAVOR_REGULAR  1   // GWL_STYLE
+#define STYLE_FLAVOR_EX       2   // GWL_EXSTYLE
+#define STYLE_FLAVOR_EXTRA    3   // Class private styles, e.g. LVM_GETEXTENDEDLISTVIEWSTYLE
+
+ClassStyleInfo* FindClassStyleInfo(HWND hwnd);
+DWORD GetWindowExtraStyles(HWND hwnd, ClassStyleInfo* pClassInfo, DWORD* pdw);
+void FillStyleListForEditing(HWND hwndTarget, HWND hwndList, UINT flavor, DWORD dwStyles);
+void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, UINT flavor);
+
 
 //
 //  Useful functions!
@@ -214,7 +228,6 @@ void SetSysMenuIconFromLayout(HWND hwnd, UINT layout);
 void ShowEditSizeDlg(HWND hwndParent, HWND hwndTarget);
 void ShowPosterDlg(HWND hwndParent, HWND hwndTarget);
 void ShowBroadcasterDlg(HWND hwndParent);
-void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended);
 void ShowWindowPropertyEditor(HWND hwndParent, HWND hwndTarget, BOOL bAddNew);
 void ShowOptionsDlg(HWND hwndParent);
 void ShowAboutDlg(HWND hwndParent);

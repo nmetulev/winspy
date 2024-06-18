@@ -6,12 +6,6 @@
 //
 //  Implements the Style Editor dialog box
 //
-//  void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
-//
-//  hwndParent - parent window of dialog
-//  hwndTarget - target window
-//  fExtended  - display standard (FALSE) or extended (TRUE) window styles
-//
 
 #include "WinSpy.h"
 #include "FindTool.h"
@@ -20,19 +14,15 @@
 
 typedef struct
 {
-    HWND   hwndTarget;  // what window are we looking at??
-    BOOL   fExtended;   // Extended (TRUE) or Normal (FALSE)
-
-    DWORD  dwStyles;    // original styles; not currently used, but could be used to reset the dialog
+    HWND            hwndTarget;      // what window are we looking at??
+    UINT            flavor;          // STYLE_FLAVOR_
+    DWORD           dwStyles;        // Initial value
+    ClassStyleInfo* pClassInfo;
 }
 StyleEditState;
 
 static StyleEditState g_state;
 
-void FillStyleLists(HWND hwndTarget, HWND hwndStyleList,
-    BOOL fAllStyles, DWORD dwStyles);
-void FillExStyleLists(HWND hwndTarget, HWND hwndExStyleList,
-    BOOL fAllStyles, DWORD dwExStyles, BOOL fExtControl);
 
 //
 //  Define our callback function for the Window Finder Tool
@@ -42,8 +32,6 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
     HWND hwndDlg;
     WCHAR szText[120];
 
-    DWORD dwStyle;
-
     switch (uCode)
     {
     case WFN_END:
@@ -51,14 +39,28 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
         if (GetClassLong(g_state.hwndTarget, GCW_ATOM) == GetClassLong(hwnd, GCW_ATOM))
         {
-            if (g_state.fExtended)
-                dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            else
+            DWORD dwStyle = 0;
+            BOOL fHasValue = FALSE;
+
+            if (g_state.flavor == STYLE_FLAVOR_REGULAR)
+            {
                 dwStyle = GetWindowLong(hwnd, GWL_STYLE);
+                fHasValue = TRUE;
+            }
+            else if (g_state.flavor == STYLE_FLAVOR_EX)
+            {
+                dwStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+                fHasValue = TRUE;
+            }
+            else if (GetWindowExtraStyles(hwnd, g_state.pClassInfo, &dwStyle) == ERROR_SUCCESS)
+            {
+                fHasValue = TRUE;
+            }
 
-            swprintf_s(szText, ARRAYSIZE(szText), L"%08X", dwStyle);
-
-            SetDlgItemText(hwndDlg, IDC_EDIT1, szText);
+            if (fHasValue)
+            {
+                FormatDlgItemText(hwndDlg, IDC_EDIT1, L"%08X", dwStyle);
+            }
         }
         else
         {
@@ -70,6 +72,48 @@ UINT CALLBACK StyleEditWndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
     }
     return 0;
+}
+
+void ApplyStyle(HWND hwndDlg)
+{
+    DWORD dwStyles = (DWORD)GetDlgItemBaseInt(hwndDlg, IDC_EDIT1, 16);
+
+    if (g_state.flavor == STYLE_FLAVOR_REGULAR)
+    {
+        SetWindowLong(g_state.hwndTarget, GWL_STYLE, dwStyles);
+    }
+    else if (g_state.flavor == STYLE_FLAVOR_EX)
+    {
+        SetWindowLong(g_state.hwndTarget, GWL_EXSTYLE, dwStyles);
+    }
+    else
+    {
+        LRESULT lr;
+        DWORD_PTR result;
+
+        lr = SendMessageTimeout(
+                g_state.hwndTarget,
+                g_state.pClassInfo->SetMessage,
+                0,
+                dwStyles,
+                SMTO_BLOCK | SMTO_ERRORONEXIT,
+                100, // 1/10 second
+                &result);
+
+        if (!lr)
+        {
+            return;
+        }
+    }
+
+    // Force the window to repaint.
+
+    SetWindowPos(
+        g_state.hwndTarget,
+        0, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_DRAWFRAME);
+
+    InvalidateRect(g_state.hwndTarget, 0, TRUE);
 }
 
 INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -86,12 +130,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
     {
     case WM_INITDIALOG:
 
-        if (g_state.fExtended)
-            dwStyles = GetWindowLong(g_state.hwndTarget, GWL_EXSTYLE);
-        else
-            dwStyles = GetWindowLong(g_state.hwndTarget, GWL_STYLE);
-
-        FormatDlgItemText(hwnd, IDC_EDIT1, L"%08X", dwStyles);
+        FormatDlgItemText(hwnd, IDC_EDIT1, L"%08X", g_state.dwStyles);
 
         MakeFinderTool(GetDlgItem(hwnd, IDC_DRAGGER), StyleEditWndFindProc);
 
@@ -128,10 +167,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
                 topindex = (int)SendMessage(hwndList, LB_GETTOPINDEX, 0, 0);
                 caretindex = (int)SendMessage(hwndList, LB_GETCARETINDEX, 0, 0);
 
-                if (g_state.fExtended)
-                    FillExStyleLists(g_state.hwndTarget, hwndList, TRUE, dwStyles, FALSE);
-                else
-                    FillStyleLists(g_state.hwndTarget, hwndList, TRUE, dwStyles);
+                FillStyleListForEditing(g_state.hwndTarget, hwndList, g_state.flavor, dwStyles);
 
                 SendMessage(hwndList, LB_SETCARETINDEX, caretindex, 0);
                 SendMessage(hwndList, LB_SETTOPINDEX, topindex, 0);
@@ -142,21 +178,7 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
             return FALSE;
 
         case IDC_APPLY:
-
-            dwStyles = (DWORD)GetDlgItemBaseInt(hwnd, IDC_EDIT1, 16);
-
-            if (g_state.fExtended)
-                SetWindowLong(g_state.hwndTarget, GWL_EXSTYLE, dwStyles);
-            else
-                SetWindowLong(g_state.hwndTarget, GWL_STYLE, dwStyles);
-
-            SetWindowPos(g_state.hwndTarget, 0,
-                0, 0, 0, 0,
-                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
-                SWP_NOACTIVATE | SWP_DRAWFRAME);
-
-            InvalidateRect(g_state.hwndTarget, 0, TRUE);
-
+            ApplyStyle(hwnd);
             return TRUE;
 
         case IDCANCEL:
@@ -224,11 +246,46 @@ INT_PTR CALLBACK StyleEditProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lPara
 }
 
 
-void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, BOOL fExtended)
+void ShowWindowStyleEditor(HWND hwndParent, HWND hwndTarget, UINT flavor)
 {
     g_state.hwndTarget = hwndTarget;
-    g_state.dwStyles = 0;
-    g_state.fExtended = fExtended;
+    g_state.flavor     = flavor;
+    g_state.pClassInfo = FindClassStyleInfo(hwndTarget);
+
+    // Fetch the initial value.
+
+    if (flavor == STYLE_FLAVOR_REGULAR)
+    {
+        g_state.dwStyles = GetWindowLong(hwndTarget, GWL_STYLE);
+    }
+    else if (flavor == STYLE_FLAVOR_EX)
+    {
+        g_state.dwStyles = GetWindowLong(hwndTarget, GWL_EXSTYLE);
+    }
+    else if (!g_state.pClassInfo || !g_state.pClassInfo->StylesExtra)
+    {
+        // Invoked for STYLE_FLAVOR_EXTRA, but we didn't find any class info.
+        //
+        // This could happen if the HWND was destroyed out from under us,
+        // just give up and do nothing.
+
+        return;
+    }
+    else
+    {
+        // This is STYLE_FLAVOR_EXTRA.  If we are unable to query the value
+        // then don't show the editing dialog.
+
+        DWORD dwErr = GetWindowExtraStyles(
+                         hwndTarget,
+                         g_state.pClassInfo,
+                         &g_state.dwStyles);
+
+        if (dwErr != ERROR_SUCCESS)
+        {
+            return;
+        }
+    }
 
     DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_STYLE_EDIT), hwndParent, StyleEditProc, 0);
 

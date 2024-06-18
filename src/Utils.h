@@ -45,6 +45,9 @@ void UpdateLayeredWindowContent(HWND hwnd, RECT rc, HBITMAP hbmp, BYTE alpha);
 BOOL IsWindowsFormsClassName(PCWSTR pcszClass);
 void ExtractWindowsFormsInnerClassName(PWSTR pszName);
 
+RECT GetControlRect(HWND hwndParent, HWND hwnd);
+void SetControlRect(HWND hwnd, RECT* prc);
+
 #ifdef __cplusplus
 }
 #endif
