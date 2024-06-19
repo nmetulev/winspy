@@ -481,6 +481,19 @@ StyleLookupEx StatusBarStyles[] =
     NULL
 };
 
+// SysLink
+StyleLookupEx SysLinkStyles[] =
+{
+    STYLE_SIMPLE(LWS_TRANSPARENT),                  // 0x0001
+    STYLE_SIMPLE(LWS_IGNORERETURN),                 // 0x0002
+    STYLE_SIMPLE(LWS_NOPREFIX),                     // 0x0004
+    STYLE_SIMPLE(LWS_USEVISUALSTYLE),               // 0x0008
+    STYLE_SIMPLE(LWS_USECUSTOMTEXT),                // 0x0010
+    STYLE_SIMPLE(LWS_RIGHT),                        // 0x0020
+
+    NULL
+};
+
 // Updown control
 StyleLookupEx UpDownStyles[] =
 {
@@ -502,6 +515,8 @@ StyleLookupEx ProgressStyles[] =
 {
     STYLE_SIMPLE(PBS_SMOOTH),                       // 0x0001
     STYLE_SIMPLE(PBS_VERTICAL),                     // 0x0004
+    STYLE_SIMPLE(PBS_MARQUEE),                      // 0x0008
+    STYLE_SIMPLE(PBS_SMOOTHREVERSE),                // 0x0010
 
     NULL
 };
@@ -664,15 +679,33 @@ StyleLookupEx ListViewExStyles[] =
     NULL
 };
 
+// TreeView extended styles
+StyleLookupEx TreeViewExStyles[] =
+{
+    STYLE_SIMPLE(TVS_EX_NOSINGLECOLLAPSE),          // 0x0001
+    STYLE_SIMPLE(TVS_EX_MULTISELECT),               // 0x0002
+    STYLE_SIMPLE(TVS_EX_DOUBLEBUFFER),              // 0x0004
+    STYLE_SIMPLE(TVS_EX_NOINDENTSTATE),             // 0x0008
+    STYLE_SIMPLE(TVS_EX_RICHTOOLTIP),               // 0x0010
+    STYLE_SIMPLE(TVS_EX_AUTOHSCROLL),               // 0x0020
+    STYLE_SIMPLE(TVS_EX_FADEINOUTEXPANDOS),         // 0x0040
+    STYLE_SIMPLE(TVS_EX_PARTIALCHECKBOXES),         // 0x0080
+    STYLE_SIMPLE(TVS_EX_EXCLUSIONCHECKBOXES),       // 0x0100
+    STYLE_SIMPLE(TVS_EX_DIMMEDCHECKBOXES),          // 0x0200
+    STYLE_SIMPLE(TVS_EX_DRAWIMAGEASYNC),            // 0x0400
+    NULL
+};
+
+
 // ComboBoxEx extended styles
 StyleLookupEx ComboBoxExStyles[] =
 {
-    STYLE_SIMPLE(CBES_EX_NOEDITIMAGE),              // 0x00000001
-    STYLE_SIMPLE(CBES_EX_NOEDITIMAGEINDENT),        // 0x00000002
-    STYLE_SIMPLE(CBES_EX_PATHWORDBREAKPROC),        // 0x00000004
-    STYLE_SIMPLE(CBES_EX_NOSIZELIMIT),              // 0x00000008
-    STYLE_SIMPLE(CBES_EX_CASESENSITIVE),            // 0x00000010
-    STYLE_SIMPLE(CBES_EX_TEXTENDELLIPSIS),          // 0x00000020
+    STYLE_SIMPLE(CBES_EX_NOEDITIMAGE),              // 0x0001
+    STYLE_SIMPLE(CBES_EX_NOEDITIMAGEINDENT),        // 0x0002
+    STYLE_SIMPLE(CBES_EX_PATHWORDBREAKPROC),        // 0x0004
+    STYLE_SIMPLE(CBES_EX_NOSIZELIMIT),              // 0x0008
+    STYLE_SIMPLE(CBES_EX_CASESENSITIVE),            // 0x0010
+    STYLE_SIMPLE(CBES_EX_TEXTENDELLIPSIS),          // 0x0020
 
     NULL
 };
@@ -680,8 +713,8 @@ StyleLookupEx ComboBoxExStyles[] =
 // Tab control extended styles
 StyleLookupEx TabCtrlExStyles[] =
 {
-    STYLE_SIMPLE(TCS_EX_FLATSEPARATORS),            // 0x00000001
-    STYLE_SIMPLE(TCS_EX_REGISTERDROP),              // 0x00000002
+    STYLE_SIMPLE(TCS_EX_FLATSEPARATORS),            // 0x0001
+    STYLE_SIMPLE(TCS_EX_REGISTERDROP),              // 0x0002
 
     NULL
 };
@@ -756,12 +789,12 @@ ClassStyleInfo ClassStyleInfos[] =
     { L"msctls_progress32",    ProgressStyles,     FALSE  },
     { L"RebarWindow32",        RebarStyles,        TRUE   },
     { L"msctls_statusbar32",   StatusBarStyles,    TRUE   },
-    // "SysLink",              SysLinkStyles,      FALSE,  (DO IT!)
+    { L"SysLink",              SysLinkStyles,      FALSE  },
     { L"SysTabControl32",      TabStyles,          FALSE, TabCtrlExStyles,   TCM_GETEXTENDEDSTYLE,          TCM_SETEXTENDEDSTYLE         },
     { L"ToolbarWindow32",      ToolbarStyles,      TRUE,  ToolBarExStyles,   TB_GETEXTENDEDSTYLE,           TB_SETEXTENDEDSTYLE          },
     { L"tooltips_class32",     ToolTipStyles,      FALSE  },
     { L"msctls_trackbar32",    TrackbarStyles,     FALSE  },
-    { L"SysTreeView32",        TreeViewStyles,     FALSE  },
+    { L"SysTreeView32",        TreeViewStyles,     FALSE, TreeViewExStyles,  TVM_GETEXTENDEDSTYLE,          TVM_SETEXTENDEDSTYLE         },
     { L"msctls_updown32",      UpDownStyles,       FALSE  },
 };
 
