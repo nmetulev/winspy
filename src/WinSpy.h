@@ -310,7 +310,7 @@ extern Options g_opts;
 //
 extern HINSTANCE g_hInst;
 
-#define szAppName L"WinSpy++"
+#define szAppName L"FxSpy"
 
 #define szInvalidWindow L"(invalid window)"
 

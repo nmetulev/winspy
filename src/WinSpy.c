@@ -212,7 +212,7 @@ void UpdateMainWindowText()
     if (hwnd && g_opts.fShowInCaption)
     {
         WCHAR szClass[70] = { 0 };
-        WCHAR ach[100] = { 0 };
+        WCHAR ach[120] = { 0 };
 
         if (IsWindow(hwnd))
         {
