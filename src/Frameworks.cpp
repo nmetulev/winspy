@@ -5,6 +5,8 @@
 #include "CaptureWindow.h"
 #include "Utils.h"
 #include <Psapi.h>
+#include <unordered_map>
+#include <string>
 
 INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -44,22 +46,39 @@ void UpdateFrameworksTab(HWND hwnd)
 
     bool usingChromium = false;
     bool usingDui = false;
+    bool usingComCtl = false;
 
-    if (wcsstr(buffer, L"Chrome_RenderWidgetHostHWND") != nullptr) {
-        usingChromium = true;
-    }
-    else if (wcsstr(buffer, L"Chrome_WidgetWin_1") != nullptr) {
-        usingChromium = true;
-    }
-    else if (wcscmp(buffer, L"DirectUIHWND") == 0) {
-        usingDui = true;
+    std::unordered_map<std::wstring, bool*> classMap = {
+        {L"Chrome_RenderWidgetHostHWND", &usingChromium},
+        {L"Chrome_WidgetWin_1", &usingChromium},
+        {L"DirectUIHWND", &usingDui},
+        {L"SysListView32", &usingComCtl},
+        {L"SysTreeView32", &usingComCtl},
+        {L"SysTabControl32", &usingComCtl},
+        {L"SysHeader32", &usingComCtl},
+        {L"SysAnimate32", &usingComCtl},
+        {L"SysDateTimePick32", &usingComCtl},
+        {L"SysMonthCal32", &usingComCtl},
+        {L"SysIPAddress32", &usingComCtl},
+        {L"ToolbarWindow32", &usingComCtl},
+        {L"ReBarWindow32", &usingComCtl}
+    };
+
+    std::unordered_map<bool*, std::wstring> frameworkMap = {
+        {&usingChromium, L"Chromium"},
+        {&usingDui, L"DirectUI"},
+        {&usingComCtl, L"ComCtl32"}
+    };
+
+    auto it = classMap.find(buffer);
+    if (it != classMap.end()) {
+        *(it->second) = true;
     }
 
-    if (usingChromium) {
-        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)TEXT("Chromium"));
-    }
-    if (usingDui) {
-        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)TEXT("DirectUI"));
+    for (const auto& framework : frameworkMap) {
+        if (*(framework.first)) {
+            SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)framework.second.c_str());
+        }
     }
 
     // Get window's process
@@ -106,10 +125,17 @@ void UpdateFrameworksTab(HWND hwnd)
         }
 
         // Get list of DLLs loaded
+        std::unordered_map<std::wstring, std::wstring> moduleMap = {
+            {L"windows.ui.xaml.dll", L"System Xaml (windows.ui.xaml.dll)"},
+            {L"presentationcore.dll", L"WPF"},
+            {L"presentationcore.ni.dll", L"WPF"},
+            {L"webview2loader.dll", L"WebView2"},
+            {L"microsoft.reactnative.dll", L"ReactNative"}
+        };
+
         HMODULE hMods[1024];
         DWORD cbNeeded;
         if (EnumProcessModulesEx(hProcess, hMods, sizeof(hMods), &cbNeeded, LIST_MODULES_ALL)) {
-            
             for (unsigned int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
                 wchar_t moduleName[MAX_PATH];
                 if (GetModuleFileNameExW(hProcess, hMods[i], moduleName, 200)) {
@@ -117,13 +143,10 @@ void UpdateFrameworksTab(HWND hwnd)
                     for (size_t j = 0; moduleName[j]; j++) {
                         moduleName[j] = towlower(moduleName[j]);
                     }
-                    if (wcsstr(moduleName, L"windows.ui.xaml.dll") != nullptr) {
-                        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)TEXT("System Xaml (windows.ui.xaml.dll)"));
-                    }
-                    else if (wcsstr(moduleName, L"presentationcore.dll") != nullptr || wcsstr(moduleName, L"presentationcore.ni.dll") != nullptr) {
-                        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)TEXT("WPF"));
-                    }
-                    else if (wcsstr(moduleName, L"microsoft.ui.xaml.dll") != nullptr) {
+                    auto modIt = moduleMap.find(moduleName);
+                    if (modIt != moduleMap.end()) {
+                        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)modIt->second.c_str());
+                    } else if (wcsstr(moduleName, L"microsoft.ui.xaml.dll") != nullptr) {
                         // Get the version of the module
                         DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleName, nullptr);
                         if (versionInfoSize > 0) {
@@ -132,7 +155,6 @@ void UpdateFrameworksTab(HWND hwnd)
                                 VS_FIXEDFILEINFO *fileInfo;
                                 UINT fileInfoSize;
                                 if (VerQueryValueW(versionInfo, L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
-                                    //std::wcout << L"WinUI-" << HIWORD(fileInfo->dwFileVersionMS) << L"." << LOWORD(fileInfo->dwFileVersionMS) << L"." << HIWORD(fileInfo->dwFileVersionLS) << L"." << LOWORD(fileInfo->dwFileVersionLS) << L" ";
                                     wchar_t version[64];
                                     swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
                                     SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)version);
@@ -141,17 +163,9 @@ void UpdateFrameworksTab(HWND hwnd)
                             delete[] versionInfo;
                         }
                     }
-                    else if (wcsstr(moduleName, L"webview2loader.dll") != nullptr) {
-                        SendDlgItemMessage(hwndDlg, IDC_LIST1, LB_ADDSTRING, 0, (LPARAM)TEXT("WebView2"));
-                    }
-                    else if (wcsstr(moduleName, L"microsoft.reactnative.dll") != nullptr) {
-                        SendDlgItemMessage(hwndDlg, IDC_LIST1, LB_ADDSTRING, 0, (LPARAM)TEXT("ReactNative"));
-                    }
-
                 }
             }
-        }
-        else {
+        } else {
             // TODO: Surface this error to the user -- std::wcout << L"  Failed to enumerate modules." << std::endl;
         }
         CloseHandle(hProcess);
