@@ -50,6 +50,7 @@ static TBBUTTON tbbPin[] =
 
 DialogTab WinSpyTab[NUMTABCONTROLITEMS] =
 {
+    0, L"Frameworks",    IDD_TAB_FRAMEWORKS, FrameworksDlgProc,
     0, L"General",       IDD_TAB_GENERAL,    GeneralDlgProc,
     0, L"Styles",        IDD_TAB_STYLES,     StyleDlgProc,
     0, L"Properties",    IDD_TAB_PROPERTIES, PropertyDlgProc,
@@ -119,7 +120,11 @@ void UpdateActiveTab()
 {
     HWND hwnd = g_hCurWnd;
 
-    if (nCurrentTab == GENERAL_TAB)
+    if (nCurrentTab == FRAMEWORKS_TAB)
+    {
+        UpdateFrameworksTab(hwnd);
+    }
+    else if (nCurrentTab == GENERAL_TAB)
     {
         UpdateGeneralTab(hwnd);
     }

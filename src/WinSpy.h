@@ -42,14 +42,15 @@ typedef struct
 
 extern DialogTab WinSpyTab[];
 
-#define GENERAL_TAB        0
-#define STYLE_TAB          1
-#define PROPERTY_TAB       2
-#define CLASS_TAB          3
-#define WINDOW_TAB         4
-#define PROCESS_TAB        5
-#define DPI_TAB            6
-#define NUMTABCONTROLITEMS 7
+#define FRAMEWORKS_TAB     0
+#define GENERAL_TAB        1
+#define STYLE_TAB          2
+#define PROPERTY_TAB       3
+#define CLASS_TAB          4
+#define WINDOW_TAB         5
+#define PROCESS_TAB        6
+#define DPI_TAB            7
+#define NUMTABCONTROLITEMS 8
 
 #define MAX_STYLE_NAME_CCH 60
 
@@ -191,6 +192,7 @@ BOOL IsWindowMinimized(HWND hwnd);
 //
 //  Dialog box procedures for each dialog tab.
 //
+INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK GeneralDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK StyleDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK WindowDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
@@ -203,6 +205,7 @@ INT_PTR CALLBACK DpiDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 void DisplayWindowInfo(HWND hwnd);
 
 void UpdateActiveTab();
+void UpdateFrameworksTab(HWND hwnd);
 void UpdateWindowTab(HWND hwnd);
 void UpdateClassTab(HWND hwnd);
 void UpdateStyleTab(HWND hwnd);

@@ -135,6 +135,9 @@
     <ClCompile Include="FlashWindow.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Frameworks.cpp" >
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="FunkyList.c" />
     <ClCompile Include="GetRemoteWindowInfo.c" />
     <ClCompile Include="InjectThread.c" />
