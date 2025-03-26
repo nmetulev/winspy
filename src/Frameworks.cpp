@@ -24,8 +24,6 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
     return FALSE;
 }
 
-
-
 void UpdateFrameworksTab(HWND hwnd)
 {
     // TODO: I notice this gets called even when the user is mousing over a window,
@@ -44,6 +42,7 @@ void UpdateFrameworksTab(HWND hwnd)
     memset(buffer, 0, sizeof(buffer));
     GetClassNameW(hwnd, buffer, ARRAYSIZE(buffer));
 
+    // Wildcard "*" supported, but only at the end of the string.
     static const std::unordered_map<std::wstring, std::wstring> classMap = {
         {L"Chrome_RenderWidgetHostHWND", L"Chromium"},
         {L"Chrome_WidgetWin_1", L"Chromium"},
@@ -57,7 +56,14 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"SysMonthCal32", L"ComCtl32"},
         {L"SysIPAddress32", L"ComCtl32"},
         {L"ToolbarWindow32", L"ComCtl32"},
-        {L"ReBarWindow32", L"ComCtl32"}
+        {L"ReBarWindow32", L"ComCtl32"},
+        {L"Windows.UI.Core.CoreWindow", L"UWP (CoreWindow)"},
+        {L"ApplicationFrameInputSinkWindow", L"UWP (ApplicationFrameHost)"},
+        {L"AfxFrameOrView*", L"MFC"},
+        {L"AfxWnd*", L"MFC" },
+        {L"AfxOleControl*", L"MFC" },
+        {L"WindowsForms*", L"WinForms"},
+        {L"Microsoft.UI.Content.DesktopChildSiteBridge", L"ContentIsland (DesktopChildSiteBridge)"},
     };
 
     static const std::unordered_map<std::wstring, std::wstring> moduleMap = {
@@ -72,10 +78,21 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"electron_native_auth.node", L"Electron"},
     };
 
-    auto it = classMap.find(buffer);
-    if (it != classMap.end()) {
-        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)it->second.c_str());
+    for (auto &classPair : classMap) {
+        // If classPair.first ends with a *, do a substring match
+        if (classPair.first.back() == L'*') {
+            // TODO: Inefficient to make a temp string every time through the loop.
+            std::wstring className(classPair.first);
+            className.pop_back(); // Remove the '*'
+            if (wcsstr(buffer, className.c_str()) != nullptr) {
+                SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)classPair.second.c_str());
+            }
+        }
+        else if (classPair.first == buffer) {
+            SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)classPair.second.c_str());
+        }
     }
+
 
     // Get window's process
     DWORD processId;
