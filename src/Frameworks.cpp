@@ -1,5 +1,4 @@
 #include "WinSpy.h"
-
 #include "resource.h"
 #include "BitmapButton.h"
 #include "CaptureWindow.h"
@@ -8,7 +7,8 @@
 #include <unordered_map>
 #include <string>
 #include <CommCtrl.h>
-#include <wil/resource.h> // Include WIL for resource management
+#include <wil/resource.h>
+#include <memory>
 
 // Helper function to add an item to the ListView
 void AddListViewItem(HWND hwndList, const std::wstring& text, int imageIndex)
@@ -149,14 +149,16 @@ void UpdateFrameworksTab(HWND hwnd)
     // Get window's process
     DWORD processId;
     GetWindowThreadProcessId(hwnd, &processId);
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+
+    // Use wil::unique_handle to manage the process handle
+    wil::unique_handle hProcess(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId));
     if (hProcess) {
 
         bool usingElectron = false;
 
         // Process name
         wchar_t processPath[MAX_PATH];
-        if (GetModuleFileNameExW(hProcess, nullptr, processPath, 200)) {
+        if (GetModuleFileNameExW(hProcess.get(), nullptr, processPath, 200)) {
             // convert to lowercase for case insensitive comparison
             for (size_t j = 0; processPath[j]; j++) {
                 processPath[j] = towlower(processPath[j]);
@@ -192,10 +194,10 @@ void UpdateFrameworksTab(HWND hwnd)
         // Get list of DLLs loaded
         HMODULE hMods[1024];
         DWORD cbNeeded;
-        if (EnumProcessModulesEx(hProcess, hMods, sizeof(hMods), &cbNeeded, LIST_MODULES_ALL)) {
+        if (EnumProcessModulesEx(hProcess.get(), hMods, sizeof(hMods), &cbNeeded, LIST_MODULES_ALL)) {
             for (unsigned int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
                 wchar_t moduleFullPath[MAX_PATH];
-                if (GetModuleFileNameExW(hProcess, hMods[i], moduleFullPath, 200)) {
+                if (GetModuleFileNameExW(hProcess.get(), hMods[i], moduleFullPath, 200)) {
                     // Trim to just the file name
                     wchar_t *fileName = wcsrchr(moduleFullPath, L'\\');
                     if (fileName) {
@@ -215,17 +217,16 @@ void UpdateFrameworksTab(HWND hwnd)
                         // Get the version of the module
                         DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleFullPath, nullptr);
                         if (versionInfoSize > 0) {
-                            BYTE *versionInfo = new BYTE[versionInfoSize];
-                            if (GetFileVersionInfoW(moduleFullPath, 0, versionInfoSize, versionInfo)) {
+                            std::unique_ptr<BYTE[]> versionInfo(new BYTE[versionInfoSize]);
+                            if (GetFileVersionInfoW(moduleFullPath, 0, versionInfoSize, versionInfo.get())) {
                                 VS_FIXEDFILEINFO *fileInfo;
                                 UINT fileInfoSize;
-                                if (VerQueryValueW(versionInfo, L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
+                                if (VerQueryValueW(versionInfo.get(), L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
                                     wchar_t version[64];
                                     swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
                                     AddListViewItem(hwndList, version, 0); // Placeholder icon index
                                 }
                             }
-                            delete[] versionInfo;
                         }
                     }
                 }
@@ -233,6 +234,5 @@ void UpdateFrameworksTab(HWND hwnd)
         } else {
             // TODO: Surface this error to the user -- std::wcout << L"  Failed to enumerate modules." << std::endl;
         }
-        CloseHandle(hProcess);
     }
 }
