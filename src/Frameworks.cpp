@@ -7,24 +7,69 @@
 #include <Psapi.h>
 #include <unordered_map>
 #include <string>
+#include <CommCtrl.h>
+
+// Helper function to add an item to the ListView
+void AddListViewItem(HWND hwndList, const std::wstring& text, int imageIndex)
+{
+    LVITEM lvItem = {};
+    lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+    lvItem.iItem = ListView_GetItemCount(hwndList);
+    lvItem.pszText = const_cast<LPWSTR>(text.c_str());
+    lvItem.iImage = imageIndex;
+    if (ListView_InsertItem(hwndList, &lvItem) == -1) {
+        // Handle error if item insertion fails
+    }
+}
 
 INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-    (void)hwnd;
-    (void)iMsg;
-    (void)wParam;
-    (void)lParam;
-
     switch (iMsg)
     {
     case WM_INITDIALOG:
+    {
+        HWND hwndList = GetDlgItem(hwnd, IDC_LIST1);
+        if (!hwndList) {
+            // Log or handle error: ListView control not found
+            return FALSE;
+        }
+
+        // Set ListView to report mode
+        ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT);
+
+        // Create an image list with placeholder icons
+        HIMAGELIST hImageList = ImageList_Create(16, 16, ILC_COLOR32, 1, 1);
+        if (hImageList) {
+            HICON hIconPlaceholder = LoadIcon(nullptr, IDI_APPLICATION); // Placeholder icon
+            ImageList_AddIcon(hImageList, hIconPlaceholder);
+            DestroyIcon(hIconPlaceholder);
+
+            // Associate the image list with the ListView
+            ListView_SetImageList(hwndList, hImageList, LVSIL_SMALL);
+        } else {
+            // Log or handle error: ImageList creation failed
+        }
+
+        // Add a single column to the ListView
+        LVCOLUMN lvColumn = {};
+        lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
+        lvColumn.pszText = L"Framework";
+        lvColumn.cx = 200; // Column width
+        if (ListView_InsertColumn(hwndList, 0, &lvColumn) == -1) {
+            // Log or handle error: Column insertion failed
+        }
+
         return TRUE;
+    }
+    default:
+        // Explicitly mark unused parameters to suppress warnings
+        (void)wParam;
+        (void)lParam;
+        break;
     }
 
     return FALSE;
 }
-
-
 
 void UpdateFrameworksTab(HWND hwnd)
 {
@@ -37,8 +82,8 @@ void UpdateFrameworksTab(HWND hwnd)
     HWND hwndDlg = WinSpyTab[FRAMEWORKS_TAB].hwnd;
     HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST1);
     
-    // Clear all items from the list
-    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+    // Clear all items from the ListView
+    ListView_DeleteAllItems(hwndList);
 
     wchar_t buffer[256];
     memset(buffer, 0, sizeof(buffer));
@@ -74,7 +119,7 @@ void UpdateFrameworksTab(HWND hwnd)
 
     auto it = classMap.find(buffer);
     if (it != classMap.end()) {
-        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)it->second.c_str());
+        AddListViewItem(hwndList, it->second, 0); // Placeholder icon index
     }
 
     // Get window's process
@@ -117,7 +162,7 @@ void UpdateFrameworksTab(HWND hwnd)
         }
 
         if (usingElectron) {
-            SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)TEXT("Electron"));
+            AddListViewItem(hwndList, L"Electron", 0); // Placeholder icon index
         }
 
         // Get list of DLLs loaded
@@ -140,7 +185,7 @@ void UpdateFrameworksTab(HWND hwnd)
                     }
                     auto modIt = moduleMap.find(fileName);
                     if (modIt != moduleMap.end()) {
-                        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)modIt->second.c_str());
+                        AddListViewItem(hwndList, modIt->second, 0); // Placeholder icon index
                     } else if (wcsstr(fileName, L"microsoft.ui.xaml.dll") != nullptr) {
                         // Get the version of the module
                         DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleFullPath, nullptr);
@@ -152,7 +197,7 @@ void UpdateFrameworksTab(HWND hwnd)
                                 if (VerQueryValueW(versionInfo, L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
                                     wchar_t version[64];
                                     swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
-                                    SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)version);
+                                    AddListViewItem(hwndList, version, 0); // Placeholder icon index
                                 }
                             }
                             delete[] versionInfo;
