@@ -22,8 +22,13 @@ void AddListViewItem(HWND hwndList, const std::wstring& text, int imageIndex)
     }
 }
 
+// Map to store framework-specific icon indices
+static std::unordered_map<std::wstring, int> frameworkIconMap;
+
 INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
+    static HIMAGELIST hImageList = nullptr;
+
     switch (iMsg)
     {
     case WM_INITDIALOG:
@@ -38,12 +43,26 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         SetWindowLong(hwndList, GWL_STYLE, GetWindowLong(hwndList, GWL_STYLE) | LVS_LIST);
         ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT);
 
-        // Create an image list with placeholder icons
-        HIMAGELIST hImageList = ImageList_Create(16, 16, ILC_COLOR32, 1, 1);
+        // Create an image list for framework icons
+        hImageList = ImageList_Create(16, 16, ILC_COLOR32, 1, 10); // Reserve space for 10 icons
         if (hImageList) {
-            HICON hIconPlaceholder = LoadIcon(nullptr, IDI_APPLICATION); // Placeholder icon
+            // Load placeholder icon
+            HICON hIconPlaceholder = LoadIcon(nullptr, IDI_APPLICATION);
             ImageList_AddIcon(hImageList, hIconPlaceholder);
             DestroyIcon(hIconPlaceholder);
+
+            // Load custom icons for specific frameworks
+            HICON hIconWPF = LoadIcon(nullptr, IDI_INFORMATION); // Replace with actual WPF icon
+            if (hIconWPF) {
+                frameworkIconMap[L"WPF"] = ImageList_AddIcon(hImageList, hIconWPF);
+                DestroyIcon(hIconWPF);
+            }
+
+            HICON hIconReactNative = LoadIcon(nullptr, IDI_WARNING); // Replace with actual React Native icon
+            if (hIconReactNative) {
+                frameworkIconMap[L"React Native"] = ImageList_AddIcon(hImageList, hIconReactNative);
+                DestroyIcon(hIconReactNative);
+            }
 
             // Associate the image list with the ListView
             ListView_SetImageList(hwndList, hImageList, LVSIL_SMALL);
@@ -53,6 +72,13 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
 
         return TRUE;
     }
+    case WM_DESTROY:
+        if (hImageList) {
+            ImageList_Destroy(hImageList);
+            hImageList = nullptr;
+        }
+        break;
+
     default:
         // Explicitly mark unused parameters to suppress warnings
         (void)wParam;
@@ -111,7 +137,8 @@ void UpdateFrameworksTab(HWND hwnd)
 
     auto it = classMap.find(buffer);
     if (it != classMap.end()) {
-        AddListViewItem(hwndList, it->second, 0); // Placeholder icon index
+        int iconIndex = frameworkIconMap.count(it->second) ? frameworkIconMap[it->second] : 0; // Default to placeholder
+        AddListViewItem(hwndList, it->second, iconIndex);
     }
 
     // Get window's process
@@ -177,7 +204,8 @@ void UpdateFrameworksTab(HWND hwnd)
                     }
                     auto modIt = moduleMap.find(fileName);
                     if (modIt != moduleMap.end()) {
-                        AddListViewItem(hwndList, modIt->second, 0); // Placeholder icon index
+                        int iconIndex = frameworkIconMap.count(modIt->second) ? frameworkIconMap[modIt->second] : 0; // Default to placeholder
+                        AddListViewItem(hwndList, modIt->second, iconIndex);
                     } else if (wcsstr(fileName, L"microsoft.ui.xaml.dll") != nullptr) {
                         // Get the version of the module
                         DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleFullPath, nullptr);
