@@ -34,7 +34,8 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
             return FALSE;
         }
 
-        // Set ListView to report mode
+        // Set ListView to use full-row select and vertical list mode
+        SetWindowLong(hwndList, GWL_STYLE, GetWindowLong(hwndList, GWL_STYLE) | LVS_LIST);
         ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT);
 
         // Create an image list with placeholder icons
@@ -48,15 +49,6 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
             ListView_SetImageList(hwndList, hImageList, LVSIL_SMALL);
         } else {
             // Log or handle error: ImageList creation failed
-        }
-
-        // Add a single column to the ListView
-        LVCOLUMN lvColumn = {};
-        lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
-        lvColumn.pszText = L"Framework";
-        lvColumn.cx = 200; // Column width
-        if (ListView_InsertColumn(hwndList, 0, &lvColumn) == -1) {
-            // Log or handle error: Column insertion failed
         }
 
         return TRUE;
