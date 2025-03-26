@@ -46,22 +46,27 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         // Create an image list for framework icons
         hImageList = ImageList_Create(16, 16, ILC_COLOR32, 1, 10); // Reserve space for 10 icons
         if (hImageList) {
-            // Load placeholder icon
-            HICON hIconPlaceholder = LoadIcon(nullptr, IDI_APPLICATION);
-            ImageList_AddIcon(hImageList, hIconPlaceholder);
-            DestroyIcon(hIconPlaceholder);
+            // Map of framework names to placeholder icons
+            static const std::unordered_map<std::wstring, LPCTSTR> iconMap = {
+                {L"Chromium", IDI_APPLICATION},
+                {L"DirectUI", IDI_INFORMATION},
+                {L"ComCtl32", IDI_WARNING},
+                {L"WPF", IDI_QUESTION},
+                {L"WebView2", IDI_ERROR},
+                {L"React Native", IDI_WARNING},
+                {L"Flutter", IDI_INFORMATION},
+                {L"CEF", IDI_APPLICATION},
+                {L"Electron", IDI_QUESTION},
+                {L"System Xaml (windows.ui.xaml.dll)", IDI_ERROR}
+            };
 
-            // Load custom icons for specific frameworks
-            HICON hIconWPF = LoadIcon(nullptr, IDI_INFORMATION); // Replace with actual WPF icon
-            if (hIconWPF) {
-                frameworkIconMap[L"WPF"] = ImageList_AddIcon(hImageList, hIconWPF);
-                DestroyIcon(hIconWPF);
-            }
-
-            HICON hIconReactNative = LoadIcon(nullptr, IDI_WARNING); // Replace with actual React Native icon
-            if (hIconReactNative) {
-                frameworkIconMap[L"React Native"] = ImageList_AddIcon(hImageList, hIconReactNative);
-                DestroyIcon(hIconReactNative);
+            // Load icons dynamically
+            for (auto it = iconMap.begin(); it != iconMap.end(); ++it) {
+                HICON hIcon = LoadIcon(nullptr, it->second);
+                if (hIcon) {
+                    frameworkIconMap[it->first] = ImageList_AddIcon(hImageList, hIcon);
+                    DestroyIcon(hIcon);
+                }
             }
 
             // Associate the image list with the ListView
