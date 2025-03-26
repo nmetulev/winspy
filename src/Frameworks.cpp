@@ -43,23 +43,23 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         SetWindowLong(hwndList, GWL_STYLE, GetWindowLong(hwndList, GWL_STYLE) | LVS_LIST);
         ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT);
 
-        // Create an image list for framework icons
-        hImageList = ImageList_Create(16, 16, ILC_COLOR32, 1, 10); // Reserve space for 10 icons
-        if (hImageList) {
-            // Map of framework names to placeholder icons
-            static const std::unordered_map<std::wstring, LPCTSTR> iconMap = {
-                {L"Chromium", IDI_APPLICATION},
-                {L"DirectUI", IDI_INFORMATION},
-                {L"ComCtl32", IDI_WARNING},
-                {L"WPF", IDI_QUESTION},
-                {L"WebView2", IDI_ERROR},
-                {L"React Native", IDI_WARNING},
-                {L"Flutter", IDI_INFORMATION},
-                {L"CEF", IDI_APPLICATION},
-                {L"Electron", IDI_QUESTION},
-                {L"System Xaml (windows.ui.xaml.dll)", IDI_ERROR}
-            };
+        // Map of framework names to placeholder icons
+        static const std::unordered_map<std::wstring, LPCTSTR> iconMap = {
+            {L"Chromium", IDI_APPLICATION},
+            {L"DirectUI", IDI_INFORMATION},
+            {L"ComCtl32", IDI_WARNING},
+            {L"WPF", IDI_QUESTION},
+            {L"WebView2", IDI_ERROR},
+            {L"React Native", IDI_WARNING},
+            {L"Flutter", IDI_INFORMATION},
+            {L"CEF", IDI_APPLICATION},
+            {L"Electron", IDI_QUESTION},
+            {L"System Xaml (windows.ui.xaml.dll)", IDI_ERROR}
+        };
 
+        // Create an image list for framework icons
+        hImageList = ImageList_Create(16, 16, ILC_COLOR32, static_cast<int>(iconMap.size()), 1);
+        if (hImageList) {
             // Load icons dynamically
             for (auto it = iconMap.begin(); it != iconMap.end(); ++it) {
                 HICON hIcon = LoadIcon(nullptr, it->second);
