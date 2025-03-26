@@ -63,7 +63,8 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"AfxWnd*", L"MFC" },
         {L"AfxOleControl*", L"MFC" },
         {L"WindowsForms*", L"WinForms"},
-        {L"Microsoft.UI.Content.DesktopChildSiteBridge", L"ContentIsland (DesktopChildSiteBridge)"},
+        {L"Microsoft.UI.Content.DesktopChildSiteBridge", L"Scene Graph ContentIsland (DesktopChildSiteBridge)"},
+        {L"Windows.UI.Composition.DesktopWindowContentBridge", L"System Island (DesktopWindowContentBridge)"},
     };
 
     static const std::unordered_map<std::wstring, std::wstring> moduleMap = {
