@@ -9,26 +9,25 @@
 #include <CommCtrl.h>
 #include <wil/resource.h>
 #include <memory>
+#include <array>
 
 // Helper function to add an item to the ListView
-void AddListViewItem(HWND hwndList, const std::wstring& text, int imageIndex)
+void AddListViewItem(HWND hwndList, std::wstring_view text, int imageIndex)
 {
     LVITEM lvItem = {};
     lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
     lvItem.iItem = ListView_GetItemCount(hwndList);
-    lvItem.pszText = const_cast<LPWSTR>(text.c_str());
+    lvItem.pszText = const_cast<LPWSTR>(text.data());
     lvItem.iImage = imageIndex;
-    if (ListView_InsertItem(hwndList, &lvItem) == -1) {
-        // Handle error if item insertion fails
-    }
+    ListView_InsertItem(hwndList, &lvItem);
 }
 
 // Map to store framework-specific icon indices
 static std::unordered_map<std::wstring, int> frameworkIconMap;
 
-INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
 {
-    static HIMAGELIST hImageList = nullptr;
+    static wil::unique_himagelist hImageList;
 
     switch (iMsg)
     {
@@ -45,7 +44,7 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT);
 
         // Map of framework names to placeholder icons
-        static const std::unordered_map<std::wstring, LPCTSTR> iconMap = {
+        static const std::unordered_map<std::wstring_view, LPCTSTR> iconMap = {
             {L"Chromium", IDI_APPLICATION},
             {L"DirectUI", IDI_INFORMATION},
             {L"ComCtl32", IDI_WARNING},
@@ -59,35 +58,30 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         };
 
         // Create an image list for framework icons
-        hImageList = ImageList_Create(16, 16, ILC_COLOR32, static_cast<int>(iconMap.size()), 1);
-        if (hImageList) {
-            // Load icons dynamically
-            for (auto it = iconMap.begin(); it != iconMap.end(); ++it) {
-                wil::unique_hicon hIcon(LoadIcon(nullptr, it->second));
-                if (hIcon) {
-                    frameworkIconMap[it->first] = ImageList_AddIcon(hImageList, hIcon.get());
-                }
-            }
-
-            // Associate the image list with the ListView
-            ListView_SetImageList(hwndList, hImageList, LVSIL_SMALL);
-        } else {
+        hImageList.reset(ImageList_Create(16, 16, ILC_COLOR32, static_cast<int>(iconMap.size()), 1));
+        if (!hImageList) {
             // Log or handle error: ImageList creation failed
+            return FALSE;
         }
+
+        // Load icons dynamically
+        for (const auto& [framework, iconId] : iconMap) {
+            wil::unique_hicon hIcon(LoadIcon(nullptr, iconId));
+            if (hIcon) {
+                frameworkIconMap.try_emplace(std::wstring(framework), ImageList_AddIcon(hImageList.get(), hIcon.get()));
+            }
+        }
+
+        // Associate the image list with the ListView
+        ListView_SetImageList(hwndList, hImageList.get(), LVSIL_SMALL);
 
         return TRUE;
     }
     case WM_DESTROY:
-        if (hImageList) {
-            ImageList_Destroy(hImageList);
-            hImageList = nullptr;
-        }
+        hImageList.reset();
         break;
 
     default:
-        // Explicitly mark unused parameters to suppress warnings
-        (void)wParam;
-        (void)lParam;
         break;
     }
 
@@ -108,11 +102,10 @@ void UpdateFrameworksTab(HWND hwnd)
     // Clear all items from the ListView
     ListView_DeleteAllItems(hwndList);
 
-    wchar_t buffer[256];
-    memset(buffer, 0, sizeof(buffer));
-    GetClassNameW(hwnd, buffer, ARRAYSIZE(buffer));
+    std::array<wchar_t, 256> buffer = {};
+    GetClassNameW(hwnd, buffer.data(), static_cast<int>(buffer.size()));
 
-    static const std::unordered_map<std::wstring, std::wstring> classMap = {
+    static const std::unordered_map<std::wstring_view, std::wstring_view> classMap = {
         {L"Chrome_RenderWidgetHostHWND", L"Chromium"},
         {L"Chrome_WidgetWin_1", L"Chromium"},
         {L"DirectUIHWND", L"DirectUI"},
@@ -128,7 +121,7 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"ReBarWindow32", L"ComCtl32"}
     };
 
-    static const std::unordered_map<std::wstring, std::wstring> moduleMap = {
+    static const std::unordered_map<std::wstring_view, std::wstring_view> moduleMap = {
         {L"windows.ui.xaml.dll", L"System Xaml (windows.ui.xaml.dll)"},
         {L"presentationcore.dll", L"WPF"},
         {L"presentationcore.ni.dll", L"WPF"},
@@ -140,9 +133,11 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"electron_native_auth.node", L"Electron"},
     };
 
-    auto it = classMap.find(buffer);
+    auto it = classMap.find(buffer.data());
     if (it != classMap.end()) {
-        int iconIndex = frameworkIconMap.count(it->second) ? frameworkIconMap[it->second] : 0; // Default to placeholder
+        // Convert the key to std::wstring for lookup
+        std::wstring key(it->second);
+        int iconIndex = frameworkIconMap.count(key) ? frameworkIconMap[key] : 0; // Default to placeholder
         AddListViewItem(hwndList, it->second, iconIndex);
     }
 
@@ -209,9 +204,13 @@ void UpdateFrameworksTab(HWND hwnd)
                     for (size_t j = 0; fileName[j]; j++) {
                         fileName[j] = towlower(fileName[j]);
                     }
-                    auto modIt = moduleMap.find(fileName);
+                    // Convert the key to std::wstring for lookup
+                    std::wstring key(fileName);
+                    auto modIt = moduleMap.find(key);
                     if (modIt != moduleMap.end()) {
-                        int iconIndex = frameworkIconMap.count(modIt->second) ? frameworkIconMap[modIt->second] : 0; // Default to placeholder
+                        // Convert modIt->second to std::wstring for frameworkIconMap lookup
+                        std::wstring frameworkKey(modIt->second);
+                        int iconIndex = frameworkIconMap.count(frameworkKey) ? frameworkIconMap[frameworkKey] : 0; // Default to placeholder
                         AddListViewItem(hwndList, modIt->second, iconIndex);
                     } else if (wcsstr(fileName, L"microsoft.ui.xaml.dll") != nullptr) {
                         // Get the version of the module
