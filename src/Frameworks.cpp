@@ -44,41 +44,37 @@ void UpdateFrameworksTab(HWND hwnd)
     memset(buffer, 0, sizeof(buffer));
     GetClassNameW(hwnd, buffer, ARRAYSIZE(buffer));
 
-    bool usingChromium = false;
-    bool usingDui = false;
-    bool usingComCtl = false;
-
-    std::unordered_map<std::wstring, bool*> classMap = {
-        {L"Chrome_RenderWidgetHostHWND", &usingChromium},
-        {L"Chrome_WidgetWin_1", &usingChromium},
-        {L"DirectUIHWND", &usingDui},
-        {L"SysListView32", &usingComCtl},
-        {L"SysTreeView32", &usingComCtl},
-        {L"SysTabControl32", &usingComCtl},
-        {L"SysHeader32", &usingComCtl},
-        {L"SysAnimate32", &usingComCtl},
-        {L"SysDateTimePick32", &usingComCtl},
-        {L"SysMonthCal32", &usingComCtl},
-        {L"SysIPAddress32", &usingComCtl},
-        {L"ToolbarWindow32", &usingComCtl},
-        {L"ReBarWindow32", &usingComCtl}
+    static const std::unordered_map<std::wstring, std::wstring> classMap = {
+        {L"Chrome_RenderWidgetHostHWND", L"Chromium"},
+        {L"Chrome_WidgetWin_1", L"Chromium"},
+        {L"DirectUIHWND", L"DirectUI"},
+        {L"SysListView32", L"ComCtl32"},
+        {L"SysTreeView32", L"ComCtl32"},
+        {L"SysTabControl32", L"ComCtl32"},
+        {L"SysHeader32", L"ComCtl32"},
+        {L"SysAnimate32", L"ComCtl32"},
+        {L"SysDateTimePick32", L"ComCtl32"},
+        {L"SysMonthCal32", L"ComCtl32"},
+        {L"SysIPAddress32", L"ComCtl32"},
+        {L"ToolbarWindow32", L"ComCtl32"},
+        {L"ReBarWindow32", L"ComCtl32"}
     };
 
-    std::unordered_map<bool*, std::wstring> frameworkMap = {
-        {&usingChromium, L"Chromium"},
-        {&usingDui, L"DirectUI"},
-        {&usingComCtl, L"ComCtl32"}
+    static const std::unordered_map<std::wstring, std::wstring> moduleMap = {
+        {L"windows.ui.xaml.dll", L"System Xaml (windows.ui.xaml.dll)"},
+        {L"presentationcore.dll", L"WPF"},
+        {L"presentationcore.ni.dll", L"WPF"},
+        {L"webview2loader.dll", L"WebView2"},
+        {L"microsoft.reactnative.dll", L"React Native"},
+        {L"react-native-win32.dll", L"React Native"},
+        {L"flutter_windows.dll", L"Flutter"},
+        {L"libcef.dll", L"CEF"},
+        {L"electron_native_auth.node", L"Electron"},
     };
 
     auto it = classMap.find(buffer);
     if (it != classMap.end()) {
-        *(it->second) = true;
-    }
-
-    for (const auto& framework : frameworkMap) {
-        if (*(framework.first)) {
-            SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)framework.second.c_str());
-        }
+        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)it->second.c_str());
     }
 
     // Get window's process
@@ -125,17 +121,6 @@ void UpdateFrameworksTab(HWND hwnd)
         }
 
         // Get list of DLLs loaded
-        std::unordered_map<std::wstring, std::wstring> moduleMap = {
-            {L"windows.ui.xaml.dll", L"System Xaml (windows.ui.xaml.dll)"},
-            {L"presentationcore.dll", L"WPF"},
-            {L"presentationcore.ni.dll", L"WPF"},
-            {L"webview2loader.dll", L"WebView2"},
-            {L"microsoft.reactnative.dll", L"ReactNative"},
-            {L"flutter_windows.dll", L"Flutter"},
-            {L"libcef.dll", L"CEF"},
-            {L"electron_native_auth.node", L"Electron"},
-        };
-
         HMODULE hMods[1024];
         DWORD cbNeeded;
         if (EnumProcessModulesEx(hProcess, hMods, sizeof(hMods), &cbNeeded, LIST_MODULES_ALL)) {
