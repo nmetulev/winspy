@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <string>
 #include <CommCtrl.h>
+#include <wil/resource.h> // Include WIL for resource management
 
 // Helper function to add an item to the ListView
 void AddListViewItem(HWND hwndList, const std::wstring& text, int imageIndex)
@@ -62,10 +63,9 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM l
         if (hImageList) {
             // Load icons dynamically
             for (auto it = iconMap.begin(); it != iconMap.end(); ++it) {
-                HICON hIcon = LoadIcon(nullptr, it->second);
+                wil::unique_hicon hIcon(LoadIcon(nullptr, it->second));
                 if (hIcon) {
-                    frameworkIconMap[it->first] = ImageList_AddIcon(hImageList, hIcon);
-                    DestroyIcon(hIcon);
+                    frameworkIconMap[it->first] = ImageList_AddIcon(hImageList, hIcon.get());
                 }
             }
 
