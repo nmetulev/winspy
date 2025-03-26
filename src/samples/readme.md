@@ -1,0 +1,1 @@
+The files in here are dumps of the window class and module hierarchy for a set of apps. None of the files here are part of the compiled tool, but merely exist to help learn about how to map modules to frameworks.
