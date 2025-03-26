@@ -290,6 +290,12 @@ UINT CALLBACK WndFindProc(HWND hwndTool, UINT uCode, HWND hwnd)
 
         DisplayWindowInfo(g_hCurWnd);
 
+        // Update the tree view selection to match the selected window
+        if (g_opts.fSelectTreeOnDragEnd && g_hCurWnd)
+        {
+            WindowTree_Locate(g_hCurWnd);
+        }
+
         g_opts.fShowHidden = fOldShowHidden;
         break;
 

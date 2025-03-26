@@ -293,6 +293,7 @@ typedef struct
     BOOL  fShowInCaption;
     BOOL  fSaveWinPos;
     BOOL  fShowDesktopRoot;
+    BOOL  fSelectTreeOnDragEnd;
     UINT  uTreeInclude;
     BOOL  fShowHiddenInList;
     BOOL  fEnableHotkey;
