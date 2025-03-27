@@ -35,6 +35,7 @@ void LoadSettings(void)
     g_opts.fShowInCaption = GetSettingBool(hkey, L"ShowInCaption", TRUE);
     g_opts.fEnableToolTips = GetSettingBool(hkey, L"EnableToolTips", FALSE);
     g_opts.fShowDesktopRoot = GetSettingBool(hkey, L"ShowDesktopRoot", FALSE);
+    g_opts.fSelectTreeOnDragEnd = GetSettingBool(hkey, L"SelectTreeOnDragEnd", TRUE);
     g_opts.uTreeInclude = GetSettingInt(hkey, L"TreeItems", WINLIST_INCLUDE_ALL);
     g_opts.fShowHiddenInList = GetSettingBool(hkey, L"List_ShowHidden", TRUE);
     g_opts.fEnableHotkey = GetSettingBool(hkey, L"EnableHotkey", FALSE);
