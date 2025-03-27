@@ -162,6 +162,7 @@
     <None Include="resource\selbox2.png">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="resource\winspy.exe.manifest">

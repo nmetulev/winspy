@@ -39,6 +39,16 @@
 #define IDD_TAB_DPI                     167
 #define IDB_WINDOW_CLOAKED              168
 #define IDD_TAB_FRAMEWORKS              168
+#define IDB_FRAMEWORK_REACT_NATIVE      169
+#define IDB_FRAMEWORK_FLUTTER           170
+#define IDB_FRAMEWORK_WINUI             171
+#define IDB_FRAMEWORK_ELECTRON          172
+#define IDB_FRAMEWORK_CHROMIUM          173
+#define IDB_FRAMEWORK_CEF               174
+#define IDB_FRAMEWORK_COMCTL32          175
+#define IDB_FRAMEWORK_DIRECTUI          176
+#define IDB_FRAMEWORK_WPF               177
+#define IDB_FRAMEWORK_WEBVIEW2          178
 #define IDC_LIST1                       1000
 #define IDC_DRAGGER                     1001
 #define IDC_LIST2                       1001

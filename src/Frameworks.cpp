@@ -1,5 +1,4 @@
 #include "WinSpy.h"
-
 #include "resource.h"
 #include "BitmapButton.h"
 #include "CaptureWindow.h"
@@ -7,18 +6,97 @@
 #include <Psapi.h>
 #include <unordered_map>
 #include <string>
+#include <CommCtrl.h>
+#include <wil/resource.h>
+#include <memory>
+#include <array>
 
-INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+// Map to store framework-specific icon indices
+static std::unordered_map<std::wstring_view, int> frameworkIconMap;
+
+// Helper function to add an item to the ListView
+void AddListViewItem(HWND hwndList, std::wstring_view text, std::wstring_view iconKey = L"")
 {
-    (void)hwnd;
-    (void)iMsg;
-    (void)wParam;
-    (void)lParam;
+    std::wstring_view iconKeyActual = iconKey.empty() ? text : iconKey;
+    int iconIndex = frameworkIconMap.count(iconKeyActual) ? frameworkIconMap[iconKeyActual] : frameworkIconMap[L"Unknown"];
+
+    LVITEM lvItem = {};
+    lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+    lvItem.iItem = ListView_GetItemCount(hwndList);
+    lvItem.pszText = const_cast<LPWSTR>(text.data());
+    lvItem.iImage = iconIndex;
+    ListView_InsertItem(hwndList, &lvItem);
+}
+
+
+INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
+{
+    static wil::unique_himagelist hImageList;
 
     switch (iMsg)
     {
     case WM_INITDIALOG:
+    {
+        HWND hwndList = GetDlgItem(hwnd, IDC_LIST1);
+        if (!hwndList) {
+            // Log or handle error: ListView control not found
+            return FALSE;
+        }
+
+        // Set ListView to use full-row select and vertical list mode
+        SetWindowLong(hwndList, GWL_STYLE, GetWindowLong(hwndList, GWL_STYLE) | LVS_LIST);
+        ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT);
+
+        // Map of framework names to image resources
+        static const std::unordered_map<std::wstring_view, LPCTSTR> iconMap = {
+            {L"CEF", MAKEINTRESOURCE(IDB_FRAMEWORK_CEF)},
+            {L"Chromium", MAKEINTRESOURCE(IDB_FRAMEWORK_CHROMIUM)},
+            {L"ComCtl32", MAKEINTRESOURCE(IDB_FRAMEWORK_COMCTL32)},
+            {L"DirectUI", MAKEINTRESOURCE(IDB_FRAMEWORK_DIRECTUI)},
+            {L"Electron", MAKEINTRESOURCE(IDB_FRAMEWORK_ELECTRON)},
+            {L"Flutter", MAKEINTRESOURCE(IDB_FRAMEWORK_FLUTTER)},
+            {L"React Native", MAKEINTRESOURCE(IDB_FRAMEWORK_REACT_NATIVE)},
+            {L"System Xaml", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
+            {L"WinUI", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
+            {L"WPF", MAKEINTRESOURCE(IDB_FRAMEWORK_WPF)},
+            {L"WebView2", MAKEINTRESOURCE(IDB_FRAMEWORK_WEBVIEW2)},
+            {L"Unknown", IDI_APPLICATION} // Default icon for unmapped frameworks
+        };
+
+        // Create an image list for framework icons (32x32 dimensions)
+        hImageList.reset(ImageList_Create(32, 32, ILC_COLOR32 | ILC_MASK, static_cast<int>(iconMap.size()), 1));
+        if (!hImageList) {
+            OutputDebugString(L"Failed to create image list.\n");
+            return FALSE;
+        }
+
+        // Load BMP icons dynamically
+        for (const auto& [framework, resourceName] : iconMap) {
+            wil::unique_hicon hIcon(LoadIcon(nullptr, resourceName));
+            if (hIcon) {
+                frameworkIconMap.try_emplace(framework, ImageList_AddIcon(hImageList.get(), hIcon.get()));
+            } else {
+                wil::unique_hbitmap hBitmap(static_cast<HBITMAP>(LoadImage(GetModuleHandle(nullptr), resourceName, IMAGE_BITMAP, 32, 32, LR_LOADTRANSPARENT | LR_CREATEDIBSECTION)));
+                if (hBitmap) {
+                    int index = ImageList_AddMasked(hImageList.get(), hBitmap.get(), RGB(255, 255, 255)); // Transparency color
+                    frameworkIconMap.try_emplace(framework, index);
+                } else {
+                    OutputDebugString(L"Failed to load bitmap for framework");
+                }
+            }
+        }
+
+        // Associate the image list with the ListView
+        ListView_SetImageList(hwndList, hImageList.get(), LVSIL_SMALL);
+
         return TRUE;
+    }
+    case WM_DESTROY:
+        hImageList.reset();
+        break;
+
+    default:
+        break;
     }
 
     return FALSE;
@@ -35,15 +113,14 @@ void UpdateFrameworksTab(HWND hwnd)
     HWND hwndDlg = WinSpyTab[FRAMEWORKS_TAB].hwnd;
     HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST1);
     
-    // Clear all items from the list
-    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+    // Clear all items from the ListView
+    ListView_DeleteAllItems(hwndList);
 
-    wchar_t buffer[256];
-    memset(buffer, 0, sizeof(buffer));
-    GetClassNameW(hwnd, buffer, ARRAYSIZE(buffer));
+    std::array<wchar_t, 256> buffer = {};
+    GetClassNameW(hwnd, buffer.data(), static_cast<int>(buffer.size()));
 
     // Wildcard "*" supported, but only at the end of the string.
-    static const std::unordered_map<std::wstring, std::wstring> classMap = {
+    static const std::unordered_map<std::wstring_view, std::wstring_view> classMap = {
         {L"Chrome_RenderWidgetHostHWND", L"Chromium"},
         {L"Chrome_WidgetWin_1", L"Chromium"},
         {L"DirectUIHWND", L"DirectUI"},
@@ -67,8 +144,8 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"Windows.UI.Composition.DesktopWindowContentBridge", L"System Island (DesktopWindowContentBridge)"},
     };
 
-    static const std::unordered_map<std::wstring, std::wstring> moduleMap = {
-        {L"windows.ui.xaml.dll", L"System Xaml (windows.ui.xaml.dll)"},
+    static const std::unordered_map<std::wstring_view, std::wstring_view> moduleMap = {
+        {L"windows.ui.xaml.dll", L"System Xaml"},
         {L"presentationcore.dll", L"WPF"},
         {L"presentationcore.ni.dll", L"WPF"},
         {L"webview2loader.dll", L"WebView2"},
@@ -85,12 +162,12 @@ void UpdateFrameworksTab(HWND hwnd)
             // TODO: Inefficient to make a temp string every time through the loop.
             std::wstring className(classPair.first);
             className.pop_back(); // Remove the '*'
-            if (wcsstr(buffer, className.c_str()) != nullptr) {
-                SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)classPair.second.c_str());
+            if (wcsstr(buffer.data(), className.c_str()) != nullptr) {
+                AddListViewItem(hwndList, classPair.second.data());
             }
         }
-        else if (classPair.first == buffer) {
-            SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)classPair.second.c_str());
+        else if (wcscmp(classPair.first.data(), buffer.data()) == 0) {
+            AddListViewItem(hwndList, classPair.second.data());
         }
     }
 
@@ -98,14 +175,16 @@ void UpdateFrameworksTab(HWND hwnd)
     // Get window's process
     DWORD processId;
     GetWindowThreadProcessId(hwnd, &processId);
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+
+    // Use wil::unique_handle to manage the process handle
+    wil::unique_handle hProcess(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId));
     if (hProcess) {
 
         bool usingElectron = false;
 
         // Process name
         wchar_t processPath[MAX_PATH];
-        if (GetModuleFileNameExW(hProcess, nullptr, processPath, 200)) {
+        if (GetModuleFileNameExW(hProcess.get(), nullptr, processPath, 200)) {
             // convert to lowercase for case insensitive comparison
             for (size_t j = 0; processPath[j]; j++) {
                 processPath[j] = towlower(processPath[j]);
@@ -135,16 +214,16 @@ void UpdateFrameworksTab(HWND hwnd)
         }
 
         if (usingElectron) {
-            SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)TEXT("Electron"));
+            AddListViewItem(hwndList, L"Electron");
         }
 
         // Get list of DLLs loaded
         HMODULE hMods[1024];
         DWORD cbNeeded;
-        if (EnumProcessModulesEx(hProcess, hMods, sizeof(hMods), &cbNeeded, LIST_MODULES_ALL)) {
+        if (EnumProcessModulesEx(hProcess.get(), hMods, sizeof(hMods), &cbNeeded, LIST_MODULES_ALL)) {
             for (unsigned int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++) {
                 wchar_t moduleFullPath[MAX_PATH];
-                if (GetModuleFileNameExW(hProcess, hMods[i], moduleFullPath, 200)) {
+                if (GetModuleFileNameExW(hProcess.get(), hMods[i], moduleFullPath, 200)) {
                     // Trim to just the file name
                     wchar_t *fileName = wcsrchr(moduleFullPath, L'\\');
                     if (fileName) {
@@ -156,24 +235,25 @@ void UpdateFrameworksTab(HWND hwnd)
                     for (size_t j = 0; fileName[j]; j++) {
                         fileName[j] = towlower(fileName[j]);
                     }
-                    auto modIt = moduleMap.find(fileName);
+                    // Convert the key to std::wstring for lookup
+                    std::wstring key(fileName);
+                    auto modIt = moduleMap.find(key);
                     if (modIt != moduleMap.end()) {
-                        SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)modIt->second.c_str());
+                        AddListViewItem(hwndList, modIt->second);
                     } else if (wcsstr(fileName, L"microsoft.ui.xaml.dll") != nullptr) {
                         // Get the version of the module
                         DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleFullPath, nullptr);
                         if (versionInfoSize > 0) {
-                            BYTE *versionInfo = new BYTE[versionInfoSize];
-                            if (GetFileVersionInfoW(moduleFullPath, 0, versionInfoSize, versionInfo)) {
+                            std::unique_ptr<BYTE[]> versionInfo(new BYTE[versionInfoSize]);
+                            if (GetFileVersionInfoW(moduleFullPath, 0, versionInfoSize, versionInfo.get())) {
                                 VS_FIXEDFILEINFO *fileInfo;
                                 UINT fileInfoSize;
-                                if (VerQueryValueW(versionInfo, L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
+                                if (VerQueryValueW(versionInfo.get(), L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
                                     wchar_t version[64];
                                     swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
-                                    SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)version);
+                                    AddListViewItem(hwndList, version, L"WinUI");
                                 }
                             }
-                            delete[] versionInfo;
                         }
                     }
                 }
@@ -181,6 +261,5 @@ void UpdateFrameworksTab(HWND hwnd)
         } else {
             // TODO: Surface this error to the user -- std::wcout << L"  Failed to enumerate modules." << std::endl;
         }
-        CloseHandle(hProcess);
     }
 }
