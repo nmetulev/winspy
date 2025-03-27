@@ -11,19 +11,23 @@
 #include <memory>
 #include <array>
 
+// Map to store framework-specific icon indices
+static std::unordered_map<std::wstring_view, int> frameworkIconMap;
+
 // Helper function to add an item to the ListView
-void AddListViewItem(HWND hwndList, std::wstring_view text, int imageIndex)
+void AddListViewItem(HWND hwndList, std::wstring_view text, std::wstring_view iconKey = L"")
 {
+    std::wstring_view iconKeyActual = iconKey.empty() ? text : iconKey;
+    int iconIndex = frameworkIconMap.count(iconKeyActual) ? frameworkIconMap[iconKeyActual] : frameworkIconMap[L"Unknown"];
+
     LVITEM lvItem = {};
     lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
     lvItem.iItem = ListView_GetItemCount(hwndList);
     lvItem.pszText = const_cast<LPWSTR>(text.data());
-    lvItem.iImage = imageIndex;
+    lvItem.iImage = iconIndex;
     ListView_InsertItem(hwndList, &lvItem);
 }
 
-// Map to store framework-specific icon indices
-static std::unordered_map<std::wstring, int> frameworkIconMap;
 
 INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
 {
@@ -52,9 +56,11 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
             {L"Electron", MAKEINTRESOURCE(IDB_FRAMEWORK_ELECTRON)},
             {L"Flutter", MAKEINTRESOURCE(IDB_FRAMEWORK_FLUTTER)},
             {L"React Native", MAKEINTRESOURCE(IDB_FRAMEWORK_REACT_NATIVE)},
-            {L"System Xaml (windows.ui.xaml.dll)", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
+            {L"System Xaml", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
+            {L"WinUI", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
             {L"WPF", MAKEINTRESOURCE(IDB_FRAMEWORK_WPF)},
-            {L"WebView2", MAKEINTRESOURCE(IDB_FRAMEWORK_WEBVIEW2)}
+            {L"WebView2", MAKEINTRESOURCE(IDB_FRAMEWORK_WEBVIEW2)},
+            {L"Unknown", IDI_APPLICATION} // Default icon for unmapped frameworks
         };
 
         // Create an image list for framework icons (32x32 dimensions)
@@ -68,12 +74,12 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
         for (const auto& [framework, resourceName] : iconMap) {
             wil::unique_hicon hIcon(LoadIcon(nullptr, resourceName));
             if (hIcon) {
-                frameworkIconMap.try_emplace(std::wstring(framework), ImageList_AddIcon(hImageList.get(), hIcon.get()));
+                frameworkIconMap.try_emplace(framework, ImageList_AddIcon(hImageList.get(), hIcon.get()));
             } else {
                 wil::unique_hbitmap hBitmap(static_cast<HBITMAP>(LoadImage(GetModuleHandle(nullptr), resourceName, IMAGE_BITMAP, 32, 32, LR_LOADTRANSPARENT | LR_CREATEDIBSECTION)));
                 if (hBitmap) {
                     int index = ImageList_AddMasked(hImageList.get(), hBitmap.get(), RGB(255, 255, 255)); // Transparency color
-                    frameworkIconMap.try_emplace(std::wstring(framework), index);
+                    frameworkIconMap.try_emplace(framework, index);
                 } else {
                     OutputDebugString(L"Failed to load bitmap for framework");
                 }
@@ -130,7 +136,7 @@ void UpdateFrameworksTab(HWND hwnd)
     };
 
     static const std::unordered_map<std::wstring_view, std::wstring_view> moduleMap = {
-        {L"windows.ui.xaml.dll", L"System Xaml (windows.ui.xaml.dll)"},
+        {L"windows.ui.xaml.dll", L"System Xaml"},
         {L"presentationcore.dll", L"WPF"},
         {L"presentationcore.ni.dll", L"WPF"},
         {L"webview2loader.dll", L"WebView2"},
@@ -143,10 +149,7 @@ void UpdateFrameworksTab(HWND hwnd)
 
     auto it = classMap.find(buffer.data());
     if (it != classMap.end()) {
-        // Convert the key to std::wstring for lookup
-        std::wstring key(it->second);
-        int iconIndex = frameworkIconMap.count(key) ? frameworkIconMap[key] : 0; // Default to placeholder
-        AddListViewItem(hwndList, it->second, iconIndex);
+        AddListViewItem(hwndList, it->second);
     }
 
     // Get window's process
@@ -191,7 +194,7 @@ void UpdateFrameworksTab(HWND hwnd)
         }
 
         if (usingElectron) {
-            AddListViewItem(hwndList, L"Electron", 0); // Placeholder icon index
+            AddListViewItem(hwndList, L"Electron");
         }
 
         // Get list of DLLs loaded
@@ -216,10 +219,7 @@ void UpdateFrameworksTab(HWND hwnd)
                     std::wstring key(fileName);
                     auto modIt = moduleMap.find(key);
                     if (modIt != moduleMap.end()) {
-                        // Convert modIt->second to std::wstring for frameworkIconMap lookup
-                        std::wstring frameworkKey(modIt->second);
-                        int iconIndex = frameworkIconMap.count(frameworkKey) ? frameworkIconMap[frameworkKey] : 0; // Default to placeholder
-                        AddListViewItem(hwndList, modIt->second, iconIndex);
+                        AddListViewItem(hwndList, modIt->second);
                     } else if (wcsstr(fileName, L"microsoft.ui.xaml.dll") != nullptr) {
                         // Get the version of the module
                         DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleFullPath, nullptr);
@@ -231,7 +231,7 @@ void UpdateFrameworksTab(HWND hwnd)
                                 if (VerQueryValueW(versionInfo.get(), L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
                                     wchar_t version[64];
                                     swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
-                                    AddListViewItem(hwndList, version, 0); // Placeholder icon index
+                                    AddListViewItem(hwndList, version, L"WinUI");
                                 }
                             }
                         }
