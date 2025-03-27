@@ -88,6 +88,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalOptions Condition="'$(WINSPY_GITHUB_FORK)'!=''">/DWINSPY_GITHUB_FORK="$(WINSPY_GITHUB_FORK)"</AdditionalOptions>
       <AdditionalOptions Condition="'$(WINSPY_GITHUB_COMMIT)'!=''">/DWINSPY_GITHUB_COMMIT="$(WINSPY_GITHUB_COMMIT)"</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -103,7 +104,6 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp17</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
