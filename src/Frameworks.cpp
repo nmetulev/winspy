@@ -119,6 +119,7 @@ void UpdateFrameworksTab(HWND hwnd)
     std::array<wchar_t, 256> buffer = {};
     GetClassNameW(hwnd, buffer.data(), static_cast<int>(buffer.size()));
 
+    // Wildcard "*" supported, but only at the end of the string.
     static const std::unordered_map<std::wstring_view, std::wstring_view> classMap = {
         {L"Chrome_RenderWidgetHostHWND", L"Chromium"},
         {L"Chrome_WidgetWin_1", L"Chromium"},
@@ -132,7 +133,15 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"SysMonthCal32", L"ComCtl32"},
         {L"SysIPAddress32", L"ComCtl32"},
         {L"ToolbarWindow32", L"ComCtl32"},
-        {L"ReBarWindow32", L"ComCtl32"}
+        {L"ReBarWindow32", L"ComCtl32"},
+        {L"Windows.UI.Core.CoreWindow", L"UWP (CoreWindow)"},
+        {L"ApplicationFrameInputSinkWindow", L"UWP (ApplicationFrameHost)"},
+        {L"AfxFrameOrView*", L"MFC"},
+        {L"AfxWnd*", L"MFC" },
+        {L"AfxOleControl*", L"MFC" },
+        {L"WindowsForms*", L"WinForms"},
+        {L"Microsoft.UI.Content.DesktopChildSiteBridge", L"Scene Graph ContentIsland (DesktopChildSiteBridge)"},
+        {L"Windows.UI.Composition.DesktopWindowContentBridge", L"System Island (DesktopWindowContentBridge)"},
     };
 
     static const std::unordered_map<std::wstring_view, std::wstring_view> moduleMap = {
@@ -147,10 +156,21 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"electron_native_auth.node", L"Electron"},
     };
 
-    auto it = classMap.find(buffer.data());
-    if (it != classMap.end()) {
-        AddListViewItem(hwndList, it->second);
+    for (auto &classPair : classMap) {
+        // If classPair.first ends with a *, do a substring match
+        if (classPair.first.back() == L'*') {
+            // TODO: Inefficient to make a temp string every time through the loop.
+            std::wstring className(classPair.first);
+            className.pop_back(); // Remove the '*'
+            if (wcsstr(buffer, className.c_str()) != nullptr) {
+                AddListViewItem(hwndList, classPair.second.c_str());
+            }
+        }
+        else if (classPair.first == buffer) {
+            AddListViewItem(hwndList, classPair.second.c_str());
+        }
     }
+
 
     // Get window's process
     DWORD processId;
