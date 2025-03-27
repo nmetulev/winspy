@@ -43,32 +43,40 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
         SetWindowLong(hwndList, GWL_STYLE, GetWindowLong(hwndList, GWL_STYLE) | LVS_LIST);
         ListView_SetExtendedListViewStyle(hwndList, LVS_EX_FULLROWSELECT);
 
-        // Map of framework names to placeholder icons
+        // Map of framework names to image resources
         static const std::unordered_map<std::wstring_view, LPCTSTR> iconMap = {
-            {L"Chromium", IDI_APPLICATION},
-            {L"DirectUI", IDI_INFORMATION},
-            {L"ComCtl32", IDI_WARNING},
-            {L"WPF", IDI_QUESTION},
-            {L"WebView2", IDI_ERROR},
-            {L"React Native", IDI_WARNING},
-            {L"Flutter", IDI_INFORMATION},
-            {L"CEF", IDI_APPLICATION},
-            {L"Electron", IDI_QUESTION},
-            {L"System Xaml (windows.ui.xaml.dll)", IDI_ERROR}
+            {L"CEF", MAKEINTRESOURCE(IDB_FRAMEWORK_CEF)},
+            {L"Chromium", MAKEINTRESOURCE(IDB_FRAMEWORK_CHROMIUM)},
+            {L"ComCtl32", MAKEINTRESOURCE(IDB_FRAMEWORK_COMCTL32)},
+            {L"DirectUI", MAKEINTRESOURCE(IDB_FRAMEWORK_DIRECTUI)},
+            {L"Electron", MAKEINTRESOURCE(IDB_FRAMEWORK_ELECTRON)},
+            {L"Flutter", MAKEINTRESOURCE(IDB_FRAMEWORK_FLUTTER)},
+            {L"React Native", MAKEINTRESOURCE(IDB_FRAMEWORK_REACT_NATIVE)},
+            {L"System Xaml (windows.ui.xaml.dll)", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
+            {L"WPF", MAKEINTRESOURCE(IDB_FRAMEWORK_WPF)},
+            {L"WebView2", MAKEINTRESOURCE(IDB_FRAMEWORK_WEBVIEW2)}
         };
 
-        // Create an image list for framework icons
-        hImageList.reset(ImageList_Create(16, 16, ILC_COLOR32, static_cast<int>(iconMap.size()), 1));
+        // Create an image list for framework icons (32x32 dimensions)
+        hImageList.reset(ImageList_Create(32, 32, ILC_COLOR32 | ILC_MASK, static_cast<int>(iconMap.size()), 1));
         if (!hImageList) {
-            // Log or handle error: ImageList creation failed
+            OutputDebugString(L"Failed to create image list.\n");
             return FALSE;
         }
 
-        // Load icons dynamically
-        for (const auto& [framework, iconId] : iconMap) {
-            wil::unique_hicon hIcon(LoadIcon(nullptr, iconId));
+        // Load BMP icons dynamically
+        for (const auto& [framework, resourceName] : iconMap) {
+            wil::unique_hicon hIcon(LoadIcon(nullptr, resourceName));
             if (hIcon) {
                 frameworkIconMap.try_emplace(std::wstring(framework), ImageList_AddIcon(hImageList.get(), hIcon.get()));
+            } else {
+                wil::unique_hbitmap hBitmap(static_cast<HBITMAP>(LoadImage(GetModuleHandle(nullptr), resourceName, IMAGE_BITMAP, 32, 32, LR_LOADTRANSPARENT | LR_CREATEDIBSECTION)));
+                if (hBitmap) {
+                    int index = ImageList_AddMasked(hImageList.get(), hBitmap.get(), RGB(255, 255, 255)); // Transparency color
+                    frameworkIconMap.try_emplace(std::wstring(framework), index);
+                } else {
+                    OutputDebugString(L"Failed to load bitmap for framework");
+                }
             }
         }
 

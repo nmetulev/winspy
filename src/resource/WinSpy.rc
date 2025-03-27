@@ -583,20 +583,23 @@ END
 //
 
 IDB_WINDOW_VISIBLE      BITMAP                  "treeicons.bmp"
-
 IDB_WINDOW_INVISIBLE    BITMAP                  "treeicons-hidden.bmp"
-
 IDB_WINDOW_CLOAKED      BITMAP                  "treeicons-cloaked.bmp"
-
 IDB_DRAGTOOL1           BITMAP                  "dragtool1.bmp"
-
 IDB_DRAGTOOL2           BITMAP                  "dragtool2.bmp"
-
 IDB_CHECK1              BITMAP                  "check1.bmp"
-
 IDB_CHECK2              BITMAP                  "check2.bmp"
-
 IDB_PIN_BITMAP          BITMAP                  "thumbtack.bmp"
+IDB_FRAMEWORK_CEF           BITMAP              "cef.bmp"
+IDB_FRAMEWORK_CHROMIUM      BITMAP              "chromium.bmp"
+IDB_FRAMEWORK_COMCTL32      BITMAP              "comctl32.bmp"
+IDB_FRAMEWORK_DIRECTUI      BITMAP              "directui.bmp"
+IDB_FRAMEWORK_ELECTRON      BITMAP              "electron.bmp"
+IDB_FRAMEWORK_FLUTTER       BITMAP              "flutter.bmp"
+IDB_FRAMEWORK_REACT_NATIVE  BITMAP              "react.bmp"
+IDB_FRAMEWORK_WEBVIEW2      BITMAP              "webview2.bmp"
+IDB_FRAMEWORK_WINUI         BITMAP              "winui.bmp"
+IDB_FRAMEWORK_WPF           BITMAP              "wpf.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -615,15 +618,10 @@ IDC_CURSOR1             CURSOR                  "cursor1.cur"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_APP                 ICON                    "app.ico"
-
 IDI_DOTS                ICON                    "dots.ico"
-
 IDI_DOWN_ARROW          ICON                    "down.ico"
-
 IDI_ENTER               ICON                    "enter.ico"
-
 IDI_MORE                ICON                    "more.ico"
-
 IDI_LESS                ICON                    "less.ico"
 
 
