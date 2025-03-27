@@ -162,12 +162,12 @@ void UpdateFrameworksTab(HWND hwnd)
             // TODO: Inefficient to make a temp string every time through the loop.
             std::wstring className(classPair.first);
             className.pop_back(); // Remove the '*'
-            if (wcsstr(buffer, className.c_str()) != nullptr) {
-                AddListViewItem(hwndList, classPair.second.c_str());
+            if (wcsstr(buffer.data(), className.c_str()) != nullptr) {
+                AddListViewItem(hwndList, classPair.second.data());
             }
         }
-        else if (classPair.first == buffer) {
-            AddListViewItem(hwndList, classPair.second.c_str());
+        else if (wcscmp(classPair.first.data(), buffer.data()) == 0) {
+            AddListViewItem(hwndList, classPair.second.data());
         }
     }
 
