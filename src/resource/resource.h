@@ -157,6 +157,8 @@
 #define IDC_STYLEEXT_LABEL              1090
 #define IDC_STYLEEXT                    1091
 #define IDC_EDITSTYLEEXT                1092
+#define IDC_PROCESS_COMMANDLINE_LABEL   1093
+#define IDC_PROCESS_COMMANDLINE         1094
 #define IDM_GOTO_TAB_GENERAL            3001
 #define IDM_GOTO_TAB_STYLES             3002
 #define IDM_GOTO_TAB_PROPERTIES         3003

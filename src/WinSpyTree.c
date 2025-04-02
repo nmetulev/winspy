@@ -732,7 +732,7 @@ void WindowTree_Initialize(HWND hwndTree)
     //add an item to the tab control
     ZeroMemory(&tcitem, sizeof(tcitem));
     tcitem.mask = TCIF_TEXT;
-    tcitem.pszText = L"All Windows";
+    tcitem.pszText = L"All Windows by Process";
 
     hwndTab = GetDlgItem(GetParent(hwndTree), IDC_TAB2);
     SendMessage(hwndTab, TCM_INSERTITEM, 0, (LPARAM)&tcitem);
@@ -946,6 +946,7 @@ void WindowTree_Locate(HWND hwnd)
     {
         SendMessage(g_hwndTree, TVM_ENSUREVISIBLE, 0, (LPARAM)hti);
         SendMessage(g_hwndTree, TVM_SELECTITEM, TVGN_CARET, (LPARAM)hti);
+
         SetFocus(g_hwndTree);
     }
 }

@@ -122,6 +122,9 @@
   <ItemGroup>
     <ClCompile Include="BitmapButton.c" />
     <ClCompile Include="CaptureWindow.c" />
+    <ClCompile Include="CppUtil.cpp" >
+        <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="DisplayClassInfo.c" />
     <ClCompile Include="DisplayDpiInfo.c" />
     <ClCompile Include="DisplayGeneralInfo.c" />

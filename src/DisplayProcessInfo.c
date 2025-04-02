@@ -17,6 +17,8 @@
 #include "resource.h"
 #include <tlhelp32.h>
 
+WCHAR* GetProcessCommandLine(DWORD dwProcessId);
+
 void DescribeProcessDpiAwareness(DWORD dwProcessId, PSTR pszAwareness, size_t cchAwareness, PSTR pszDpi, size_t cchDpi);
 BOOL IsGetSystemDpiForProcessPresent();
 
@@ -267,6 +269,9 @@ void UpdateProcessTab(HWND hwnd, DWORD dwOverridePID)
             ShowWindow(GetDlgItem(hwndDlg, IDC_PROCESS_SYSTEM_DPI_LABEL), SW_HIDE);
             ShowWindow(GetDlgItem(hwndDlg, IDC_PROCESS_SYSTEM_DPI), SW_HIDE);
         }
+
+        WCHAR *szCommandLine = GetProcessCommandLine(dwProcessId);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESS_COMMANDLINE, szCommandLine);
     }
     else
     {

@@ -114,6 +114,9 @@
     <ClCompile Include="Frameworks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CppUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BitmapButton.h">
@@ -212,5 +215,9 @@
     <Image Include="resource\less.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter" />
   </ItemGroup>
 </Project>

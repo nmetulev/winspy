@@ -89,6 +89,8 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
         // Associate the image list with the ListView
         ListView_SetImageList(hwndList, hImageList.get(), LVSIL_SMALL);
 
+        AddListViewItem(hwndList, L"(No window selected)");
+
         return TRUE;
     }
     case WM_DESTROY:
@@ -109,12 +111,18 @@ void UpdateFrameworksTab(HWND hwnd)
     // tab may be doing more work in the future, we may want to find a way to
     // only do work when the user releases the mouse button.  AND do expensive work 
     // on a background thread.
-    
+
     HWND hwndDlg = WinSpyTab[FRAMEWORKS_TAB].hwnd;
     HWND hwndList = GetDlgItem(hwndDlg, IDC_LIST1);
-    
+
     // Clear all items from the ListView
     ListView_DeleteAllItems(hwndList);
+
+    if (hwnd == NULL)
+    {
+        AddListViewItem(hwndList, L"(No window selected)");
+        return;
+    }
 
     std::array<wchar_t, 256> buffer = {};
     GetClassNameW(hwnd, buffer.data(), static_cast<int>(buffer.size()));

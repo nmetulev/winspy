@@ -255,7 +255,7 @@ void WinSpyDlg_SizeContents(HWND hwnd)
     duNormal.cx = duMinimized.cx;
     duNormal.cy = 251;
 
-    duExpanded.cx = 500;
+    duExpanded.cx = 640;
     duExpanded.cy = duNormal.cy;
 
     // work out the size (in pixels) of each window layout
