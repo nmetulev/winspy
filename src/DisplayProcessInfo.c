@@ -17,7 +17,9 @@
 #include "resource.h"
 #include <tlhelp32.h>
 
+// Functions implemented in CppUtil.cpp
 WCHAR* GetProcessCommandLine(DWORD dwProcessId);
+CHAR* GetModuleNameFromExportDir(DWORD processId);
 
 void DescribeProcessDpiAwareness(DWORD dwProcessId, PSTR pszAwareness, size_t cchAwareness, PSTR pszDpi, size_t cchDpi);
 BOOL IsGetSystemDpiForProcessPresent();
@@ -271,7 +273,7 @@ void UpdateProcessTab(HWND hwnd, DWORD dwOverridePID)
         }
 
         WCHAR *szCommandLine = GetProcessCommandLine(dwProcessId);
-        SetDlgItemTextEx(hwndDlg, IDC_PROCESS_COMMANDLINE, szCommandLine);
+        SetDlgItemTextEx(hwndDlg, IDC_PROCESS_COMMANDLINE, szCommandLine ? szCommandLine : L"(null)");
     }
     else
     {

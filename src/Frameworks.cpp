@@ -11,6 +11,10 @@
 #include <memory>
 #include <array>
 
+// Functions implemented in CppUtil.cpp
+extern "C" WCHAR * GetProcessCommandLine(DWORD dwProcessId);
+extern "C" CHAR * GetModuleNameFromExportDir(DWORD processId);
+
 // Map to store framework-specific icon indices
 static std::unordered_map<std::wstring_view, int> frameworkIconMap;
 
@@ -18,6 +22,13 @@ static std::unordered_map<std::wstring_view, int> frameworkIconMap;
 void AddListViewItem(HWND hwndList, std::wstring_view text, std::wstring_view iconKey = L"")
 {
     std::wstring_view iconKeyActual = iconKey.empty() ? text : iconKey;
+    
+    // If iconKeyActual is "Framework (extra text)", extract the framework name
+    if (iconKeyActual.find(L" (") != std::wstring_view::npos)
+    {
+        iconKeyActual = iconKeyActual.substr(0, iconKeyActual.find(L" ("));
+    }
+
     int iconIndex = frameworkIconMap.count(iconKeyActual) ? frameworkIconMap[iconKeyActual] : frameworkIconMap[L"Unknown"];
 
     LVITEM lvItem = {};
@@ -153,15 +164,15 @@ void UpdateFrameworksTab(HWND hwnd)
     };
 
     static const std::unordered_map<std::wstring_view, std::wstring_view> moduleMap = {
-        {L"windows.ui.xaml.dll", L"System Xaml"},
-        {L"presentationcore.dll", L"WPF"},
-        {L"presentationcore.ni.dll", L"WPF"},
-        {L"webview2loader.dll", L"WebView2"},
-        {L"microsoft.reactnative.dll", L"React Native"},
-        {L"react-native-win32.dll", L"React Native"},
-        {L"flutter_windows.dll", L"Flutter"},
-        {L"libcef.dll", L"CEF"},
-        {L"electron_native_auth.node", L"Electron"},
+        {L"windows.ui.xaml.dll", L"System Xaml (in process)"},
+        {L"presentationcore.dll", L"WPF (in process)"},
+        {L"presentationcore.ni.dll", L"WPF (in process)"},
+        {L"webview2loader.dll", L"WebView2 (in process)"},
+        {L"microsoft.reactnative.dll", L"React Native (in process)"},
+        {L"react-native-win32.dll", L"React Native (in process)"},
+        {L"flutter_windows.dll", L"Flutter (in process)"},
+        {L"libcef.dll", L"CEF (in process)"},
+        {L"electron_native_auth.node", L"Electron (in process)"},
     };
 
     for (auto &classPair : classMap) {
@@ -178,7 +189,6 @@ void UpdateFrameworksTab(HWND hwnd)
             AddListViewItem(hwndList, classPair.second.data());
         }
     }
-
 
     // Get window's process
     DWORD processId;
@@ -221,8 +231,20 @@ void UpdateFrameworksTab(HWND hwnd)
             // TODO: Error: L"  Failed to get process name." << std::endl;
         }
 
+        if (!usingElectron) {
+            // We've noticed that for many/most/all Electron exes, the module name in the export dir
+            // is often "electron.exe". 
+            CHAR* headerModuleName = GetModuleNameFromExportDir(processId);
+            if (headerModuleName)
+            {
+                if (strcmp(headerModuleName, "electron.exe") == 0) {
+                    usingElectron = true;
+                }
+            }
+        }
+
         if (usingElectron) {
-            AddListViewItem(hwndList, L"Electron");
+            AddListViewItem(hwndList, L"Electron (in process)");
         }
 
         // Get list of DLLs loaded
@@ -258,7 +280,7 @@ void UpdateFrameworksTab(HWND hwnd)
                                 UINT fileInfoSize;
                                 if (VerQueryValueW(versionInfo.get(), L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
                                     wchar_t version[64];
-                                    swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
+                                    swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d (in process)", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
                                     AddListViewItem(hwndList, version, L"WinUI");
                                 }
                             }
