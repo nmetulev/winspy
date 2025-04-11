@@ -4,6 +4,11 @@
 #include <winternl.h>
 #include <string>
 #include <vector>
+#include <dbghelp.h>
+#include <Psapi.h>
+#include <wil/resource.h>
+
+#pragma comment(lib, "dbghelp.lib")
 
 // Function pointer types for dynamic loading
 typedef NTSTATUS(NTAPI *pfnNtQueryInformationProcess)(
@@ -122,4 +127,88 @@ extern "C" WCHAR* GetProcessCommandLine(DWORD dwProcessId)
     // How is this safe?  Well, it's only really safe until the std::vector is resized.
     // The caller needs to just use the pointer immediately and not keep it around.
     return cmdLine->data();
+}
+
+struct ProcInfo
+{
+    std::wstring ImagePath;
+    std::string ModuleNameFromExportDir;
+    std::wstring ErrorMessage;
+};
+
+std::vector<ProcInfo> g_procInfoCacheItems;
+
+extern "C" CHAR* GetModuleNameFromExportDir(DWORD processId)
+{
+    // Get image path of procInfo.ProcessId
+    wil::unique_handle process(OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId));
+    if (process == NULL) {
+        return nullptr;
+    }
+
+    // Get the image file name
+    WCHAR peFilePath[MAX_PATH];
+    if (GetModuleFileNameExW(process.get(), NULL, peFilePath, MAX_PATH) == 0) {
+        return nullptr;
+    }
+
+    for (auto &procInfo : g_procInfoCacheItems)
+    {
+        if (procInfo.ImagePath == peFilePath)
+        {
+            return procInfo.ModuleNameFromExportDir.data();
+        }
+    }
+
+    auto &procInfo = g_procInfoCacheItems.emplace_back(std::move(ProcInfo{ peFilePath, "", L"" }));
+
+    // Map file into memory
+    wil::unique_hfile file(CreateFile(peFilePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+    if (file.get() == INVALID_HANDLE_VALUE) {
+        procInfo.ErrorMessage = L"Failed to open file";
+        return nullptr;
+    }
+    wil::unique_handle mapping(CreateFileMapping(file.get(), NULL, PAGE_READONLY, 0, 0, NULL));
+    if (mapping == nullptr) {
+        procInfo.ErrorMessage = L"Failed to create file mapping";
+        return nullptr;
+    }
+
+    wil::unique_any_handle_null<decltype(&::UnmapViewOfFile), ::UnmapViewOfFile> fileView(MapViewOfFile(mapping.get(), FILE_MAP_READ, 0, 0, 0));
+    if (!fileView) {
+        procInfo.ErrorMessage = L"Failed to map view of file";
+        return nullptr;
+    }
+
+    ULONG size{ 0 };
+    PIMAGE_SECTION_HEADER header;
+
+    void *dirEntry = ::ImageDirectoryEntryToDataEx(
+        fileView.get(),
+        FALSE,
+        IMAGE_DIRECTORY_ENTRY_EXPORT,
+        &size,
+        &header);
+
+    // Get the exports
+    PIMAGE_EXPORT_DIRECTORY pExportDir = (PIMAGE_EXPORT_DIRECTORY)dirEntry;
+    if (pExportDir == NULL) {
+        procInfo.ErrorMessage = L"Failed to get export directory";
+        return nullptr;
+    }
+
+    // Get PE headers for RVA to VA conversion
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)fileView.get();
+    PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((BYTE *)fileView.get() + dosHeader->e_lfanew);
+
+    // Get module name from export directory
+    char *moduleName = (char *)ImageRvaToVa(
+        ntHeaders,
+        fileView.get(),
+        pExportDir->Name,
+        NULL);
+    
+    procInfo.ModuleNameFromExportDir = std::string(moduleName);
+
+    return procInfo.ModuleNameFromExportDir.data();
 }
