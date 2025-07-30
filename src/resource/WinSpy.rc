@@ -602,6 +602,8 @@ IDB_FRAMEWORK_REACT_NATIVE  BITMAP              "react.bmp"
 IDB_FRAMEWORK_WEBVIEW2      BITMAP              "webview2.bmp"
 IDB_FRAMEWORK_WINUI         BITMAP              "winui.bmp"
 IDB_FRAMEWORK_WPF           BITMAP              "wpf.bmp"
+IDB_FRAMEWORK_QT            BITMAP              "qt.bmp"
+IDB_FRAMEWORK_WXWIDGETS     BITMAP              "wxwidgets.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -715,4 +717,3 @@ IDB_SELBOX              PNG                     "selbox.png"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

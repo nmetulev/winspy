@@ -49,6 +49,8 @@
 #define IDB_FRAMEWORK_DIRECTUI          176
 #define IDB_FRAMEWORK_WPF               177
 #define IDB_FRAMEWORK_WEBVIEW2          178
+#define IDB_FRAMEWORK_QT                179
+#define IDB_FRAMEWORK_WXWIDGETS         180
 #define IDC_LIST1                       1000
 #define IDC_DRAGGER                     1001
 #define IDC_LIST2                       1001

@@ -66,11 +66,13 @@ INT_PTR CALLBACK FrameworksDlgProc(HWND hwnd, UINT iMsg, WPARAM, LPARAM)
             {L"DirectUI", MAKEINTRESOURCE(IDB_FRAMEWORK_DIRECTUI)},
             {L"Electron", MAKEINTRESOURCE(IDB_FRAMEWORK_ELECTRON)},
             {L"Flutter", MAKEINTRESOURCE(IDB_FRAMEWORK_FLUTTER)},
+            {L"Qt", MAKEINTRESOURCE(IDB_FRAMEWORK_QT)},
             {L"React Native", MAKEINTRESOURCE(IDB_FRAMEWORK_REACT_NATIVE)},
             {L"System Xaml", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
             {L"WinUI", MAKEINTRESOURCE(IDB_FRAMEWORK_WINUI)},
             {L"WPF", MAKEINTRESOURCE(IDB_FRAMEWORK_WPF)},
             {L"WebView2", MAKEINTRESOURCE(IDB_FRAMEWORK_WEBVIEW2)},
+            {L"wxWidgets", MAKEINTRESOURCE(IDB_FRAMEWORK_WXWIDGETS)},
             {L"Unknown", IDI_APPLICATION} // Default icon for unmapped frameworks
         };
 
@@ -143,6 +145,17 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"Chrome_RenderWidgetHostHWND", L"Chromium"},
         {L"Chrome_WidgetWin_1", L"Chromium"},
         {L"DirectUIHWND", L"DirectUI"},
+        {L"QWidget", L"Qt"},
+        {L"Qt5QWindowIcon", L"Qt"},
+        {L"Qt6QWindowIcon", L"Qt"},
+        {L"QMainWindow", L"Qt"},
+        {L"QDialog", L"Qt"},
+        {L"wxWindowMSW", L"wxWidgets"},
+        {L"wxMDIFrameClassNR", L"wxWidgets"},
+        {L"wxMDIChildFrameClassNR", L"wxWidgets"},
+        {L"wxFrameClassNR", L"wxWidgets"},
+        {L"wxDialogClassNR", L"wxWidgets"},
+        {L"wxPanelClassNR", L"wxWidgets"},
         {L"SysListView32", L"ComCtl32"},
         {L"SysTreeView32", L"ComCtl32"},
         {L"SysTabControl32", L"ComCtl32"},
@@ -173,6 +186,16 @@ void UpdateFrameworksTab(HWND hwnd)
         {L"flutter_windows.dll", L"Flutter (in process)"},
         {L"libcef.dll", L"CEF (in process)"},
         {L"electron_native_auth.node", L"Electron (in process)"},
+        {L"qt5core.dll", L"Qt (in process)"},
+        {L"qt6core.dll", L"Qt (in process)"},
+        {L"qt5gui.dll", L"Qt (in process)"},
+        {L"qt6gui.dll", L"Qt (in process)"},
+        {L"qt5widgets.dll", L"Qt (in process)"},
+        {L"qt6widgets.dll", L"Qt (in process)"},
+        {L"wxmsw31u_core_vc_custom.dll", L"wxWidgets (in process)"},
+        {L"wxmsw32u_core_vc_custom.dll", L"wxWidgets (in process)"},
+        {L"wxbase31u_vc_custom.dll", L"wxWidgets (in process)"},
+        {L"wxbase32u_vc_custom.dll", L"wxWidgets (in process)"},
     };
 
     for (auto &classPair : classMap) {
@@ -282,6 +305,36 @@ void UpdateFrameworksTab(HWND hwnd)
                                     wchar_t version[64];
                                     swprintf_s(version, ARRAYSIZE(version), L"WinUI-%d.%d.%d.%d (in process)", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
                                     AddListViewItem(hwndList, version, L"WinUI");
+                                }
+                            }
+                        }
+                    } else if (wcsstr(fileName, L"qt5core.dll") != nullptr || wcsstr(fileName, L"qt6core.dll") != nullptr) {
+                        // Get Qt version information
+                        DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleFullPath, nullptr);
+                        if (versionInfoSize > 0) {
+                            std::unique_ptr<BYTE[]> versionInfo(new BYTE[versionInfoSize]);
+                            if (GetFileVersionInfoW(moduleFullPath, 0, versionInfoSize, versionInfo.get())) {
+                                VS_FIXEDFILEINFO *fileInfo;
+                                UINT fileInfoSize;
+                                if (VerQueryValueW(versionInfo.get(), L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
+                                    wchar_t version[64];
+                                    swprintf_s(version, ARRAYSIZE(version), L"Qt-%d.%d.%d.%d (in process)", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
+                                    AddListViewItem(hwndList, version, L"Qt");
+                                }
+                            }
+                        }
+                    } else if (wcsstr(fileName, L"wxmsw") != nullptr && wcsstr(fileName, L"_core_") != nullptr) {
+                        // Get wxWidgets version information
+                        DWORD versionInfoSize = GetFileVersionInfoSizeW(moduleFullPath, nullptr);
+                        if (versionInfoSize > 0) {
+                            std::unique_ptr<BYTE[]> versionInfo(new BYTE[versionInfoSize]);
+                            if (GetFileVersionInfoW(moduleFullPath, 0, versionInfoSize, versionInfo.get())) {
+                                VS_FIXEDFILEINFO *fileInfo;
+                                UINT fileInfoSize;
+                                if (VerQueryValueW(versionInfo.get(), L"\\", (LPVOID *)&fileInfo, &fileInfoSize)) {
+                                    wchar_t version[64];
+                                    swprintf_s(version, ARRAYSIZE(version), L"wxWidgets-%d.%d.%d.%d (in process)", HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS), HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
+                                    AddListViewItem(hwndList, version, L"wxWidgets");
                                 }
                             }
                         }
